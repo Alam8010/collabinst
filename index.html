@@ -1103,6 +1103,86 @@
   </div>
 </div>
 
+<!-- ─── EDIT PROFILE MODAL ─── -->
+<div class="modal-overlay" id="editProfileModal">
+  <div class="modal-box" style="max-width:520px;max-height:90vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeModal('editProfileModal')">✕</button>
+    <div class="modal-title">EDIT PROFILE</div>
+    <div class="modal-sub">Update your public profile information</div>
+    <div class="post-form" id="editProfileForm">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input class="post-input" type="text" id="editName" placeholder="Your full name"/>
+      </div>
+      <div class="form-group" id="editInfluencerFields">
+        <label>Instagram Handle</label>
+        <input class="post-input" type="text" id="editHandle" placeholder="@yourhandle"/>
+      </div>
+      <div class="form-group" id="editNicheGroup">
+        <label>Niche</label>
+        <select class="post-select" id="editNiche">
+          <option value="">Select niche...</option>
+          <option>Fashion & Style</option>
+          <option>Fitness & Health</option>
+          <option>Food & Cooking</option>
+          <option>Tech & Gadgets</option>
+          <option>Travel & Lifestyle</option>
+          <option>Gaming</option>
+          <option>Beauty & Skincare</option>
+          <option>Sports</option>
+          <option>Finance & Business</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group" id="editFollowersGroup">
+        <label>Follower Count</label>
+        <select class="post-select" id="editFollowers">
+          <option value="">Select range...</option>
+          <option>1K - 10K</option>
+          <option>10K - 50K</option>
+          <option>50K - 100K</option>
+          <option>100K - 500K</option>
+          <option>500K+</option>
+        </select>
+      </div>
+      <div class="form-group" id="editPriceGroup">
+        <label>Price per Reel (USD)</label>
+        <input class="post-input" type="number" id="editPrice" placeholder="e.g. 150"/>
+      </div>
+      <div class="form-group" id="editBrandGroup">
+        <label>Brand / Company Name</label>
+        <input class="post-input" type="text" id="editBrandName" placeholder="Your brand name"/>
+      </div>
+      <div class="form-group">
+        <label>Bio</label>
+        <textarea class="post-textarea" id="editBio" placeholder="Tell brands about yourself..." style="min-height:80px"></textarea>
+      </div>
+      <button class="auth-submit" id="editSaveBtn" onclick="saveProfile()">Save Changes →</button>
+    </div>
+    <div style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border)">
+      <div style="font-size:13px;font-weight:700;color:var(--grey);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">Danger Zone</div>
+      <button onclick="confirmDeleteAccount()" style="width:100%;padding:12px;border-radius:4px;border:1px solid rgba(232,25,44,0.4);background:rgba(232,25,44,0.06);color:var(--red);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s" onmouseover="this.style.background='rgba(232,25,44,0.15)'" onmouseout="this.style.background='rgba(232,25,44,0.06)'">
+        🗑️ Delete My Account
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── DELETE CONFIRM MODAL ─── -->
+<div class="modal-overlay" id="deleteConfirmModal">
+  <div class="modal-box" style="max-width:420px;text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+    <div class="modal-title" style="font-size:28px">ARE YOU SURE?</div>
+    <div style="font-size:14px;color:var(--white2);line-height:1.7;margin:16px 0 28px">
+      This will permanently delete your account, profile, messages and all data. <strong style="color:var(--red)">This cannot be undone.</strong>
+    </div>
+    <div style="display:flex;gap:12px">
+      <button onclick="closeModal('deleteConfirmModal')" style="flex:1;padding:12px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--white2);font-size:14px;font-weight:600;cursor:pointer">Cancel</button>
+      <button onclick="deleteAccount()" id="deleteBtn" style="flex:1;padding:12px;border-radius:4px;background:var(--red);color:var(--white);font-size:14px;font-weight:700;cursor:pointer;border:none">Yes, Delete Account</button>
+    </div>
+  </div>
+</div>
+
 <!-- ─── TOAST ─── -->
 <div class="toast" id="toast"></div>
 
@@ -1863,7 +1943,7 @@ async function renderProfile() {
       </div>
       <div class="profile-actions">
         ${isOwn
-          ? '<button class="btn-hero-red" onclick="showPage(\'dashboard\')">Go to Dashboard</button>'
+          ? '<button class="btn-hero-red" onclick="openEditProfile()">Edit Profile ✏️</button><button class="btn-hero-outline" onclick="showPage(\'dashboard\')" style="margin-left:8px">Dashboard</button>'
           : `<button class="btn-hero-red" onclick="openDeal('${user.id}','${user.name}',${user.price||0})">Send Deal →</button>
              <button class="btn-hero-outline" onclick="openMessageToUser('${user.id}','${user.name}')">Message</button>`
         }
@@ -1913,6 +1993,115 @@ async function renderNotifications() {
         <div class="notif-time">${n.time}</div>
       </div>
     </div>`).join('');
+}
+
+// ─── EDIT PROFILE ────────────────────────────────
+function openEditProfile() {
+  if(!currentUser) return;
+  const isInfluencer = currentUser.role === 'influencer';
+
+  // Pre-fill form
+  document.getElementById('editName').value = currentUser.name || '';
+  document.getElementById('editHandle').value = currentUser.handle || '';
+  document.getElementById('editBio').value = currentUser.bio || '';
+  document.getElementById('editBrandName').value = currentUser.brandName || '';
+
+  // Set niche dropdown
+  const nicheEl = document.getElementById('editNiche');
+  for(let i=0; i<nicheEl.options.length; i++) {
+    if(nicheEl.options[i].value === currentUser.niche) { nicheEl.selectedIndex = i; break; }
+  }
+
+  // Set followers dropdown
+  const followersEl = document.getElementById('editFollowers');
+  for(let i=0; i<followersEl.options.length; i++) {
+    if(followersEl.options[i].value === currentUser.followers) { followersEl.selectedIndex = i; break; }
+  }
+
+  document.getElementById('editPrice').value = currentUser.price || '';
+
+  // Show/hide influencer vs brand fields
+  document.getElementById('editInfluencerFields').style.display = isInfluencer ? 'flex' : 'none';
+  document.getElementById('editNicheGroup').style.display = isInfluencer ? 'flex' : 'none';
+  document.getElementById('editFollowersGroup').style.display = isInfluencer ? 'flex' : 'none';
+  document.getElementById('editPriceGroup').style.display = isInfluencer ? 'flex' : 'none';
+  document.getElementById('editBrandGroup').style.display = !isInfluencer ? 'flex' : 'none';
+
+  document.getElementById('editProfileModal').classList.add('open');
+}
+
+async function saveProfile() {
+  if(!currentUser) return;
+  const btn = document.getElementById('editSaveBtn');
+  btn.textContent = 'Saving...';
+  btn.disabled = true;
+
+  const updates = {
+    name: document.getElementById('editName').value.trim() || currentUser.name,
+    handle: document.getElementById('editHandle').value.trim() || currentUser.handle,
+    niche: document.getElementById('editNiche').value || currentUser.niche,
+    followers: document.getElementById('editFollowers').value || currentUser.followers,
+    price: parseInt(document.getElementById('editPrice').value) || currentUser.price,
+    brand_name: document.getElementById('editBrandName').value.trim() || currentUser.brandName,
+    bio: document.getElementById('editBio').value.trim(),
+  };
+
+  const { error } = await _supabase.from('profiles').update(updates).eq('id', currentUser.id);
+
+  btn.textContent = 'Save Changes →';
+  btn.disabled = false;
+
+  if(error) { showToast('Error saving: ' + error.message); return; }
+
+  // Update local state
+  currentUser.name = updates.name;
+  currentUser.handle = updates.handle;
+  currentUser.niche = updates.niche;
+  currentUser.followers = updates.followers;
+  currentUser.price = updates.price;
+  currentUser.brandName = updates.brand_name;
+  currentUser.bio = updates.bio;
+
+  closeModal('editProfileModal');
+  showToast('Profile updated successfully! ✅', 'success');
+  renderProfile();
+}
+
+function confirmDeleteAccount() {
+  closeModal('editProfileModal');
+  document.getElementById('deleteConfirmModal').classList.add('open');
+}
+
+async function deleteAccount() {
+  const btn = document.getElementById('deleteBtn');
+  btn.textContent = 'Deleting...';
+  btn.disabled = true;
+
+  try {
+    // Delete profile data first
+    await _supabase.from('messages').delete().eq('sender_id', currentUser.id);
+    await _supabase.from('messages').delete().eq('receiver_id', currentUser.id);
+    await _supabase.from('deals').delete().or(`brand_id.eq.${currentUser.id},creator_id.eq.${currentUser.id}`);
+    await _supabase.from('brand_posts').delete().eq('user_id', currentUser.id);
+    await _supabase.from('profiles').delete().eq('id', currentUser.id);
+
+    // Sign out
+    await _supabase.auth.signOut();
+    currentUser = null;
+    currentMode = 'influencer';
+
+    closeModal('deleteConfirmModal');
+    document.getElementById('navActions').innerHTML = `
+      <button class="btn-ghost" onclick="showPage('auth')">Log In</button>
+      <button class="btn-red" onclick="showPage('auth')">Join Free</button>
+    `;
+    showToast('Your account has been deleted.');
+    showPage('landing');
+  } catch(e) {
+    btn.textContent = 'Yes, Delete Account';
+    btn.disabled = false;
+    showToast('Error deleting account. Please try again.');
+  }
 }
 
 // ─── MODALS ──────────────────────────────────────
