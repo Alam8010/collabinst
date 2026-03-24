@@ -658,6 +658,34 @@
   .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
   .reveal.visible { opacity: 1; transform: translateY(0); }
 
+
+  /* ADMIN TABS */
+  .admin-tab {
+    padding: 16px 24px; background: transparent; color: var(--grey);
+    font-size: 13px; font-weight: 600; letter-spacing: 0.5px;
+    border: none; border-bottom: 2px solid transparent;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    font-family: 'Barlow', sans-serif;
+  }
+  .admin-tab:hover { color: var(--white); }
+  .admin-tab.active { color: var(--white); border-bottom-color: var(--red); }
+  .admin-stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 40px; }
+  .admin-stat-card {
+    background: var(--black2); border: 1px solid var(--border); border-radius: 4px;
+    padding: 24px; text-align: center;
+  }
+  .admin-stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: var(--red); letter-spacing: 2px; }
+  .admin-stat-label { font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--grey); margin-top: 4px; }
+  .admin-table { width: 100%; border-collapse: collapse; background: var(--black2); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .admin-table th { text-align: left; padding: 12px 16px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--grey); border-bottom: 1px solid var(--border); background: var(--black3); }
+  .admin-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--white2); }
+  .admin-table tr:last-child td { border-bottom: none; }
+  .admin-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .admin-del-btn { padding: 5px 12px; border-radius: 3px; background: rgba(232,25,44,0.1); border: 1px solid rgba(232,25,44,0.3); color: var(--red); font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .admin-del-btn:hover { background: var(--red); color: var(--white); }
+  .admin-complete-btn { padding: 5px 12px; border-radius: 3px; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #22c55e; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .admin-complete-btn:hover { background: #22c55e; color: var(--white); }
+
   /* ─── UTILS ─── */
   .hidden { display: none !important; }
   .text-red { color: var(--red); }
@@ -1065,6 +1093,43 @@
   </div>
 </div>
 
+
+<!-- ═══════════════════════════════════════════
+     PAGE: ADMIN
+════════════════════════════════════════════ -->
+<div id="page-admin" class="page">
+  <div style="padding-top:64px;min-height:100vh;background:var(--black)">
+    <!-- ADMIN LOGIN -->
+    <div id="adminLogin" style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 64px);padding:20px">
+      <div style="background:var(--black2);border:1px solid var(--border);border-radius:6px;padding:48px 40px;width:100%;max-width:400px;text-align:center">
+        <div style="font-size:40px;margin-bottom:16px">🔐</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;margin-bottom:8px">ADMIN ACCESS</div>
+        <div style="font-size:13px;color:var(--grey);margin-bottom:28px">This area is restricted to CollabInst administrators only.</div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <input type="password" id="adminPassInput" placeholder="Enter admin password" style="background:var(--black3);border:1px solid var(--border);border-radius:4px;padding:12px 16px;color:var(--white);font-size:14px;font-family:'Barlow',sans-serif;outline:none" onkeydown="if(event.key==='Enter')checkAdminPass()"/>
+          <div id="adminPassError" style="font-size:13px;color:var(--red);display:none;padding:8px 12px;background:rgba(232,25,44,0.08);border-radius:4px;border:1px solid rgba(232,25,44,0.2)"></div>
+          <button onclick="checkAdminPass()" style="padding:14px;border-radius:4px;background:var(--red);color:var(--white);font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:'Barlow',sans-serif">Enter Admin Panel →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD -->
+    <div id="adminDash" style="display:none">
+      <!-- ADMIN NAV -->
+      <div style="background:var(--black2);border-bottom:1px solid var(--border);padding:0 40px;display:flex;align-items:center;gap:0;overflow-x:auto">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;margin-right:32px;color:var(--red);white-space:nowrap">ADMIN PANEL</div>
+        <button class="admin-tab active" onclick="adminTab('stats',this)">📊 Stats</button>
+        <button class="admin-tab" onclick="adminTab('users',this)">👥 Users</button>
+        <button class="admin-tab" onclick="adminTab('deals',this)">💼 Deals</button>
+        <button class="admin-tab" onclick="adminTab('posts',this)">📢 Posts</button>
+      </div>
+
+      <!-- ADMIN CONTENT -->
+      <div id="adminContent" style="padding:40px;max-width:1200px;margin:0 auto"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ─── PAYMENT MODAL ─── -->
 <div class="modal-overlay" id="paymentModal">
   <div class="modal-box">
@@ -1236,6 +1301,7 @@ function showPage(page) {
   }
 
   if(page === 'browse') renderBrowse();
+  if(page === 'admin') { /* admin handles itself */ }
   if(page === 'board') renderBoard();
   if(page === 'messages') renderMessages();
   if(page === 'notifications') renderNotifications();
@@ -2104,6 +2170,197 @@ async function deleteAccount() {
   }
 }
 
+// ─── ADMIN PANEL ─────────────────────────────────
+const ADMIN_PASSWORD = 'collabinst@admin2026';
+
+function checkAdminPass() {
+  const input = document.getElementById('adminPassInput').value;
+  const errEl = document.getElementById('adminPassError');
+  if(input === ADMIN_PASSWORD) {
+    document.getElementById('adminLogin').style.display = 'none';
+    document.getElementById('adminDash').style.display = 'block';
+    adminTab('stats', document.querySelector('.admin-tab'));
+  } else {
+    errEl.textContent = 'Incorrect password. Try again.';
+    errEl.style.display = 'block';
+    document.getElementById('adminPassInput').value = '';
+  }
+}
+
+function adminTab(tab, el) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const content = document.getElementById('adminContent');
+  content.innerHTML = '<div style="color:var(--grey);font-size:14px;padding:20px">Loading...</div>';
+  if(tab === 'stats') loadAdminStats();
+  if(tab === 'users') loadAdminUsers();
+  if(tab === 'deals') loadAdminDeals();
+  if(tab === 'posts') loadAdminPosts();
+}
+
+async function loadAdminStats() {
+  const [
+    { count: totalUsers },
+    { count: totalCreators },
+    { count: totalBrands },
+    { count: totalDeals },
+    { count: totalPosts },
+    { data: dealAmounts },
+  ] = await Promise.all([
+    _supabase.from('profiles').select('*', { count: 'exact', head: true }),
+    _supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role','influencer'),
+    _supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role','brand'),
+    _supabase.from('deals').select('*', { count: 'exact', head: true }),
+    _supabase.from('brand_posts').select('*', { count: 'exact', head: true }),
+    _supabase.from('deals').select('amount'),
+  ]);
+
+  const totalValue = (dealAmounts || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+  const platformCut = Math.floor(totalValue * 0.20);
+
+  document.getElementById('adminContent').innerHTML = `
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:24px">PLATFORM <span style="color:var(--red)">OVERVIEW</span></div>
+    <div class="admin-stat-grid">
+      <div class="admin-stat-card">
+        <div class="admin-stat-num">${totalUsers || 0}</div>
+        <div class="admin-stat-label">Total Users</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-num">${totalCreators || 0}</div>
+        <div class="admin-stat-label">Creators</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-num">${totalBrands || 0}</div>
+        <div class="admin-stat-label">Brands</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-num">${totalDeals || 0}</div>
+        <div class="admin-stat-label">Total Deals</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-num">${totalPosts || 0}</div>
+        <div class="admin-stat-label">Brand Posts</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-num" style="color:#22c55e">$${totalValue}</div>
+        <div class="admin-stat-label">Total Deal Value</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-num" style="color:#22c55e">$${platformCut}</div>
+        <div class="admin-stat-label">Your 20% Cut</div>
+      </div>
+    </div>
+    <div style="background:var(--black2);border:1px solid rgba(232,25,44,0.2);border-radius:4px;padding:24px;margin-top:8px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:8px">Admin Access</div>
+      <div style="font-size:13px;color:var(--grey)">Logged in as <strong style="color:var(--white)">CollabInst Admin</strong> — Full platform control active.</div>
+    </div>`;
+}
+
+async function loadAdminUsers() {
+  const { data: users } = await _supabase.from('profiles').select('*').order('created_at', { ascending: false });
+
+  document.getElementById('adminContent').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px">ALL <span style="color:var(--red)">USERS</span></div>
+      <div style="font-size:13px;color:var(--grey)">${users ? users.length : 0} total users</div>
+    </div>
+    <table class="admin-table">
+      <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Handle</th><th>Niche</th><th>Joined</th><th>Action</th></tr></thead>
+      <tbody>
+        ${users && users.length ? users.map(u => `<tr>
+          <td><strong>${u.name}</strong></td>
+          <td style="color:var(--grey)">${u.email}</td>
+          <td><span style="padding:3px 10px;border-radius:2px;font-size:11px;font-weight:700;background:${u.role==='influencer'?'rgba(232,25,44,0.15)':'rgba(14,165,233,0.15)'};color:${u.role==='influencer'?'var(--red)':'#0ea5e9'}">${u.role}</span></td>
+          <td>${u.handle || '-'}</td>
+          <td>${u.niche || '-'}</td>
+          <td>${new Date(u.created_at).toLocaleDateString()}</td>
+          <td><button class="admin-del-btn" onclick="adminDeleteUser('${u.id}','${u.name}')">Delete</button></td>
+        </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--grey);padding:40px">No users yet</td></tr>'}
+      </tbody>
+    </table>`;
+}
+
+async function adminDeleteUser(userId, userName) {
+  if(!confirm('Delete user ' + userName + '? This cannot be undone.')) return;
+  await _supabase.from('messages').delete().eq('sender_id', userId);
+  await _supabase.from('messages').delete().eq('receiver_id', userId);
+  await _supabase.from('deals').delete().or('brand_id.eq.' + userId + ',creator_id.eq.' + userId);
+  await _supabase.from('brand_posts').delete().eq('user_id', userId);
+  await _supabase.from('profiles').delete().eq('id', userId);
+  showToast('User ' + userName + ' deleted.', 'success');
+  loadAdminUsers();
+}
+
+async function loadAdminDeals() {
+  const { data: deals } = await _supabase.from('deals').select('*').order('created_at', { ascending: false });
+
+  document.getElementById('adminContent').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px">ALL <span style="color:var(--red)">DEALS</span></div>
+      <div style="font-size:13px;color:var(--grey)">${deals ? deals.length : 0} total deals</div>
+    </div>
+    <table class="admin-table">
+      <thead><tr><th>Description</th><th>Amount</th><th>Platform Cut</th><th>Creator Gets</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${deals && deals.length ? deals.map(d => `<tr>
+          <td>${d.description || 'Deal'}</td>
+          <td><strong>$${d.amount}</strong></td>
+          <td style="color:var(--red)">$${Math.floor(d.amount * 0.20)}</td>
+          <td style="color:#22c55e">$${Math.floor(d.amount * 0.80)}</td>
+          <td><span class="deal-status ${d.status}">${d.status}</span></td>
+          <td>${new Date(d.created_at).toLocaleDateString()}</td>
+          <td style="display:flex;gap:6px;flex-wrap:wrap">
+            ${d.status !== 'completed' ? `<button class="admin-complete-btn" onclick="adminCompleteDeal('${d.id}')">Complete</button>` : ''}
+            <button class="admin-del-btn" onclick="adminDeleteDeal('${d.id}')">Delete</button>
+          </td>
+        </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--grey);padding:40px">No deals yet</td></tr>'}
+      </tbody>
+    </table>`;
+}
+
+async function adminCompleteDeal(dealId) {
+  await _supabase.from('deals').update({ status: 'completed' }).eq('id', dealId);
+  showToast('Deal marked as completed!', 'success');
+  loadAdminDeals();
+}
+
+async function adminDeleteDeal(dealId) {
+  if(!confirm('Delete this deal? This cannot be undone.')) return;
+  await _supabase.from('deals').delete().eq('id', dealId);
+  showToast('Deal deleted.');
+  loadAdminDeals();
+}
+
+async function loadAdminPosts() {
+  const { data: posts } = await _supabase.from('brand_posts').select('*').order('created_at', { ascending: false });
+
+  document.getElementById('adminContent').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px">BRAND <span style="color:var(--red)">POSTS</span></div>
+      <div style="font-size:13px;color:var(--grey)">${posts ? posts.length : 0} total posts</div>
+    </div>
+    <table class="admin-table">
+      <thead><tr><th>Brand</th><th>Title</th><th>Niche</th><th>Budget</th><th>Posted</th><th>Action</th></tr></thead>
+      <tbody>
+        ${posts && posts.length ? posts.map(p => `<tr>
+          <td><strong>${p.brand_name}</strong></td>
+          <td>${p.title}</td>
+          <td>${p.niche || '-'}</td>
+          <td style="color:#22c55e">$${p.budget}</td>
+          <td>${new Date(p.created_at).toLocaleDateString()}</td>
+          <td><button class="admin-del-btn" onclick="adminDeletePost('${p.id}','${p.brand_name}')">Delete</button></td>
+        </tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--grey);padding:40px">No posts yet</td></tr>'}
+      </tbody>
+    </table>`;
+}
+
+async function adminDeletePost(postId, brandName) {
+  if(!confirm('Delete post by ' + brandName + '?')) return;
+  await _supabase.from('brand_posts').delete().eq('id', postId);
+  showToast('Post deleted.', 'success');
+  loadAdminPosts();
+}
+
 // ─── MODALS ──────────────────────────────────────
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
@@ -2137,7 +2394,12 @@ setTimeout(() => {
 // ─── INIT ────────────────────────────────────────
 async function init() {
   await checkSession();
-  showPage('landing');
+  // Check if admin URL
+  if(window.location.hash === '#admin') {
+    showPage('admin');
+  } else {
+    showPage('landing');
+  }
 }
 
 async function checkSession() {
