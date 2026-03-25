@@ -1557,7 +1557,7 @@ function renderDashboard() {
   if(!currentUser) { showPage('auth'); return; }
   const isInfluencer = currentMode === 'influencer';
 
-  document.getElementById('sidebarAvatar').textContent = initials(currentUser.name);
+  document.getElementById('sidebarAvatar').textContent = getInitials(currentUser.name);
   document.getElementById('sidebarName').textContent = currentUser.name;
   document.getElementById('sidebarRole').textContent = isInfluencer ? 'Creator Mode' : 'Brand Mode';
   document.getElementById('switchModeBtn').textContent = isInfluencer ? 'Switch to Brand Mode →' : 'Switch to Creator Mode →';
@@ -1736,8 +1736,8 @@ async function renderBrowse() {
 }
 
 function renderCreatorCard(c) {
-  const color = avatarColor(c.name);
-  const av = initials(c.name);
+  const color = getColor(c.name);
+  const av = getInitials(c.name);
   const isDb = !!c.handle; // real DB record vs demo
   return `
     <div class="influencer-card" onclick="openProfile('${c.id}')">
@@ -1896,9 +1896,9 @@ async function renderMessages() {
     partnerIds.map((pid, i) => {
       const p = profileMap[pid] || { name: 'User', role: 'user' };
       const lastMsg = partners[pid][partners[pid].length-1];
-      const color = avatarColor(p.name);
+      const color = getColor(p.name);
       return `<div class="msg-thread ${i===0?'active':''}" onclick="openThread('${pid}', this)" data-pid="${pid}">
-        <div class="msg-thread-avatar" style="background:${color}20;color:${color}">${initials(p.name)}</div>
+        <div class="msg-thread-avatar" style="background:${color}20;color:${color}">${getInitials(p.name)}</div>
         <div class="msg-thread-info">
           <div class="msg-thread-name">${p.name}</div>
           <div class="msg-thread-preview">${lastMsg.text.slice(0,40)}${lastMsg.text.length>40?'...':''}</div>
@@ -1919,7 +1919,7 @@ async function openThread(partnerId, el) {
   const { data: partner } = await _supabase.from('profiles').select('*').eq('id', partnerId).single();
   if(!partner) return;
 
-  const color = avatarColor(partner.name);
+  const color = getColor(partner.name);
   const threadMsgs = allMessages.filter(m =>
     (m.sender_id === currentUser.id && m.receiver_id === partnerId) ||
     (m.sender_id === partnerId && m.receiver_id === currentUser.id)
@@ -1927,7 +1927,7 @@ async function openThread(partnerId, el) {
 
   win.innerHTML = `
     <div class="msg-window-header">
-      <div class="msg-thread-avatar" style="background:${color}20;color:${color}">${initials(partner.name)}</div>
+      <div class="msg-thread-avatar" style="background:${color}20;color:${color}">${getInitials(partner.name)}</div>
       <div><div class="msg-header-name">${partner.name}</div><div class="msg-header-role">${partner.role}</div></div>
       <button class="btn-deal" style="margin-left:auto" onclick="openDeal('${partner.id}','${partner.name}',${partner.price||0})">📋 Propose Deal</button>
     </div>
@@ -1935,7 +1935,7 @@ async function openThread(partnerId, el) {
       ${threadMsgs.map(m => {
         const mine = m.sender_id === currentUser.id;
         return `<div class="msg-bubble-wrap ${mine?'mine':''}">
-          <div class="msg-bub-avatar" style="background:${mine?'var(--red)':color+'20'};color:${mine?'white':color}">${mine?initials(currentUser.name):initials(partner.name)}</div>
+          <div class="msg-bub-avatar" style="background:${mine?'var(--red)':color+'20'};color:${mine?'white':color}">${mine?getInitials(currentUser.name):getInitials(partner.name)}</div>
           <div><div class="msg-bubble ${mine?'mine':'theirs'}">${m.text}</div>
           <div class="msg-bubble-time">${timeSince(new Date(m.created_at))}</div></div>
         </div>`;
@@ -1971,11 +1971,11 @@ async function sendMessage(receiverId) {
   allMessages.push(data);
   const body = document.getElementById('activeMsgBody');
   if(body) {
-    const color = avatarColor(currentUser.name);
+    const color = getColor(currentUser.name);
     const el = document.createElement('div');
     el.className = 'msg-bubble-wrap mine';
     el.innerHTML = `
-      <div class="msg-bub-avatar" style="background:var(--red);color:white">${initials(currentUser.name)}</div>
+      <div class="msg-bub-avatar" style="background:var(--red);color:white">${getInitials(currentUser.name)}</div>
       <div><div class="msg-bubble mine">${text}</div><div class="msg-bubble-time">Just now</div></div>`;
     body.appendChild(el);
     body.scrollTop = body.scrollHeight;
@@ -2071,8 +2071,8 @@ async function renderProfile() {
     return;
   }
 
-  const color = avatarColor(user.name);
-  const av = initials(user.name);
+  const color = getColor(user.name);
+  const av = getInitials(user.name);
   const isOwn = currentUser && user.id === currentUser.id;
 
   heroEl.innerHTML = `
