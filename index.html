@@ -686,6 +686,32 @@
   .admin-complete-btn { padding: 5px 12px; border-radius: 3px; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #22c55e; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
   .admin-complete-btn:hover { background: #22c55e; color: var(--white); }
 
+
+  /* VIDEO DELIVERY */
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: 6px;
+    padding: 40px; text-align: center; cursor: pointer;
+    transition: all 0.3s; background: var(--black3);
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.dragover { border-color: var(--red); background: rgba(232,25,44,0.05); }
+  .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-icon { font-size: 40px; margin-bottom: 12px; }
+  .upload-title { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .upload-sub { font-size: 13px; color: var(--grey); }
+  .upload-progress { margin-top: 16px; display: none; }
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--red); border-radius: 2px; transition: width 0.3s; width: 0%; }
+  .progress-label { font-size: 12px; color: var(--grey); margin-top: 6px; text-align: center; }
+  .video-preview { margin-top: 16px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
+  .video-preview video { width: 100%; max-height: 300px; display: block; }
+  .delivered-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px; border-radius: 2px;
+    background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3);
+    color: #22c55e; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+  }
+
   /* ─── UTILS ─── */
   .hidden { display: none !important; }
   .text-red { color: var(--red); }
@@ -1248,6 +1274,40 @@
   </div>
 </div>
 
+<!-- ─── VIDEO UPLOAD MODAL ─── -->
+<div class="modal-overlay" id="videoUploadModal">
+  <div class="modal-box" style="max-width:520px">
+    <button class="modal-close" onclick="closeModal('videoUploadModal')">✕</button>
+    <div class="modal-title">DELIVER YOUR REEL</div>
+    <div class="modal-sub" id="videoUploadSub">Upload your completed reel for this deal</div>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="videoFileInput" accept="video/*" onchange="handleVideoSelect(event)"/>
+      <div class="upload-icon">🎬</div>
+      <div class="upload-title">Drop your reel here</div>
+      <div class="upload-sub">MP4, MOV, AVI — Max 100MB</div>
+    </div>
+    <div class="upload-progress" id="uploadProgress">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">Uploading...</div>
+    </div>
+    <div id="videoPreviewWrap"></div>
+    <div style="margin-top:16px" id="videoSubmitWrap" style="display:none">
+      <button class="auth-submit" id="videoSubmitBtn" onclick="submitVideo()" style="display:none">Submit Reel →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── VIDEO REVIEW MODAL ─── -->
+<div class="modal-overlay" id="videoReviewModal">
+  <div class="modal-box" style="max-width:580px">
+    <button class="modal-close" onclick="closeModal('videoReviewModal')">✕</button>
+    <div class="modal-title">REVIEW REEL</div>
+    <div class="modal-sub" id="videoReviewSub">Review the delivered content</div>
+    <div id="videoReviewContent" style="margin:20px 0"></div>
+    <div style="display:flex;gap:12px;margin-top:8px" id="videoReviewActions"></div>
+  </div>
+</div>
+
 <!-- ─── TOAST ─── -->
 <div class="toast" id="toast"></div>
 
@@ -1617,29 +1677,47 @@ async function renderDashDeals() {
       <div class="dash-greeting">MY <span>DEALS</span></div>
       <div class="dash-sub">All your collaborations</div>
     </div>
-    <div id="allDealsTable" style="background:var(--black2);border:1px solid var(--border);border-radius:4px;overflow:hidden;">
-      <div style="padding:20px;color:var(--grey);text-align:center">Loading...</div>
+    <div id="dealsTableWrap" style="background:var(--black2);border:1px solid var(--border);border-radius:4px;overflow:hidden;">
+      <div style="padding:24px;color:var(--grey);font-size:14px">Loading deals...</div>
     </div>`;
 
-  const isInfluencer = currentMode === 'influencer';
-  const col = isInfluencer ? 'creator_id' : 'brand_id';
-  const { data: deals } = await _supabase.from('deals').select('*').eq(col, currentUser.id).order('created_at',{ascending:false});
-  const el = document.getElementById('allDealsTable');
-  if(!deals || !deals.length) {
-    el.innerHTML = '<div style="padding:32px;color:var(--grey);text-align:center">No deals yet.</div>';
+  const { data: deals } = await _supabase.from('deals').select('*')
+    .or('brand_id.eq.' + currentUser.id + ',creator_id.eq.' + currentUser.id)
+    .order('created_at', { ascending: false });
+
+  if(!deals || deals.length === 0) {
+    document.getElementById('dealsTableWrap').innerHTML = '<div class="empty-state"><div class="empty-icon">💼</div><h3>No deals yet</h3><p>Your deals will appear here once created.</p></div>';
     return;
   }
-  el.innerHTML = `<table class="deals-table">
-    <thead><tr><th>Content</th><th>Amount</th><th>${isInfluencer?'Your Cut (80%)':'Platform Fee (20%)'}</th><th>Status</th><th>Date</th></tr></thead>
-    <tbody>${deals.map(d=>`<tr>
-      <td>${d.description||'—'}</td>
-      <td>$${d.amount}</td>
-      <td style="color:${isInfluencer?'#22c55e':'#e8192c'};font-weight:700">$${isInfluencer?Math.round(d.amount*0.8):Math.round(d.amount*0.2)}</td>
-      <td><span class="deal-status ${d.status}">${d.status}</span></td>
-      <td>${new Date(d.created_at).toLocaleDateString()}</td>
-    </tr>`).join('')}</tbody>
-  </table>`;
+
+  const isCreator = currentMode === 'influencer';
+  const rows = deals.map(d => {
+    const statusClass = d.status === 'completed' ? 'completed' : d.status === 'delivered' || d.status === 'active' ? 'active' : 'pending';
+    const statusLabel = d.status === 'delivered' ? '📦 Delivered' : d.status === 'revision' ? '🔄 Revision' : d.status;
+    let reelCell = '-';
+    if(isCreator) {
+      if(['pending','active','revision'].includes(d.status)) {
+        reelCell = '<button class="btn-msg" style="font-size:11px;padding:6px 12px" onclick="openVideoUpload('' + d.id + '','' + (d.description||'Deal').replace(/'/g,'') + '')">' + (d.status === 'revision' ? '🔄 Re-upload' : '📤 Upload Reel') + '</button>';
+      } else if(d.status === 'delivered') {
+        reelCell = '<span class="delivered-badge">📦 Awaiting Review</span>';
+      } else if(d.status === 'completed') {
+        reelCell = '<span class="delivered-badge">✅ Approved</span>';
+      }
+    } else {
+      if(d.video_url && (d.status === 'delivered' || d.status === 'completed')) {
+        const btnColor = d.status === 'completed' ? 'var(--black3)' : 'var(--red)';
+        const btnLabel = d.status === 'completed' ? '▶ View Reel' : '🎬 Review Reel';
+        reelCell = '<button class="btn-msg" style="font-size:11px;padding:6px 12px;background:' + btnColor + '" onclick="openVideoReview('' + d.id + '','' + d.video_url + '','' + (d.description||'Deal').replace(/'/g,'') + '','' + d.creator_id + '')">' + btnLabel + '</button>';
+      } else {
+        reelCell = '<span style="font-size:12px;color:var(--grey)">Awaiting upload</span>';
+      }
+    }
+    return '<tr><td>' + (d.description||'Deal') + '</td><td><strong>$' + d.amount + '</strong></td><td style="color:#22c55e;font-weight:700">$' + Math.floor(d.amount*0.8) + '</td><td><span class="deal-status ' + statusClass + '">' + statusLabel + '</span></td><td>' + reelCell + '</td><td>' + new Date(d.created_at).toLocaleDateString() + '</td></tr>';
+  }).join('');
+
+  document.getElementById('dealsTableWrap').innerHTML = '<table class="deals-table"><thead><tr><th>Description</th><th>Amount</th><th>' + (isCreator ? 'Your Cut (80%)' : 'Creator Gets (80%)') + '</th><th>Status</th><th>Reel</th><th>Date</th></tr></thead><tbody>' + rows + '</tbody></table>';
 }
+
 
 // ─── BROWSE PAGE ─────────────────────────────────
 async function renderBrowse() {
@@ -2300,7 +2378,7 @@ async function loadAdminDeals() {
       <div style="font-size:13px;color:var(--grey)">${deals ? deals.length : 0} total deals</div>
     </div>
     <table class="admin-table">
-      <thead><tr><th>Description</th><th>Amount</th><th>Platform Cut</th><th>Creator Gets</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Description</th><th>Amount</th><th>Platform Cut</th><th>Creator Gets</th><th>Status</th><th>Reel</th><th>Date</th><th>Actions</th></tr></thead>
       <tbody>
         ${deals && deals.length ? deals.map(d => `<tr>
           <td>${d.description || 'Deal'}</td>
@@ -2309,6 +2387,9 @@ async function loadAdminDeals() {
           <td style="color:#22c55e">$${Math.floor(d.amount * 0.80)}</td>
           <td><span class="deal-status ${d.status}">${d.status}</span></td>
           <td>${new Date(d.created_at).toLocaleDateString()}</td>
+          <td>
+            ${d.video_url ? `<a href="${d.video_url}" target="_blank" style="color:var(--red);font-size:12px;font-weight:600">▶ View</a>` : '<span style="color:var(--grey);font-size:12px">None</span>'}
+          </td>
           <td style="display:flex;gap:6px;flex-wrap:wrap">
             ${d.status !== 'completed' ? `<button class="admin-complete-btn" onclick="adminCompleteDeal('${d.id}')">Complete</button>` : ''}
             <button class="admin-del-btn" onclick="adminDeleteDeal('${d.id}')">Delete</button>
@@ -2359,6 +2440,174 @@ async function adminDeletePost(postId, brandName) {
   await _supabase.from('brand_posts').delete().eq('id', postId);
   showToast('Post deleted.', 'success');
   loadAdminPosts();
+}
+
+// ─── CLOUDINARY CONFIG ───────────────────────────
+const CLOUDINARY_CLOUD = 'dwy5loxsn';
+const CLOUDINARY_PRESET = 'ml_defualt';
+let currentUploadDealId = null;
+let uploadedVideoUrl = null;
+
+// ─── VIDEO DELIVERY ───────────────────────────────
+function openVideoUpload(dealId, dealDesc) {
+  currentUploadDealId = dealId;
+  uploadedVideoUrl = null;
+  document.getElementById('videoUploadSub').textContent = 'Upload your reel for: ' + dealDesc;
+  document.getElementById('uploadProgress').style.display = 'none';
+  document.getElementById('videoPreviewWrap').innerHTML = '';
+  document.getElementById('videoSubmitBtn').style.display = 'none';
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('videoFileInput').value = '';
+  document.getElementById('videoUploadModal').classList.add('open');
+}
+
+function handleVideoSelect(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  if(file.size > 100 * 1024 * 1024) {
+    showToast('File too large. Max size is 100MB.'); return;
+  }
+  uploadToCloudinary(file);
+}
+
+async function uploadToCloudinary(file) {
+  const progressWrap = document.getElementById('uploadProgress');
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+  const submitBtn = document.getElementById('videoSubmitBtn');
+
+  progressWrap.style.display = 'block';
+  progressLabel.textContent = 'Uploading... 0%';
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', CLOUDINARY_PRESET);
+  formData.append('cloud_name', CLOUDINARY_CLOUD);
+  formData.append('resource_type', 'video');
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.upload.addEventListener('progress', (e) => {
+      if(e.lengthComputable) {
+        const pct = Math.round((e.loaded / e.total) * 100);
+        progressFill.style.width = pct + '%';
+        progressLabel.textContent = 'Uploading... ' + pct + '%';
+      }
+    });
+    xhr.addEventListener('load', () => {
+      if(xhr.status === 200) {
+        const data = JSON.parse(xhr.responseText);
+        uploadedVideoUrl = data.secure_url;
+        progressLabel.textContent = 'Upload complete! ✅';
+        progressFill.style.width = '100%';
+        progressFill.style.background = '#22c55e';
+
+        // Show preview
+        document.getElementById('videoPreviewWrap').innerHTML = `
+          <div class="video-preview" style="margin-top:16px">
+            <video controls src="${uploadedVideoUrl}"></video>
+          </div>
+          <div style="margin-top:10px;font-size:13px;color:#22c55e;font-weight:600">✅ Reel uploaded successfully! Review it above then submit.</div>`;
+
+        submitBtn.style.display = 'block';
+        resolve(data);
+      } else {
+        progressLabel.textContent = 'Upload failed. Please try again.';
+        progressFill.style.background = 'var(--red)';
+        reject(new Error('Upload failed'));
+      }
+    });
+    xhr.addEventListener('error', () => {
+      progressLabel.textContent = 'Upload failed. Check your connection.';
+      reject(new Error('Network error'));
+    });
+    xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`);
+    xhr.send(formData);
+  });
+}
+
+async function submitVideo() {
+  if(!uploadedVideoUrl || !currentUploadDealId) return;
+  const btn = document.getElementById('videoSubmitBtn');
+  btn.textContent = 'Submitting...';
+  btn.disabled = true;
+
+  const { error } = await _supabase.from('deals')
+    .update({ video_url: uploadedVideoUrl, status: 'delivered' })
+    .eq('id', currentUploadDealId);
+
+  if(error) {
+    showToast('Error submitting: ' + error.message);
+    btn.textContent = 'Submit Reel →';
+    btn.disabled = false;
+    return;
+  }
+
+  // Notify brand via message
+  const { data: deal } = await _supabase.from('deals').select('*').eq('id', currentUploadDealId).single();
+  if(deal) {
+    await _supabase.from('messages').insert({
+      sender_id: currentUser.id,
+      receiver_id: deal.brand_id,
+      text: 'I have delivered my reel for our deal! Please review it in your Deals section.'
+    });
+  }
+
+  closeModal('videoUploadModal');
+  showToast('Reel delivered successfully! The brand has been notified. 🎉', 'success');
+  renderDashDeals();
+}
+
+function openVideoReview(dealId, videoUrl, dealDesc, creatorId) {
+  document.getElementById('videoReviewSub').textContent = 'Reviewing: ' + dealDesc;
+  document.getElementById('videoReviewContent').innerHTML = `
+    <div class="video-preview">
+      <video controls src="${videoUrl}" style="width:100%;max-height:360px"></video>
+    </div>
+    <div style="margin-top:12px;font-size:13px;color:var(--white2)">
+      The creator has delivered this reel. Review it carefully before approving payment.
+    </div>`;
+
+  document.getElementById('videoReviewActions').innerHTML = `
+    <button onclick="approveDeal('${dealId}','${creatorId}')" style="flex:1;padding:12px;border-radius:4px;background:#22c55e;color:var(--white);font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:'Barlow',sans-serif">
+      ✅ Approve & Release Payment
+    </button>
+    <button onclick="rejectDeal('${dealId}')" style="flex:1;padding:12px;border-radius:4px;background:rgba(232,25,44,0.1);border:1px solid rgba(232,25,44,0.3);color:var(--red);font-size:14px;font-weight:700;cursor:pointer;font-family:'Barlow',sans-serif">
+      ❌ Request Revision
+    </button>`;
+
+  document.getElementById('videoReviewModal').classList.add('open');
+}
+
+async function approveDeal(dealId, creatorId) {
+  const { error } = await _supabase.from('deals')
+    .update({ status: 'completed' })
+    .eq('id', dealId);
+
+  if(error) { showToast('Error: ' + error.message); return; }
+
+  // Notify creator
+  await _supabase.from('messages').insert({
+    sender_id: currentUser.id,
+    receiver_id: creatorId,
+    text: 'Great work! Your reel has been approved and payment has been released. Thank you for the collaboration!'
+  });
+
+  closeModal('videoReviewModal');
+  showToast('Deal approved! Payment released to creator. 🎉', 'success');
+  renderDashDeals();
+}
+
+async function rejectDeal(dealId) {
+  const { error } = await _supabase.from('deals')
+    .update({ status: 'revision' })
+    .eq('id', dealId);
+
+  if(error) { showToast('Error: ' + error.message); return; }
+
+  closeModal('videoReviewModal');
+  showToast('Revision requested. Creator has been notified.', 'success');
+  renderDashDeals();
 }
 
 // ─── MODALS ──────────────────────────────────────
