@@ -449,6 +449,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
         <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="Your password"/></div>
         <div class="auth-error" id="loginError"></div>
         <button class="auth-submit" id="loginBtn" onclick="handleLogin()">Log In →</button>
+        <div class="auth-divider"><a href="#" onclick="switchAuthTab('forgot');return false;" style="color:var(--grey)">Forgot your password?</a></div>
         <div class="auth-divider">No account? <a href="#" onclick="switchAuthTab('signup');return false;" style="color:var(--red)">Sign up free</a></div>
       </div>
       <!-- VERIFY -->
@@ -459,6 +460,46 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
         <div style="font-size:12px;color:var(--grey);margin-bottom:20px">Didn't get it? Check your spam folder.</div>
         <button class="auth-submit" onclick="resendVerify()">Resend Verification Email</button>
         <div style="margin-top:16px"><a href="#" onclick="switchAuthTab('login');return false;" style="color:var(--red);font-size:13px">← Back to Login</a></div>
+      </div>
+
+      <!-- FORGOT PASSWORD -->
+      <div id="formForgot" class="hidden" style="text-align:center;padding:10px 0">
+        <div style="font-size:48px;margin-bottom:16px">🔑</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:8px">FORGOT PASSWORD</div>
+        <div style="font-size:14px;color:var(--white2);line-height:1.6;margin-bottom:24px">Enter your email and we will send you a link to reset your password.</div>
+        <div class="form-group" style="text-align:left;margin-bottom:12px">
+          <label>Email</label>
+          <input type="email" id="forgotEmail" class="pay-input" placeholder="your@email.com"/>
+        </div>
+        <div class="auth-error" id="forgotError"></div>
+        <button class="auth-submit" id="forgotBtn" onclick="sendResetLink()" style="margin-top:8px">Send Reset Link →</button>
+        <div style="margin-top:16px"><a href="#" onclick="switchAuthTab('login');return false;" style="color:var(--red);font-size:13px">← Back to Login</a></div>
+      </div>
+
+      <!-- FORGOT SUCCESS -->
+      <div id="formForgotSent" class="hidden" style="text-align:center;padding:20px 0">
+        <div style="font-size:48px;margin-bottom:16px">📬</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:12px">CHECK YOUR EMAIL</div>
+        <div style="font-size:14px;color:var(--white2);line-height:1.7;margin-bottom:24px">We sent a password reset link to<br><strong id="forgotEmailShow" style="color:var(--red)"></strong><br><br>Click the link in your email to set a new password.</div>
+        <div style="font-size:12px;color:var(--grey);margin-bottom:20px">Didn't get it? Check your spam folder.</div>
+        <div style="margin-top:16px"><a href="#" onclick="switchAuthTab('login');return false;" style="color:var(--red);font-size:13px">← Back to Login</a></div>
+      </div>
+
+      <!-- RESET PASSWORD (shown after clicking email link) -->
+      <div id="formReset" class="hidden" style="text-align:center;padding:10px 0">
+        <div style="font-size:48px;margin-bottom:16px">🔐</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:8px">SET NEW PASSWORD</div>
+        <div style="font-size:14px;color:var(--white2);line-height:1.6;margin-bottom:24px">Choose a new password for your account.</div>
+        <div class="form-group" style="text-align:left;margin-bottom:12px">
+          <label>New Password</label>
+          <input type="password" id="resetPass1" class="pay-input" placeholder="Min 6 characters"/>
+        </div>
+        <div class="form-group" style="text-align:left;margin-bottom:12px">
+          <label>Confirm Password</label>
+          <input type="password" id="resetPass2" class="pay-input" placeholder="Repeat your password"/>
+        </div>
+        <div class="auth-error" id="resetError"></div>
+        <button class="auth-submit" id="resetBtn" onclick="submitNewPassword()" style="margin-top:8px">Save New Password →</button>
       </div>
     </div>
   </div>
@@ -767,12 +808,18 @@ function updateNav() {
 
 // ── AUTH ─────────────────────────────────────────
 function switchAuthTab(tab) {
-  document.getElementById('formSignup').classList.toggle('hidden', tab !== 'signup');
-  document.getElementById('formLogin').classList.toggle('hidden', tab !== 'login');
-  document.getElementById('formVerify').classList.add('hidden');
+  const allForms = ['formSignup','formLogin','formVerify','formForgot','formForgotSent','formReset'];
+  allForms.forEach(f => document.getElementById(f).classList.add('hidden'));
+  if(tab === 'signup') document.getElementById('formSignup').classList.remove('hidden');
+  if(tab === 'login') document.getElementById('formLogin').classList.remove('hidden');
+  if(tab === 'verify') document.getElementById('formVerify').classList.remove('hidden');
+  if(tab === 'forgot') document.getElementById('formForgot').classList.remove('hidden');
+  if(tab === 'forgotSent') document.getElementById('formForgotSent').classList.remove('hidden');
+  if(tab === 'reset') document.getElementById('formReset').classList.remove('hidden');
   document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
   document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
   hideErr('signupError'); hideErr('loginError');
+  if(tab === 'forgot') { hideErr('forgotError'); }
 }
 function selectRole(role) {
   ROLE_SEL = role;
@@ -814,6 +861,37 @@ async function resendVerify() {
   const { error } = await _sb.auth.resend({ type:'signup', email: PENDING_EMAIL });
   if(error) toast('Could not resend: ' + error.message);
   else toast('Verification email resent!', 'success');
+}
+
+async function sendResetLink() {
+  hideErr('forgotError');
+  const email = document.getElementById('forgotEmail').value.trim();
+  if(!email || !email.includes('@')) { showErr('forgotError', 'Please enter a valid email address.'); return; }
+  const btn = document.getElementById('forgotBtn');
+  btn.textContent = 'Sending...'; btn.disabled = true;
+  const { error } = await _sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://alam8010.github.io/collabinst'
+  });
+  btn.textContent = 'Send Reset Link →'; btn.disabled = false;
+  if(error) { showErr('forgotError', error.message); return; }
+  document.getElementById('forgotEmailShow').textContent = email;
+  switchAuthTab('forgotSent');
+}
+
+async function submitNewPassword() {
+  hideErr('resetError');
+  const p1 = document.getElementById('resetPass1').value;
+  const p2 = document.getElementById('resetPass2').value;
+  if(p1.length < 6) { showErr('resetError', 'Password must be at least 6 characters.'); return; }
+  if(p1 !== p2) { showErr('resetError', 'Passwords do not match.'); return; }
+  const btn = document.getElementById('resetBtn');
+  btn.textContent = 'Saving...'; btn.disabled = true;
+  const { error } = await _sb.auth.updateUser({ password: p1 });
+  btn.textContent = 'Save New Password →'; btn.disabled = false;
+  if(error) { showErr('resetError', error.message); return; }
+  toast('Password updated successfully! Please log in.', 'success');
+  await _sb.auth.signOut();
+  switchAuthTab('login');
 }
 async function handleLogin() {
   hideErr('loginError');
@@ -1394,11 +1472,30 @@ async function adminDelPost(id) { if(!confirm('Delete this post?')) return; awai
 
 // ── INIT ──────────────────────────────────────────
 async function init() {
+  // Check if this is a password reset redirect
+  const hash = window.location.hash;
+  const params = new URLSearchParams(hash.replace('#','?'));
+  const type = params.get('type');
+  const accessToken = params.get('access_token');
+
+  if(type === 'recovery' && accessToken) {
+    // Set the session from the reset token
+    await _sb.auth.setSession({
+      access_token: accessToken,
+      refresh_token: params.get('refresh_token') || ''
+    });
+    showPage('auth');
+    switchAuthTab('reset');
+    // Clean up URL
+    history.replaceState(null, '', window.location.pathname);
+    return;
+  }
+
   const { data: { session } } = await _sb.auth.getSession();
   if(session && session.user && session.user.email_confirmed_at) {
     await loadProfile(session.user);
   }
-  if(window.location.hash==='#admin') showPage('admin');
+  if(hash === '#admin') showPage('admin');
   else showPage('landing');
 }
 init();
