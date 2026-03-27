@@ -332,10 +332,10 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
 .reveal.visible{opacity:1;transform:translateY(0);}
 
   /* WHATSAPP FLOAT BUTTON */
-  .wa-float{position:fixed;bottom:32px;left:32px;z-index:99999;display:flex;align-items:center;gap:10px;background:#25D366;color:white;padding:12px 20px;border-radius:50px;font-size:14px;font-weight:700;box-shadow:0 4px 20px rgba(37,211,102,0.4);text-decoration:none;transition:all 0.3s;font-family:'Barlow',sans-serif;}
+  .wa-float{position:fixed;bottom:32px;right:32px;z-index:99999;display:flex;align-items:center;gap:10px;background:#25D366;color:white;padding:12px 20px;border-radius:50px;font-size:14px;font-weight:700;box-shadow:0 4px 20px rgba(37,211,102,0.4);text-decoration:none;transition:all 0.3s;font-family:'Barlow',sans-serif;}
   .wa-float:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(37,211,102,0.5);background:#20bd5a;color:white;}
   .wa-float svg{width:20px;height:20px;fill:white;flex-shrink:0;}
-  @media(max-width:480px){.wa-float span{display:none;}.wa-float{padding:14px;border-radius:50%;}}
+  @media(max-width:480px){.wa-float span{display:none;}.wa-float{padding:14px;border-radius:50%;bottom:20px;right:16px;}}
 </style>
 </head>
 <body>
@@ -721,7 +721,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
 </a>
 
 <!-- TOAST -->
-<div id="toast" style="position:fixed;bottom:32px;right:32px;z-index:3000;background:var(--black2);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:4px;padding:14px 20px;min-width:280px;font-size:14px;color:var(--white);transform:translateY(100px);opacity:0;transition:all 0.4s ease;pointer-events:none;"></div>
+<div id="toast" style="position:fixed;bottom:32px;left:32px;z-index:3000;background:var(--black2);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:4px;padding:14px 20px;min-width:280px;font-size:14px;color:var(--white);transform:translateY(100px);opacity:0;transition:all 0.4s ease;pointer-events:none;"></div>
 
 <script>
 // ── SUPABASE ──────────────────────────────────────
