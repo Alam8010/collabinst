@@ -336,6 +336,30 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
   .wa-float:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(37,211,102,0.5);background:#20bd5a;color:white;}
   .wa-float svg{width:20px;height:20px;fill:white;flex-shrink:0;}
   @media(max-width:480px){.wa-float span{display:none;}.wa-float{padding:14px;border-radius:50%;bottom:20px;right:16px;}}
+
+  /* DEAL FLOW EXTRAS */
+  .usage-opts{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:4px;}
+  .usage-opt{padding:12px 16px;border-radius:4px;border:1px solid var(--border);background:var(--black3);cursor:pointer;transition:all 0.2s;display:flex;align-items:flex-start;gap:10px;}
+  .usage-opt.selected{border-color:var(--red);background:rgba(232,25,44,0.08);}
+  .usage-opt input[type="radio"]{margin-top:2px;accent-color:var(--red);flex-shrink:0;}
+  .usage-opt-label{font-size:13px;font-weight:600;display:block;}
+  .usage-opt-sub{font-size:11px;color:var(--grey);display:block;margin-top:2px;}
+  .payment-instructions{background:var(--black3);border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:20px;margin-bottom:20px;}
+  .payment-instructions h4{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:0.5px;color:#22c55e;margin-bottom:12px;}
+  .pay-method{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .pay-method:last-child{border-bottom:none;}
+  .pay-method-icon{font-size:20px;flex-shrink:0;}
+  .pay-method-label{font-size:12px;color:var(--grey);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+  .pay-method-val{font-size:14px;font-weight:700;color:var(--white);}
+  .proof-upload-zone{border:2px dashed var(--border);border-radius:6px;padding:24px;text-align:center;cursor:pointer;transition:all 0.3s;background:var(--black3);position:relative;margin-top:8px;}
+  .proof-upload-zone:hover{border-color:var(--red);background:rgba(232,25,44,0.05);}
+  .proof-upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .timer-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:2px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:#f59e0b;font-size:11px;font-weight:700;}
+  .tos-section{margin-bottom:24px;}
+  .tos-section h3{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:0.5px;margin-bottom:8px;color:var(--white);}
+  .tos-section p,.tos-section li{font-size:13px;color:var(--white2);line-height:1.7;margin-bottom:6px;}
+  .tos-section ul{padding-left:20px;}
+  .watermark-notice{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:4px;padding:10px 14px;font-size:12px;color:#f59e0b;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
 </style>
 </head>
 <body>
@@ -408,7 +432,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
       <div><div class="footer-logo">Collab<span>Inst</span></div><div style="font-size:13px;color:var(--grey);margin-top:6px">Where Brands Meet Creators</div></div>
       <div class="footer-links">
         <div class="footer-col"><h5>Platform</h5><a href="#" onclick="showPage('browse');return false;">Browse Creators</a><a href="#" onclick="showPage('board');return false;">Brand Board</a><a href="#" onclick="showPage('auth');return false;">Sign Up</a></div>
-        <div class="footer-col"><h5>Legal</h5><a href="#">Privacy Policy</a><a href="#">Terms of Service</a></div>
+        <div class="footer-col"><h5>Legal</h5><a href="#">Privacy Policy</a><a href="#" onclick="showPage('tos');return false;">Terms of Service</a></div>
       </div>
     </div>
     <div class="footer-bottom"><p>© 2026 CollabInst. All rights reserved.</p><p>CollabInst takes a 20% platform fee on all deals.</p></div>
@@ -611,19 +635,151 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
   </div>
 </div>
 
+
+<!-- TERMS OF SERVICE PAGE -->
+<div id="page-tos" class="page">
+  <div style="padding-top:80px;max-width:800px;margin:0 auto;padding-left:40px;padding-right:40px;padding-bottom:60px">
+    <div class="section-label">Legal</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:3px;margin-bottom:8px">TERMS OF <span style="color:var(--red)">SERVICE</span></div>
+    <div style="font-size:13px;color:var(--grey);margin-bottom:40px">Last updated: March 2026 — CollabInst Platform</div>
+
+    <div class="tos-section">
+      <h3>1. Platform Overview</h3>
+      <p>CollabInst is a marketplace connecting Instagram creators with brands. We facilitate deals, content delivery and payments. CollabInst takes a 20% platform fee on every completed deal.</p>
+    </div>
+
+    <div class="tos-section">
+      <h3>2. Content Ownership & Copyright</h3>
+      <ul>
+        <li>All content created by a creator remains their intellectual property until full payment is confirmed and rights are formally transferred.</li>
+        <li>Preview versions of reels are watermarked and are strictly for review purposes only.</li>
+        <li>Brands may not use, download, share or publish any watermarked preview content under any circumstances.</li>
+        <li>Using preview content without completing payment constitutes copyright infringement and will result in immediate account termination and legal action.</li>
+        <li>Content rights transfer to the brand only after full payment is confirmed by CollabInst admin.</li>
+      </ul>
+    </div>
+
+    <div class="tos-section">
+      <h3>3. Creator Obligations</h3>
+      <ul>
+        <li>Creators must deliver original, high quality content that matches the agreed deal description.</li>
+        <li>Creators must not upload inappropriate, sexual, violent or misleading content. Violations result in immediate permanent ban.</li>
+        <li>If the deal includes posting on the creator's Instagram account, the post must remain live for a minimum of 30 days.</li>
+        <li>Early deletion of a required Instagram post before the 30-day period will result in withholding of the second payment instalment.</li>
+        <li>Creators must provide proof of posting (Instagram post URL and screenshot) within 48 hours of the agreed posting date.</li>
+        <li>All uploaded content is reviewed by CollabInst admin before being shown to brands. This is non-negotiable.</li>
+      </ul>
+    </div>
+
+    <div class="tos-section">
+      <h3>4. Brand Obligations</h3>
+      <ul>
+        <li>Brands must clearly describe the content they need before a deal is initiated.</li>
+        <li>Brands must pay the full agreed amount to CollabInst before content creation begins.</li>
+        <li>Brands may not use preview/watermarked content for any purpose.</li>
+        <li>Brands must review and respond to delivered content within 7 days. Failure to respond will be treated as automatic approval.</li>
+        <li>Brands may request one free revision per deal. Additional revisions may incur extra charges agreed between brand and creator.</li>
+        <li>Attempting to steal, copy or use content without proper payment will result in permanent ban and legal action.</li>
+      </ul>
+    </div>
+
+    <div class="tos-section">
+      <h3>5. Payment Terms</h3>
+      <ul>
+        <li>All payments are made to CollabInst first. CollabInst holds funds in escrow until content is approved.</li>
+        <li>Creator receives 80% of the agreed deal amount. CollabInst retains 20% as platform fee.</li>
+        <li>For deals requiring Instagram posting, payment is split: 40% on reel delivery and approval, 40% after 30-day posting period is complete.</li>
+        <li>CollabInst reserves the right to withhold or refund payment in case of disputes, fraud or policy violations.</li>
+        <li>All payments are final once released. No refunds after content is approved and rights transferred.</li>
+      </ul>
+    </div>
+
+    <div class="tos-section">
+      <h3>6. Content Moderation</h3>
+      <ul>
+        <li>All uploaded reels are reviewed by CollabInst admin before being shown to brands.</li>
+        <li>CollabInst reserves the right to reject any content that violates our community guidelines.</li>
+        <li>Rejected content will be returned to the creator with a reason. Creator may resubmit revised content.</li>
+        <li>Repeated violations will result in permanent account termination.</li>
+      </ul>
+    </div>
+
+    <div class="tos-section">
+      <h3>7. Dispute Resolution</h3>
+      <ul>
+        <li>In case of disputes between brands and creators, CollabInst admin has final authority.</li>
+        <li>Both parties must provide evidence to support their claims.</li>
+        <li>CollabInst will make a fair decision based on the deal terms, delivered content and platform policies.</li>
+        <li>CollabInst is not liable for disputes arising from unclear deal descriptions or undocumented agreements made outside the platform.</li>
+      </ul>
+    </div>
+
+    <div class="tos-section">
+      <h3>8. Account Termination</h3>
+      <ul>
+        <li>CollabInst reserves the right to terminate any account that violates these terms.</li>
+        <li>Terminated accounts forfeit any pending payments if termination is due to policy violations.</li>
+        <li>Users may delete their own accounts at any time from their profile settings.</li>
+      </ul>
+    </div>
+
+    <div class="tos-section">
+      <h3>9. Contact</h3>
+      <p>For disputes, reports or questions contact CollabInst via WhatsApp: +923142459992</p>
+      <p>Platform: https://alam8010.github.io/collabinst</p>
+      <p>Founders: Akash Alam & Mustafa Bro — IBA Karachi, Batch of 2028</p>
+    </div>
+
+    <div style="margin-top:40px;padding-top:24px;border-top:1px solid var(--border)">
+      <button class="btn-hero-red" onclick="showPage('landing')">← Back to Home</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODALS -->
 <!-- Deal Modal -->
 <div class="modal-overlay" id="dealModal">
-  <div class="modal-box">
+  <div class="modal-box" style="max-width:560px">
     <button class="modal-close" onclick="closeModal('dealModal')">✕</button>
     <div class="modal-title">SEND A DEAL</div>
     <div class="modal-sub" id="dealModalSub">Propose a deal to this creator</div>
-    <div class="payment-split" id="dealSplit"></div>
+
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
       <input class="pay-input" type="number" id="dealAmount" placeholder="Deal amount in USD" oninput="updateSplit()"/>
-      <input class="pay-input" type="text" id="dealDesc" placeholder="Content description (e.g. 30-sec reel)"/>
+      <input class="pay-input" type="text" id="dealDesc" placeholder="Content description (e.g. 30-sec reel, product review)"/>
       <input class="pay-input" type="text" id="dealDeadline" placeholder="Deadline (e.g. 7 days)"/>
     </div>
+
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:600;letter-spacing:0.5px;color:var(--grey);text-transform:uppercase;margin-bottom:10px">Content Usage Rights</div>
+      <div class="usage-opts" id="usageOpts">
+        <label class="usage-opt selected" onclick="selectUsage('brand_only',this)">
+          <input type="radio" name="usage" value="brand_only" checked/>
+          <div><span class="usage-opt-label">🏢 Brand Use Only</span><span class="usage-opt-sub">Creator delivers reel. Brand posts on their account. Creator is not required to post.</span></div>
+        </label>
+        <label class="usage-opt" onclick="selectUsage('creator_post',this)">
+          <input type="radio" name="usage" value="creator_post"/>
+          <div><span class="usage-opt-label">📸 Creator Posts on Instagram</span><span class="usage-opt-sub">Creator posts on their account tagging the brand. Brand gets organic reach. 40/40 split payment.</span></div>
+        </label>
+        <label class="usage-opt" onclick="selectUsage('both',this)">
+          <input type="radio" name="usage" value="both"/>
+          <div><span class="usage-opt-label">🤝 Both — Creator Posts + Brand Gets Reel</span><span class="usage-opt-sub">Creator posts on their account AND delivers reel to brand. 40/40 split payment.</span></div>
+        </label>
+      </div>
+    </div>
+
+    <div class="payment-split" id="dealSplit"></div>
+
+    <div class="payment-instructions">
+      <h4>💳 How to Pay</h4>
+      <div class="pay-method"><div class="pay-method-icon">📱</div><div><div class="pay-method-label">Easypaisa / JazzCash</div><div class="pay-method-val">0314-2459992</div></div></div>
+      <div class="pay-method"><div class="pay-method-icon">🏦</div><div><div class="pay-method-label">Bank Transfer (HBL)</div><div class="pay-method-val">0314-2459992 — Akash Alam</div></div></div>
+      <div class="pay-method"><div class="pay-method-icon">💬</div><div><div class="pay-method-label">After Paying</div><div class="pay-method-val">Send screenshot to WhatsApp: +923142459992</div></div></div>
+      <div style="margin-top:12px;font-size:12px;color:var(--grey);line-height:1.6">⚠️ Deal will be activated only after payment is confirmed by CollabInst admin. Your payment is held securely until content is approved.</div>
+    </div>
+
+    <div style="margin-bottom:16px;font-size:12px;color:var(--grey)">By sending this deal you agree to our <a href="#" onclick="closeModal('dealModal');showPage('tos');return false;" style="color:var(--red)">Terms of Service</a>.</div>
+
     <button class="auth-submit" onclick="submitDeal()">Send Deal Proposal →</button>
   </div>
 </div>
@@ -720,6 +876,38 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
   <span>Talk to our Bot</span>
 </a>
 
+
+<!-- Proof of Posting Modal -->
+<div class="modal-overlay" id="proofModal">
+  <div class="modal-box" style="max-width:500px">
+    <button class="modal-close" onclick="closeModal('proofModal')">✕</button>
+    <div class="modal-title">PROOF OF POST</div>
+    <div class="modal-sub">Submit proof that you posted the reel on your Instagram</div>
+
+    <div class="watermark-notice">⚠️ Your remaining 40% payment will be held for 30 days after submission to verify the post stays live.</div>
+
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="form-group">
+        <label>Instagram Post URL</label>
+        <input class="pay-input" type="url" id="proofUrl" placeholder="https://www.instagram.com/p/XXXXXXX"/>
+        <div style="font-size:11px;color:var(--grey);margin-top:4px">Paste the direct link to your Instagram post</div>
+      </div>
+      <div class="form-group">
+        <label>Screenshot of Post</label>
+        <div class="proof-upload-zone" id="proofUploadZone">
+          <input type="file" id="proofScreenshot" accept="image/*" onchange="onProofSelected(event)"/>
+          <div style="font-size:28px;margin-bottom:8px">📸</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px">Upload Screenshot</div>
+          <div style="font-size:12px;color:var(--grey)">Show your username, post content and date</div>
+        </div>
+        <div id="proofPreview" style="margin-top:8px"></div>
+      </div>
+      <div class="auth-error" id="proofError"></div>
+      <button class="auth-submit" id="proofSubmitBtn" onclick="submitProof()">Submit Proof →</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast" style="position:fixed;bottom:32px;left:32px;z-index:3000;background:var(--black2);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:4px;padding:14px 20px;min-width:280px;font-size:14px;color:var(--white);transform:translateY(100px);opacity:0;transition:all 0.4s ease;pointer-events:none;"></div>
 
@@ -746,6 +934,9 @@ let UPLOAD_DEAL_ID = null;
 let REVIEW_DEAL = null;
 let UPLOADED_URL = null;
 let MSG_PARTNER = null;
+let USAGE_SEL = 'brand_only';
+let PROOF_DEAL_ID = null;
+let PROOF_SCREENSHOT_URL = null;
 
 // ── HELPERS ───────────────────────────────────────
 const AVATAR_COLORS = ['#e8192c','#7c3aed','#ea580c','#0ea5e9','#10b981','#f59e0b','#ec4899','#14b8a6'];
@@ -1207,10 +1398,25 @@ function updateSplit() {
   const amt = parseFloat(document.getElementById('dealAmount').value)||0;
   const fee = Math.round(amt*0.20);
   const cut = amt - fee;
+  const part1 = Math.floor(cut*0.5);
+  const part2 = cut - part1;
+  const isSplit = ['creator_post','both'].includes(USAGE_SEL);
   document.getElementById('dealSplit').innerHTML =
     '<div class="split-row"><span class="split-label">Deal Amount</span><span class="split-val">$'+amt.toFixed(2)+'</span></div>' +
     '<div class="split-row"><span class="split-label">CollabInst Fee (20%)</span><span class="split-val red">-$'+fee.toFixed(2)+'</span></div>' +
-    '<div class="split-row"><span class="split-label">Creator Receives (80%)</span><span class="split-val green">$'+cut.toFixed(2)+'</span></div>';
+    (isSplit ?
+      '<div class="split-row"><span class="split-label">Creator Gets on Delivery (40%)</span><span class="split-val green">$'+part1.toFixed(2)+'</span></div>' +
+      '<div class="split-row"><span class="split-label">Creator Gets after 30 Days (40%)</span><span class="split-val green">$'+part2.toFixed(2)+'</span></div>'
+    :
+      '<div class="split-row"><span class="split-label">Creator Receives (80%)</span><span class="split-val green">$'+cut.toFixed(2)+'</span></div>'
+    );
+}
+
+function selectUsage(val, el) {
+  USAGE_SEL = val;
+  document.querySelectorAll('.usage-opt').forEach(o => o.classList.remove('selected'));
+  if(el) el.classList.add('selected');
+  updateSplit();
 }
 async function submitDeal() {
   if(!CU||!DEAL_TARGET) return;
@@ -1218,11 +1424,21 @@ async function submitDeal() {
   const description = document.getElementById('dealDesc').value.trim();
   const deadline = document.getElementById('dealDeadline').value.trim();
   if(!amount||!description){toast('Please fill in amount and description');return;}
-  const { error } = await _sb.from('deals').insert({ brand_id:CU.id, creator_id:DEAL_TARGET.id, amount, description, deadline, status:'pending' });
+  const usageLabels = {brand_only:'Brand Use Only',creator_post:'Creator Posts on Instagram',both:'Both — Creator Posts + Brand Gets Reel'};
+  const { error } = await _sb.from('deals').insert({
+    brand_id:CU.id, creator_id:DEAL_TARGET.id,
+    amount, description, deadline,
+    status:'pending',
+    usage_rights: USAGE_SEL,
+  });
   if(error){toast('Error: '+error.message);return;}
-  await _sb.from('messages').insert({ sender_id:CU.id, receiver_id:DEAL_TARGET.id, text:'Hi! I sent you a deal proposal: "'+description+'" for $'+amount+'. Check your deals!' });
+  const usageMsg = USAGE_SEL !== 'brand_only' ? ' Content usage: '+usageLabels[USAGE_SEL]+'. Payment will be split 40% on delivery, 40% after 30-day posting period.' : '';
+  await _sb.from('messages').insert({
+    sender_id:CU.id, receiver_id:DEAL_TARGET.id,
+    text:'Hi! I sent you a deal proposal: "'+description+'" for $'+amount+'.'+usageMsg+' Please check your deals and I will send payment confirmation shortly!'
+  });
   closeModal('dealModal');
-  toast('Deal sent to '+DEAL_TARGET.name+'! 🎉','success');
+  toast('Deal sent! Please complete payment and send screenshot to WhatsApp. 🎉','success');
 }
 
 // ── PROFILE ───────────────────────────────────────
@@ -1482,7 +1698,7 @@ async function adminDeals() {
   const { data: deals } = await _sb.from('deals').select('*').order('created_at',{ascending:false});
   document.getElementById('adminContent').innerHTML =
     '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:24px">ALL <span style="color:var(--red)">DEALS</span> ('+(deals?deals.length:0)+')</div>' +
-    '<table class="admin-table"><thead><tr><th>Description</th><th>Amount</th><th>Platform Cut</th><th>Creator Gets</th><th>Status</th><th>Reel</th><th>Date</th><th>Actions</th></tr></thead><tbody>' +
+    '<table class="admin-table"><thead><tr><th>Description</th><th>Amount</th><th>Platform Cut</th><th>Creator Gets</th><th>Status</th><th>Usage Rights</th><th>Reel/Proof</th><th>Date</th><th>Actions</th></tr></thead><tbody>' +
     (deals&&deals.length?deals.map(d=>'<tr><td>'+(d.description||'Deal')+'</td><td><strong>$'+d.amount+'</strong></td><td style="color:var(--red)">$'+Math.floor(d.amount*0.2)+'</td><td style="color:#22c55e">$'+Math.floor(d.amount*0.8)+'</td><td><span class="deal-status '+(d.status==='completed'?'completed':d.status==='delivered'||d.status==='active'?'active':'pending')+'">'+d.status+'</span></td><td>'+(d.video_url?'<a href="'+d.video_url+'" target="_blank" style="color:var(--red);font-size:12px;font-weight:600">▶ View</a>':'-')+'</td><td>'+new Date(d.created_at).toLocaleDateString()+'</td><td style="display:flex;gap:6px">'+(d.status!=='completed'?'<button class="admin-ok-btn" onclick="adminOkDeal(\''+d.id+'\')">Complete</button>':'')+'<button class="admin-del-btn" onclick="adminDelDeal(\''+d.id+'\')">Delete</button></td></tr>').join(''):'<tr><td colspan="8" style="text-align:center;color:var(--grey);padding:40px">No deals yet</td></tr>') +
     '</tbody></table>';
 }
@@ -1524,6 +1740,87 @@ async function adminPosts() {
     '</tbody></table>';
 }
 async function adminDelPost(id) { if(!confirm('Delete this post?')) return; await _sb.from('brand_posts').delete().eq('id',id); toast('Deleted.'); adminPosts(); }
+
+// ── PROOF OF POSTING ─────────────────────────────
+function openProofModal(dealId) {
+  PROOF_DEAL_ID = dealId;
+  PROOF_SCREENSHOT_URL = null;
+  document.getElementById('proofUrl').value = '';
+  document.getElementById('proofPreview').innerHTML = '';
+  document.getElementById('proofError').style.display = 'none';
+  document.getElementById('proofSubmitBtn').textContent = 'Submit Proof →';
+  document.getElementById('proofSubmitBtn').disabled = false;
+  openModal('proofModal');
+}
+
+function onProofSelected(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  if(file.size > 10*1024*1024){ toast('Image too large. Max 10MB.'); return; }
+  uploadProofScreenshot(file);
+}
+
+function uploadProofScreenshot(file) {
+  const preview = document.getElementById('proofPreview');
+  preview.innerHTML = '<div style="font-size:12px;color:var(--grey);padding:8px">Uploading screenshot...</div>';
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CL_PRESET);
+  fd.append('cloud_name', CL_CLOUD);
+  const xhr = new XMLHttpRequest();
+  xhr.addEventListener('load', () => {
+    if(xhr.status===200) {
+      const d = JSON.parse(xhr.responseText);
+      PROOF_SCREENSHOT_URL = d.secure_url;
+      preview.innerHTML = '<img src="'+d.secure_url+'" style="width:100%;border-radius:4px;border:1px solid var(--border);margin-top:4px"/><div style="font-size:12px;color:#22c55e;margin-top:6px;font-weight:600">✅ Screenshot uploaded!</div>';
+    } else {
+      preview.innerHTML = '<div style="font-size:12px;color:var(--red)">Upload failed. Try again.</div>';
+    }
+  });
+  xhr.open('POST', 'https://api.cloudinary.com/v1_1/'+CL_CLOUD+'/image/upload');
+  xhr.send(fd);
+}
+
+async function submitProof() {
+  if(!PROOF_DEAL_ID) return;
+  const url = document.getElementById('proofUrl').value.trim();
+  const errEl = document.getElementById('proofError');
+  errEl.style.display = 'none';
+  if(!url || !url.includes('instagram.com')) {
+    errEl.textContent = 'Please enter a valid Instagram post URL.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if(!PROOF_SCREENSHOT_URL) {
+    errEl.textContent = 'Please upload a screenshot of your post.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const btn = document.getElementById('proofSubmitBtn');
+  btn.textContent = 'Submitting...'; btn.disabled = true;
+
+  // Save post_url, screenshot and set 30-day hold timer
+  const holdUntil = new Date(Date.now() + 30*24*60*60*1000).toISOString();
+  const { data: deal, error } = await _sb.from('deals')
+    .update({ post_url: url, proof_screenshot: PROOF_SCREENSHOT_URL, payment_hold_until: holdUntil })
+    .eq('id', PROOF_DEAL_ID)
+    .select().single();
+
+  if(error) { errEl.textContent = 'Error: '+error.message; errEl.style.display='block'; btn.textContent='Submit Proof →'; btn.disabled=false; return; }
+
+  // Notify admin via message (to yourself)
+  if(deal) {
+    await _sb.from('messages').insert({
+      sender_id: CU.id,
+      receiver_id: deal.brand_id,
+      text: 'I have posted the reel on my Instagram! Proof submitted. Post URL: '+url
+    });
+  }
+
+  closeModal('proofModal');
+  toast('Proof submitted! Your remaining payment will be released after 30 days. 🎉', 'success');
+  loadDashDeals();
+}
 
 // ── INIT ──────────────────────────────────────────
 async function init() {
