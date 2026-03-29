@@ -1377,11 +1377,11 @@ async function submitVideo() {
   if(!UPLOADED_URL||!UPLOAD_DEAL_ID) return;
   const btn = document.getElementById('submitVideoBtn');
   btn.textContent='Submitting...'; btn.disabled=true;
-  const { data: deal, error } = await _sb.from('deals').update({ video_url:UPLOADED_URL, status:'delivered' }).eq('id',UPLOAD_DEAL_ID).select().single();
+  const { data: deal, error } = await _sb.from('deals').update({ video_url:UPLOADED_URL, status:'under_review' }).eq('id',UPLOAD_DEAL_ID).select().single();
   if(error){ toast('Error: '+error.message); btn.textContent='Submit Reel →'; btn.disabled=false; return; }
-  if(deal) await _sb.from('messages').insert({ sender_id:CU.id, receiver_id:deal.brand_id, text:'I have delivered my reel! Please review it in your Deals section.' });
+  if(deal) await _sb.from('messages').insert({ sender_id:CU.id, receiver_id:deal.brand_id, text:'I have submitted my reel for admin review. You will be notified once it is approved and ready for your review!' });
   closeModal('uploadModal');
-  toast('Reel delivered! Brand has been notified. 🎉','success');
+  toast('Reel submitted for review! You will be notified once approved. 🎉','success');
   loadDashDeals();
 }
 
@@ -1445,6 +1445,7 @@ async function adminStats() {
     _sb.from('deals').select('amount'),
   ]);
   const total = (da.data||[]).reduce((s,x)=>s+(x.amount||0),0);
+  const { count: pendingCount } = await _sb.from('deals').select('*',{count:'exact',head:true}).eq('status','under_review');
   document.getElementById('adminContent').innerHTML =
     '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:24px">PLATFORM <span style="color:var(--red)">OVERVIEW</span></div>' +
     '<div class="admin-stat-grid">' +
@@ -1455,6 +1456,9 @@ async function adminStats() {
     '<div class="admin-stat-card"><div class="admin-stat-num">'+(po.count||0)+'</div><div class="admin-stat-label">Brand Posts</div></div>' +
     '<div class="admin-stat-card"><div class="admin-stat-num" style="color:#22c55e">$'+total+'</div><div class="admin-stat-label">Total Deal Value</div></div>' +
     '<div class="admin-stat-card"><div class="admin-stat-num" style="color:#22c55e">$'+Math.floor(total*0.2)+'</div><div class="admin-stat-label">Your 20% Cut</div></div>' +
+    '<div class="admin-stat-card" style="border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.05)">' +
+    '<div class="admin-stat-num" style="color:#f59e0b" id="pendingReviewCount">...</div>' +
+    '<div class="admin-stat-label">Reels to Review</div></div>' +
     '</div>';
 }
 async function adminUsers() {
@@ -1483,6 +1487,33 @@ async function adminDeals() {
     '</tbody></table>';
 }
 async function adminOkDeal(id) { await _sb.from('deals').update({status:'completed'}).eq('id',id); toast('Deal completed!','success'); adminDeals(); }
+
+async function adminApproveReel(dealId, creatorId) {
+  if(!confirm('Approve this reel? The brand will now be able to review it.')) return;
+  await _sb.from('deals').update({ status:'delivered' }).eq('id', dealId);
+  // Notify creator
+  await _sb.from('messages').insert({
+    sender_id: '00000000-0000-0000-0000-000000000000',
+    receiver_id: creatorId,
+    text: '✅ Your reel has been reviewed and approved by CollabInst admin! The brand can now review it. Great work!'
+  });
+  toast('Reel approved! Brand can now review it.', 'success');
+  adminDeals();
+}
+
+async function adminRejectReel(dealId, creatorId) {
+  const reason = prompt('Enter rejection reason (will be sent to creator):');
+  if(reason === null) return;
+  await _sb.from('deals').update({ status:'revision', video_url: null }).eq('id', dealId);
+  // Notify creator
+  await _sb.from('messages').insert({
+    sender_id: '00000000-0000-0000-0000-000000000000',
+    receiver_id: creatorId,
+    text: '❌ Your reel was rejected by CollabInst admin. Reason: ' + (reason || 'Content does not meet platform guidelines') + '. Please upload a new reel.'
+  });
+  toast('Reel rejected. Creator has been notified.', 'success');
+  adminDeals();
+}
 async function adminDelDeal(id) { if(!confirm('Delete this deal?')) return; await _sb.from('deals').delete().eq('id',id); toast('Deleted.'); adminDeals(); }
 async function adminPosts() {
   const { data: posts } = await _sb.from('brand_posts').select('*').order('created_at',{ascending:false});
