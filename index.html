@@ -1228,7 +1228,8 @@ async function loadDashDeals() {
       else if(d.status==='delivered') reel = '<span class="delivered-badge">📦 Awaiting Review</span>';
       else if(d.status==='completed') reel = '<span class="delivered-badge">✅ Approved</span>';
     } else {
-      if(d.video_url) reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:' + (d.status==='completed'?'var(--black4)':'var(--red)') + '" onclick="openReview(\'' + d.id + '\',\'' + d.video_url + '\',\'' + (d.description||'Deal').replace(/'/g,'') + '\',\'' + d.creator_id + '\')">' + (d.status==='completed'?'▶ View':'🎬 Review Reel') + '</button>';
+    if(d.status==='under_review') reel = '<span style="font-size:12px;color:#f59e0b;font-weight:600;padding:4px 10px;background:rgba(245,158,11,0.15);border-radius:2px">🔍 Being Reviewed by Admin</span>';
+else if(d.video_url && (d.status==='delivered'||d.status==='completed')) reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:' + (d.status==='completed'?'var(--black4)':'var(--red)') + '" onclick="openReview(\'' + d.id + '\',\'' + d.video_url + '\',\'' + (d.description||'Deal').replace(/'/g,'') + '\',\'' + d.creator_id + '\')">' + (d.status==='completed'?'▶ View':'🎬 Review Reel') + '</button>';
       else reel = '<span style="font-size:12px;color:var(--grey)">Awaiting upload</span>';
     }
     return '<tr><td>' + (d.description||'Deal') + '</td><td><strong>$' + d.amount + '</strong></td><td style="color:#22c55e;font-weight:700">$' + Math.floor(d.amount*0.8) + '</td><td><span class="deal-status ' + sc + '">' + sl + '</span></td><td>' + reel + '</td><td>' + new Date(d.created_at).toLocaleDateString() + '</td></tr>';
