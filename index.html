@@ -1223,8 +1223,13 @@ async function loadDashDeals() {
     const sl = d.status==='delivered'?'📦 Delivered':d.status==='revision'?'🔄 Revision':d.status;
     let reel = '-';
     if(isInf) {
-      if(['pending','active','revision'].includes(d.status))
-        reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openUpload(\'' + d.id + '\',\'' + (d.description||'Deal').replace(/'/g,'') + '\')">' + (d.status==='revision'?'🔄 Re-upload':'📤 Upload Reel') + '</button>';
+      if(d.status==='pending')
+  reel = '<div style="display:flex;gap:6px">' +
+    '<button class="admin-ok-btn" onclick="acceptDeal(\''+d.id+'\',\''+d.brand_id+'\')">✅ Accept</button>' +
+    '<button class="admin-del-btn" onclick="rejectDeal(\''+d.id+'\',\''+d.brand_id+'\')">❌ Reject</button>' +
+    '</div>';
+else if(d.status==='active'||d.status==='revision')
+  reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openUpload(\''+d.id+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\')">'+( d.status==='revision'?'🔄 Re-upload':'📤 Upload Reel')+'</button>';
       else if(d.status==='delivered') reel = '<span class="delivered-badge">📦 Awaiting Review</span>';
       else if(d.status==='completed') reel = '<span class="delivered-badge">✅ Approved</span>';
     } else {
@@ -1236,8 +1241,28 @@ async function loadDashDeals() {
     '<button class="admin-del-btn" onclick="adminRejectReel(\''+d.id+'\',\''+d.creator_id+'\')">❌ Reject</button>' +
     '</div></div>';
 }
-else if(d.video_url && (d.status==='delivered'||d.status==='completed')) reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:' + (d.status==='completed'?'var(--black4)':'var(--red)') + '" onclick="openReview(\'' + d.id + '\',\'' + d.video_url + '\',\'' + (d.description||'Deal').replace(/'/g,'') + '\',\'' + d.creator_id + '\')">' + (d.status==='completed'?'▶ View':'🎬 Review Reel') + '</button>';
-      else reel = '<span style="font-size:12px;color:var(--grey)">Awaiting upload</span>';
+else if(d.video_url && d.status==='delivered') 
+  reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openReview(\''+d.id+'\',\''+d.video_url+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">🎬 Review Reel</button>';
+else if(d.video_url && d.status==='completed')
+  reel = '<div style="display:flex;flex-direction:column;gap:6px">' +
+    '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:var(--black4)" onclick="openReview(\''+d.id+'\',\''+d.video_url+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">▶ View Reel</button>' +
+    '<a href="'+d.video_url+'" download target="_blank" style="display:inline-block;padding:5px 10px;border-radius:4px;background:#22c55e;color:white;font-size:11px;font-weight:700;text-align:center;text-decoration:none">⬇️ Download Reel</a>' +
+    '</div>';
+if(d.status==='active' && !d.video_url && !d.payment_confirmed) {
+  reel = '<div style="display:flex;flex-direction:column;gap:6px">' +
+    '<span style="font-size:11px;font-weight:700;color:#22c55e">✅ Creator Accepted!</span>' +
+    '<span style="font-size:11px;color:var(--white2)">Please complete payment:</span>' +
+    '<div style="background:var(--black3);border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:10px;font-size:11px">' +
+    '📱 <strong>Easypaisa/JazzCash:</strong> 0314-2459992<br/>' +
+    '🏦 <strong>HBL Bank:</strong> Akash Alam<br/>' +
+    '💰 <strong>Amount:</strong> $'+d.amount+' USD<br/><br/>' +
+    '<input id="pkrAmount_'+d.id+'" class="pay-input" type="number" placeholder="Enter PKR amount you are sending" style="font-size:11px;padding:6px 10px;margin-top:4px"/><br/><br/>' +
+    '💬 <strong>After paying</strong> send screenshot to WhatsApp: +923142459992' +
+    '</div>' +
+    '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:#22c55e" onclick="confirmPaymentSent(\''+d.id+'\')">💳 I Have Paid →</button>' +
+    '</div>';
+}      
+else reel = '<span style="font-size:12px;color:var(--grey)">Awaiting upload</span>';
     }
     return '<tr><td>' + (d.description||'Deal') + '</td><td><strong>$' + d.amount + '</strong></td><td style="color:#22c55e;font-weight:700">$' + Math.floor(d.amount*0.8) + '</td><td><span class="deal-status ' + sc + '">' + sl + '</span></td><td>' + reel + '</td><td>' + new Date(d.created_at).toLocaleDateString() + '</td></tr>';
   }).join('');
@@ -1425,6 +1450,49 @@ function selectUsage(val, el) {
   document.querySelectorAll('.usage-opt').forEach(o => o.classList.remove('selected'));
   if(el) el.classList.add('selected');
   updateSplit();
+}
+async function acceptDeal(dealId, brandId) {
+  const { error } = await _sb.from('deals')
+    .update({ status:'active' })
+    .eq('id', dealId);
+  if(error){ toast('Error: '+error.message); return; }
+  await _sb.from('messages').insert({
+    sender_id: CU.id,
+    receiver_id: brandId,
+    text: '✅ I have accepted your deal proposal! Please complete the payment to get started. Send payment screenshot to WhatsApp: +923142459992'
+  });
+  toast('Deal accepted! Brand has been notified to pay.', 'success');
+  loadDashDeals();
+}
+
+async function rejectDeal(dealId, brandId) {
+  const { error } = await _sb.from('deals')
+    .update({ status:'rejected' })
+    .eq('id', dealId);
+  if(error){ toast('Error: '+error.message); return; }
+  await _sb.from('messages').insert({
+    sender_id: CU.id,
+    receiver_id: brandId,
+    text: '❌ Sorry, I am unable to accept this deal proposal at this time. Feel free to send a new proposal!'
+  });
+  toast('Deal rejected. Brand has been notified.', 'success');
+  loadDashDeals();
+}
+async function confirmPaymentSent(dealId) {
+  const pkrInput = document.getElementById('pkrAmount_'+dealId);
+  const pkrAmount = pkrInput ? pkrInput.value.trim() : '';
+  if(!pkrAmount){ toast('Please enter the PKR amount you sent.'); return; }
+  const { error } = await _sb.from('deals')
+    .update({ payment_confirmed: false, pkr_amount: pkrAmount })
+    .eq('id', dealId);
+  if(error){ toast('Error: '+error.message); return; }
+  await _sb.from('messages').insert({
+    sender_id: CU.id,
+    receiver_id: dealId,
+    text: '💳 Payment sent! PKR Amount: '+pkrAmount+'. Screenshot sent to WhatsApp. Waiting for admin confirmation.'
+  });
+  toast('Payment notification sent! Admin will confirm shortly.', 'success');
+  loadDashDeals();
 }
 async function submitDeal() {
   if(!CU||!DEAL_TARGET) return;
