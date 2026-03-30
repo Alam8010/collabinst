@@ -957,6 +957,9 @@ function timeAgo(ts) {
   if(d < 86400) return Math.floor(d/3600) + 'h ago';
   return Math.floor(d/86400) + 'd ago';
 }
+function getWatermarkedUrl(url) {
+  return url.replace('/upload/', '/upload/l_text:Arial_40:COLLABINST%20PREVIEW%20ONLY,co_white,o_40,g_center/');
+}
 function toast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1251,7 +1254,8 @@ else if(d.status==='active'||d.status==='revision')
 } else if(d.status==='active' && d.payment_confirmed) {
   reel = '<span style="font-size:12px;color:#22c55e;font-weight:600">✅ Payment Confirmed — Awaiting Reel</span>';
 } else if(d.video_url && d.status==='delivered') {
-  reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openReview(\''+d.id+'\',\''+d.video_url+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">🎬 Review Reel</button>';
+  const previewUrl = getWatermarkedUrl(d.video_url);
+  reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openReview(\''+d.id+'\',\''+previewUrl+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">🎬 Review Reel</button>';
 } else if(d.video_url && d.status==='completed') {
   reel = '<div style="display:flex;flex-direction:column;gap:6px">' +
     '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:var(--black4)" onclick="openReview(\''+d.id+'\',\''+d.video_url+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">▶ View Reel</button>' +
