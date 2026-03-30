@@ -1233,22 +1233,9 @@ else if(d.status==='active'||d.status==='revision')
       else if(d.status==='delivered') reel = '<span class="delivered-badge">📦 Awaiting Review</span>';
       else if(d.status==='completed') reel = '<span class="delivered-badge">✅ Approved</span>';
     } else {
-    if(d.status==='under_review' && d.video_url) {
-  reelCell = '<div style="display:flex;flex-direction:column;gap:4px">' +
-    '<a href="'+d.video_url+'" target="_blank" style="color:var(--red);font-size:12px;font-weight:600">▶ Watch Reel</a>' +
-    '<div style="display:flex;gap:4px;margin-top:4px">' +
-    '<button class="admin-ok-btn" onclick="adminApproveReel(\''+d.id+'\',\''+d.creator_id+'\')">✅ Approve</button>' +
-    '<button class="admin-del-btn" onclick="adminRejectReel(\''+d.id+'\',\''+d.creator_id+'\')">❌ Reject</button>' +
-    '</div></div>';
-}
-else if(d.video_url && d.status==='delivered') 
-  reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openReview(\''+d.id+'\',\''+d.video_url+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">🎬 Review Reel</button>';
-else if(d.video_url && d.status==='completed')
-  reel = '<div style="display:flex;flex-direction:column;gap:6px">' +
-    '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:var(--black4)" onclick="openReview(\''+d.id+'\',\''+d.video_url+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">▶ View Reel</button>' +
-    '<a href="'+d.video_url+'" download target="_blank" style="display:inline-block;padding:5px 10px;border-radius:4px;background:#22c55e;color:white;font-size:11px;font-weight:700;text-align:center;text-decoration:none">⬇️ Download Reel</a>' +
-    '</div>';
-if(d.status==='active' && !d.video_url && !d.payment_confirmed) {
+   if(d.status==='under_review') {
+  reel = '<span style="font-size:12px;color:#f59e0b;font-weight:600;padding:4px 10px;background:rgba(245,158,11,0.15);border-radius:2px">🔍 Being Reviewed by Admin</span>';
+} else if(d.status==='active' && !d.payment_confirmed) {
   reel = '<div style="display:flex;flex-direction:column;gap:6px">' +
     '<span style="font-size:11px;font-weight:700;color:#22c55e">✅ Creator Accepted!</span>' +
     '<span style="font-size:11px;color:var(--white2)">Please complete payment:</span>' +
@@ -1261,8 +1248,18 @@ if(d.status==='active' && !d.video_url && !d.payment_confirmed) {
     '</div>' +
     '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:#22c55e" onclick="confirmPaymentSent(\''+d.id+'\')">💳 I Have Paid →</button>' +
     '</div>';
-}      
-else reel = '<span style="font-size:12px;color:var(--grey)">Awaiting upload</span>';
+} else if(d.status==='active' && d.payment_confirmed) {
+  reel = '<span style="font-size:12px;color:#22c55e;font-weight:600">✅ Payment Confirmed — Awaiting Reel</span>';
+} else if(d.video_url && d.status==='delivered') {
+  reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openReview(\''+d.id+'\',\''+d.video_url+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">🎬 Review Reel</button>';
+} else if(d.video_url && d.status==='completed') {
+  reel = '<div style="display:flex;flex-direction:column;gap:6px">' +
+    '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:var(--black4)" onclick="openReview(\''+d.id+'\',\''+d.video_url+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">▶ View Reel</button>' +
+    '<a href="'+d.video_url+'" download target="_blank" style="display:inline-block;padding:5px 10px;border-radius:4px;background:#22c55e;color:white;font-size:11px;font-weight:700;text-align:center;text-decoration:none">⬇️ Download Reel</a>' +
+    '</div>';
+} else {
+  reel = '<span style="font-size:12px;color:var(--grey)">Awaiting upload</span>';
+}
     }
     return '<tr><td>' + (d.description||'Deal') + '</td><td><strong>$' + d.amount + '</strong></td><td style="color:#22c55e;font-weight:700">$' + Math.floor(d.amount*0.8) + '</td><td><span class="deal-status ' + sc + '">' + sl + '</span></td><td>' + reel + '</td><td>' + new Date(d.created_at).toLocaleDateString() + '</td></tr>';
   }).join('');
