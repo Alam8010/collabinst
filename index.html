@@ -1704,10 +1704,65 @@ async function adminDelUser(id, name) {
 }
 async function adminDeals() {
   const { data: deals } = await _sb.from('deals').select('*').order('created_at',{ascending:false});
+  const pendingReviews = (deals||[]).filter(d => d.status === 'under_review').length;
+  
+  let rows = '';
+  if(deals && deals.length) {
+    deals.forEach(d => {
+      const sc = d.status==='completed'?'completed':d.status==='delivered'||d.status==='active'?'active':'pending';
+      const usageLabel = d.usage_rights==='creator_post'?'📸 Creator Post':d.usage_rights==='both'?'🤝 Both':'🏢 Brand Only';
+      
+      let reelCell = '-';
+      if(d.status==='under_review' && d.video_url) {
+        reelCell = '<div style="display:flex;flex-direction:column;gap:4px">' +
+          '<a href="'+d.video_url+'" target="_blank" style="color:var(--red);font-size:12px;font-weight:600">▶ Watch Reel</a>' +
+          '<div style="display:flex;gap:4px;margin-top:4px">' +
+          '<button class="admin-ok-btn" onclick="adminApproveReel(\''+d.id+'\',\''+d.creator_id+'\')">✅ Approve</button>' +
+          '<button class="admin-del-btn" onclick="adminRejectReel(\''+d.id+'\',\''+d.creator_id+'\')">❌ Reject</button>' +
+          '</div></div>';
+      } else if(d.status==='delivered' && d.video_url) {
+        reelCell = '<div style="display:flex;flex-direction:column;gap:4px">' +
+          '<a href="'+d.video_url+'" target="_blank" style="color:var(--red);font-size:12px;font-weight:600">▶ View Reel</a>' +
+          '<span style="font-size:11px;color:#22c55e;font-weight:600">✅ Sent to Brand</span>' +
+          '</div>';
+      } else if(d.status==='completed' && d.video_url) {
+        reelCell = '<div style="display:flex;flex-direction:column;gap:4px">' +
+          '<a href="'+d.video_url+'" target="_blank" style="color:var(--red);font-size:12px;font-weight:600">▶ View Reel</a>' +
+          (d.post_url?'<a href="'+d.post_url+'" target="_blank" style="font-size:11px;color:#22c55e">View Post →</a>':'') +
+          '</div>';
+      } else if(!d.video_url) {
+        reelCell = '<span style="font-size:12px;color:var(--grey)">No reel yet</span>';
+      }
+
+      let actionCell = '';
+      if(d.status==='pending'||d.status==='revision') {
+        actionCell += '<button class="admin-ok-btn" onclick="adminOkDeal(\''+d.id+'\')" title="Force complete for disputes only">⚠️ Override</button>';
+      }
+      actionCell += '<button class="admin-del-btn" onclick="adminDelDeal(\''+d.id+'\')">Delete</button>';
+
+      rows += '<tr style="'+(d.status==='under_review'?'background:rgba(245,158,11,0.05);border-left:2px solid #f59e0b':'')+'">' +
+        '<td>'+(d.description||'Deal')+'</td>' +
+        '<td><strong>$'+d.amount+'</strong></td>' +
+        '<td style="color:var(--red)">$'+Math.floor(d.amount*0.2)+'</td>' +
+        '<td style="color:#22c55e">$'+Math.floor(d.amount*0.8)+'</td>' +
+        '<td><span class="deal-status '+sc+'">'+d.status+'</span></td>' +
+        '<td style="font-size:12px">'+usageLabel+'</td>' +
+        '<td>'+reelCell+'</td>' +
+        '<td>'+new Date(d.created_at).toLocaleDateString()+'</td>' +
+        '<td style="display:flex;gap:6px;flex-wrap:wrap">'+actionCell+'</td>' +
+        '</tr>';
+    });
+  } else {
+    rows = '<tr><td colspan="9" style="text-align:center;color:var(--grey);padding:40px">No deals yet</td></tr>';
+  }
+
   document.getElementById('adminContent').innerHTML =
-    '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:24px">ALL <span style="color:var(--red)">DEALS</span> ('+(deals?deals.length:0)+')</div>' +
-    '<table class="admin-table"><thead><tr><th>Description</th><th>Amount</th><th>Platform Cut</th><th>Creator Gets</th><th>Status</th><th>Usage Rights</th><th>Reel/Proof</th><th>Date</th><th>Actions</th></tr></thead><tbody>' +
-    (deals&&deals.length?deals.map(d=>'<tr><td>'+(d.description||'Deal')+'</td><td><strong>$'+d.amount+'</strong></td><td style="color:var(--red)">$'+Math.floor(d.amount*0.2)+'</td><td style="color:#22c55e">$'+Math.floor(d.amount*0.8)+'</td><td><span class="deal-status '+(d.status==='completed'?'completed':d.status==='delivered'||d.status==='active'?'active':'pending')+'">'+d.status+'</span></td><td>'+(d.video_url?'<a href="'+d.video_url+'" target="_blank" style="color:var(--red);font-size:12px;font-weight:600">▶ View</a>':'-')+'</td><td>'+new Date(d.created_at).toLocaleDateString()+'</td><td style="display:flex;gap:6px">'+(d.status==='pending'||d.status==='revision'?'<button class="admin-ok-btn" onclick="adminOkDeal(\''+d.id+'\')" title="Only use this to override disputes">⚠️ Force Complete</button>':'')+'<button class="admin-del-btn" onclick="adminDelDeal(\''+d.id+'\')">Delete</button></td></tr>').join(''):'<tr><td colspan="8" style="text-align:center;color:var(--grey);padding:40px">No deals yet</td></tr>') +
+    '<div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap">' +
+    '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:32px;letter-spacing:2px">ALL <span style="color:var(--red)">DEALS</span> ('+(deals?deals.length:0)+')</div>' +
+    (pendingReviews>0?'<span style="background:var(--red);color:white;font-size:13px;font-weight:700;padding:6px 14px;border-radius:20px">🔍 '+pendingReviews+' Reel'+(pendingReviews>1?'s':'')+' Awaiting Review</span>':'') +
+    '</div>' +
+    '<table class="admin-table"><thead><tr><th>Description</th><th>Amount</th><th>Platform Cut</th><th>Creator Gets</th><th>Status</th><th>Usage Rights</th><th>Reel</th><th>Date</th><th>Actions</th></tr></thead><tbody>' +
+    rows +
     '</tbody></table>';
 }
 async function adminOkDeal(id) { await _sb.from('deals').update({status:'completed'}).eq('id',id); toast('Deal completed!','success'); adminDeals(); }
