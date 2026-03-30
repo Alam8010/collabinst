@@ -1231,8 +1231,12 @@ async function loadDashDeals() {
     '<button class="admin-ok-btn" onclick="acceptDeal(\''+d.id+'\',\''+d.brand_id+'\')">✅ Accept</button>' +
     '<button class="admin-del-btn" onclick="rejectDeal(\''+d.id+'\',\''+d.brand_id+'\')">❌ Reject</button>' +
     '</div>';
-else if(d.status==='active'||d.status==='revision')
-  reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openUpload(\''+d.id+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\')">'+( d.status==='revision'?'🔄 Re-upload':'📤 Upload Reel')+'</button>';
+else if(d.status==='active' && d.payment_confirmed)
+  reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openUpload(\''+d.id+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\')">📤 Upload Reel</button>';
+else if(d.status==='active' && !d.payment_confirmed)
+  reel = '<span style="font-size:11px;color:#f59e0b;font-weight:600;padding:4px 10px;background:rgba(245,158,11,0.15);border-radius:2px">⏳ Awaiting Payment</span>';
+else if(d.status==='revision')
+  reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openUpload(\''+d.id+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\')">🔄 Re-upload</button>';
       else if(d.status==='delivered') reel = '<span class="delivered-badge">📦 Awaiting Review</span>';
       else if(d.status==='completed') reel = '<span class="delivered-badge">✅ Approved</span>';
     } else {
@@ -1682,7 +1686,13 @@ async function submitVideo() {
 function openReview(dealId, videoUrl, dealDesc, creatorId) {
   REVIEW_DEAL = { id:dealId, creatorId };
   document.getElementById('reviewModalSub').textContent = 'Reviewing: '+dealDesc;
-  document.getElementById('reviewVideoWrap').innerHTML = '<div class="video-preview"><video controls src="'+videoUrl+'" style="width:100%;max-height:340px"></video></div><div style="margin-top:10px;font-size:13px;color:var(--white2)">Review the reel carefully before approving payment.</div>';
+  document.getElementById('reviewVideoWrap').innerHTML = 
+  '<div style="position:relative;border-radius:6px;overflow:hidden;border:1px solid var(--border)">' +
+  '<video controls src="'+videoUrl+'" style="width:100%;max-height:340px;display:block"></video>' +
+  '<div style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">' +
+  '<div style="color:white;font-size:18px;font-weight:900;letter-spacing:3px;text-transform:uppercase;opacity:0.4;transform:rotate(-30deg);text-shadow:0 0 10px rgba(0,0,0,0.8);text-align:center">COLLABINST<br/>PREVIEW ONLY<br/>NOT FOR USE</div>' +
+  '</div></div>' +
+  '<div style="margin-top:10px;font-size:13px;color:var(--white2)">Review the reel carefully before approving payment.</div>';
   document.getElementById('reviewActions').innerHTML =
     '<button onclick="approveDeal()" style="flex:1;padding:12px;border-radius:4px;background:#22c55e;color:var(--white);font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:\'Barlow\',sans-serif">✅ Approve & Release Payment</button>' +
     '<button onclick="requestRevision()" style="flex:1;padding:12px;border-radius:4px;background:rgba(232,25,44,0.1);border:1px solid rgba(232,25,44,0.3);color:var(--red);font-size:14px;font-weight:700;cursor:pointer;font-family:\'Barlow\',sans-serif">❌ Request Revision</button>';
