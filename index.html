@@ -1635,6 +1635,8 @@ function openUpload(dealId, dealDesc) {
   document.getElementById('uploadProgressWrap').style.display = 'none';
   document.getElementById('videoPreviewWrap').innerHTML = '';
   document.getElementById('submitVideoBtn').style.display = 'none';
+  document.getElementById('submitVideoBtn').disabled = false;
+document.getElementById('submitVideoBtn').textContent = 'Submit Reel →';
   document.getElementById('progressFill').style.width = '0%';
   document.getElementById('progressFill').style.background = 'var(--red)';
   document.getElementById('videoFileInput').value = '';
@@ -1665,9 +1667,12 @@ function uploadToCloudinary(file) {
     if(xhr.status===200) {
       const d = JSON.parse(xhr.responseText);
       UPLOADED_URL = d.secure_url;
+console.log('Uploaded URL:', UPLOADED_URL);
       pf.style.width='100%'; pf.style.background='#22c55e'; pl.textContent='Upload complete! ✅';
       document.getElementById('videoPreviewWrap').innerHTML = '<div class="video-preview" style="margin-top:16px"><video controls src="'+UPLOADED_URL+'"></video></div><div style="margin-top:8px;font-size:13px;color:#22c55e;font-weight:600">✅ Reel uploaded! Review it above then submit.</div>';
-      sb.style.display = 'block';
+      sb.textContent = 'Submit Reel →';
+sb.disabled = false;
+sb.style.display = 'block';
     } else { pl.textContent='Upload failed. Try again.'; pf.style.background='var(--red)'; }
   });
   xhr.addEventListener('error', () => { pl.textContent='Upload failed. Check connection.'; });
