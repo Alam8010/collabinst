@@ -617,9 +617,12 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
         <div style="font-size:40px;margin-bottom:16px">🔐</div>
         <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;margin-bottom:8px">ADMIN ACCESS</div>
         <div style="font-size:13px;color:var(--grey);margin-bottom:28px">Restricted to CollabInst administrators only.</div>
-        <input type="password" id="adminPassInput" placeholder="Enter admin password" style="background:var(--black3);border:1px solid var(--border);border-radius:4px;padding:12px 16px;color:var(--white);font-size:14px;width:100%;margin-bottom:12px;font-family:'Barlow',sans-serif;" onkeydown="if(event.key==='Enter')checkAdminPass()"/>
+        <div style="font-size:14px;color:var(--white2);margin-bottom:16px">
+  You must be logged in with an admin account to access this panel.
+</div>
+<div id="adminUserShow" style="font-size:13px;color:var(--grey);margin-bottom:16px"></div>
         <div class="auth-error" id="adminPassError" style="margin-bottom:12px"></div>
-        <button onclick="checkAdminPass()" class="auth-submit">Enter Admin Panel →</button>
+        <button onclick="checkAdminPass()" class="auth-submit">Verify Admin Access →</button>
       </div>
     </div>
     <div id="adminDashWrap" style="display:none">
@@ -994,7 +997,12 @@ function showPage(page) {
   if(page === 'notifications') loadNotifications();
   if(page === 'dashboard') renderDashboard();
   if(page === 'profile') renderProfile();
-  if(page === 'admin') { /* handled by checkAdminPass */ }
+  if(page === 'admin') {
+  const el = document.getElementById('adminUserShow');
+  if(el) {
+    el.textContent = CU ? 'Logged in as: ' + CU.name + ' (' + CU.email + ')' : 'Not logged in — please log in first.';
+  }
+}
   setTimeout(() => {
     document.querySelectorAll('.reveal').forEach(el => {
       const obs = new IntersectionObserver(entries => {
@@ -1725,16 +1733,21 @@ async function requestRevision() {
 }
 
 // ── ADMIN ─────────────────────────────────────────
-const ADMIN_PASS = 'collabinst@admin2026';
-function checkAdminPass() {
-  const v = document.getElementById('adminPassInput').value;
-  if(v===ADMIN_PASS) {
+async function checkAdminPass() {
+  if(!CU) {
+    showErr('adminPassError', 'Please log in to your CollabInst account first.');
+    return;
+  }
+  const { data: profile } = await _sb.from('profiles')
+    .select('is_admin')
+    .eq('id', CU.id)
+    .single();
+  if(profile && profile.is_admin === true) {
     document.getElementById('adminLoginWrap').style.display='none';
     document.getElementById('adminDashWrap').style.display='block';
     adminTab('stats', document.querySelector('.admin-tab'));
   } else {
-    showErr('adminPassError','Incorrect password.');
-    document.getElementById('adminPassInput').value='';
+    showErr('adminPassError', 'Access denied. You do not have admin privileges.');
   }
 }
 function adminTab(tab, el) {
