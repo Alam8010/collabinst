@@ -796,7 +796,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
       <input class="post-input" type="text" id="postTitle" placeholder="e.g. Looking for Fashion Creator for Reel"/>
       <textarea class="post-textarea" id="postBody" placeholder="Describe the content you need..."></textarea>
       <select class="post-select" id="postNiche"><option value="">Target niche...</option><option>Fashion &amp; Style</option><option>Fitness &amp; Health</option><option>Food &amp; Cooking</option><option>Tech &amp; Gadgets</option><option>Travel &amp; Lifestyle</option><option>Gaming</option><option>Beauty &amp; Skincare</option><option>Sports</option><option>Other</option></select>
-      <input class="post-input" type="number" id="postBudget" placeholder="Budget in USD"/>
+      <input class="post-input" type="number" id="postBudget" placeholder="Budget in PKR (e.g. 5000)"/>
       <button class="auth-submit" onclick="submitPost()">Post Opportunity →</button>
     </div>
   </div>
@@ -1251,7 +1251,7 @@ else if(d.status==='revision')
     '<div style="background:var(--black3);border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:10px;font-size:11px">' +
     '📱 <strong>Easypaisa/JazzCash:</strong> 0314-2459992<br/>' +
     '🏦 <strong>HBL Bank:</strong> Akash Alam<br/>' +
-    '💰 <strong>Amount:</strong> PKR '+d.amount+' USD<br/><br/>' +
+    '💰 <strong>Amount:</strong> PKR '+Number(d.amount).toLocaleString()+'<br/><br/>' +
     '<input id="pkrAmount_'+d.id+'" class="pay-input" type="number" placeholder="Enter PKR amount you are sending" style="font-size:11px;padding:6px 10px;margin-top:4px"/><br/><br/>' +
     '💬 <strong>After paying</strong> send screenshot to WhatsApp: +923142459992' +
     '</div>' +
@@ -1271,7 +1271,7 @@ else if(d.status==='revision')
   reel = '<span style="font-size:12px;color:var(--grey)">Awaiting upload</span>';
 }
     }
-    return '<tr><td>' + (d.description||'Deal') + '</td><td><strong>$' + d.amount + '</strong></td><td style="color:#22c55e;font-weight:700">PKR ' + Math.floor(d.amount*0.8) + '</td><td><span class="deal-status ' + sc + '">' + sl + '</span></td><td>' + reel + '</td><td>' + new Date(d.created_at).toLocaleDateString() + '</td></tr>';
+    return '<tr><td>' + (d.description||'Deal') + '</td><td><strong>PKR ' + Number(d.amount).toLocaleString() + '</strong></td><td style="color:#22c55e;font-weight:700">PKR ' + Math.floor(d.amount*0.8) + '</td><td><span class="deal-status ' + sc + '">' + sl + '</span></td><td>' + reel + '</td><td>' + new Date(d.created_at).toLocaleDateString() + '</td></tr>';
   }).join('');
   wrap.innerHTML = '<table class="deals-table"><thead><tr><th>Description</th><th>Amount</th><th>' + (isInf?'Your Cut':'Creator Gets') + ' (80%)</th><th>Status</th><th>Reel</th><th>Date</th></tr></thead><tbody>' + rows + '</tbody></table>';
 }
@@ -1302,7 +1302,7 @@ function creatorCard(c) {
     '<a href="' + igUrl + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:4px;color:var(--red);font-size:13px;text-decoration:none;margin-top:2px" title="View on Instagram">' + igIcon + handle + '</a>' +
     '<div class="inf-niche">' + (c.niche||'Creator') + '</div></div></div>' +
     '<div class="inf-card-stats"><div class="inf-stat-item"><div class="inf-stat-val">' + (c.followers||'N/A') + '</div><div class="inf-stat-label">Followers</div></div></div>' +
-    '<div class="inf-card-footer"><div class="inf-price">From <strong>$' + (c.price||0) + '</strong>/reel</div>' +
+    '<div class="inf-card-footer"><div class="inf-price">From <strong>PKR ' + (c.price||0).toLocaleString() + '</strong>/reel</div>' +
     '<button class="btn-msg" onclick="event.stopPropagation();openDeal(\'' + c.id + '\',\'' + (c.name||'Creator').replace(/'/g,'') + '\',' + (c.price||0) + ')">Send Deal</button></div></div>';
 }
 function filterNiche(niche, btn) {
@@ -1331,7 +1331,7 @@ function boardCard(p) {
   return '<div class="brand-post"><div class="brand-post-header"><div class="brand-avatar">🏢</div><div><div class="brand-name-txt">' + (p.brand_name||'Brand') + '</div><div class="brand-verified">✦ Verified Brand</div></div></div>' +
     '<div class="brand-post-title">' + p.title + '</div><div class="brand-post-body">' + p.body + '</div>' +
     '<div class="brand-post-tags"><span class="brand-tag">' + (p.niche||'General') + '</span></div>' +
-    '<div class="brand-post-footer"><div class="brand-budget">Budget: <strong>$' + (p.budget||0) + '</strong></div>' +
+    '<div class="brand-post-footer"><div class="brand-budget">Budget: <strong>PKR ' + Number(p.budget||0).toLocaleString() + '</strong></div>' +
     '<button class="btn-msg" onclick="msgUser(\'' + p.user_id + '\')">Apply Now</button></div></div>';
 }
 function openPostModal() { if(!CU){showPage('auth');return;} openModal('postModal'); }
@@ -1834,7 +1834,7 @@ actionCell += '<button class="admin-del-btn" onclick="adminDelDeal(\''+d.id+'\')
 
       rows += '<tr style="'+(d.status==='under_review'?'background:rgba(245,158,11,0.05);border-left:2px solid #f59e0b':'')+'">' +
         '<td>'+(d.description||'Deal')+'</td>' +
-        '<td><strong>PKR '+d.amount+'</strong></td>' +
+        '<td><strong>PKR '+Number(d.amount).toLocaleString()+'</strong></td>' +
         '<td style="color:var(--red)">PKR '+Math.floor(d.amount*0.2)+'</td>' +
         '<td style="color:#22c55e">PKR '+Math.floor(d.amount*0.8)+'</td>' +
         '<td><span class="deal-status '+sc+'">'+d.status+'</span></td>' +
