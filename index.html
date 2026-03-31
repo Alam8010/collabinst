@@ -629,6 +629,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
         <button class="admin-tab" onclick="adminTab('users',this)">👥 Users</button>
         <button class="admin-tab" onclick="adminTab('deals',this)">💼 Deals</button>
         <button class="admin-tab" onclick="adminTab('posts',this)">📢 Posts</button>
+        <button class="admin-tab" onclick="adminTab('messages',this)">💬 Messages</button>
       </div>
       <div id="adminContent" style="padding:40px;max-width:1200px;margin:0 auto"></div>
     </div>
@@ -693,7 +694,16 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
         <li>All payments are final once released. No refunds after content is approved and rights transferred.</li>
       </ul>
     </div>
-
+  <div class="tos-section">
+  <h3>6. Message Monitoring & Privacy</h3>
+  <ul>
+    <li>All messages sent on CollabInst are stored securely and may be reviewed by CollabInst admin for fraud detection, dispute resolution and platform safety purposes.</li>
+    <li>CollabInst monitors messages to detect platform bypass attempts — where brands and creators agree to conduct deals outside the platform to avoid platform fees.</li>
+    <li>Any attempt to move deals outside CollabInst will result in immediate permanent ban of both parties.</li>
+    <li>Messages are never shared with third parties and are only used for internal platform safety purposes.</li>
+    <li>By using CollabInst you consent to this message monitoring policy.</li>
+  </ul>
+</div>
     <div class="tos-section">
       <h3>6. Content Moderation</h3>
       <ul>
@@ -1737,6 +1747,7 @@ function adminTab(tab, el) {
   if(tab==='users') adminUsers();
   if(tab==='deals') adminDeals();
   if(tab==='posts') adminPosts();
+  if(tab==='messages') adminMessages();
 }
 async function adminStats() {
   const [u,inf,br,d,po,da] = await Promise.all([
@@ -1882,6 +1893,80 @@ async function adminPosts() {
     '</tbody></table>';
 }
 async function adminDelPost(id) { if(!confirm('Delete this post?')) return; await _sb.from('brand_posts').delete().eq('id',id); toast('Deleted.'); adminPosts(); }
+async function adminMessages() {
+  const { data: msgs } = await _sb.from('messages')
+    .select('*')
+    .order('created_at', {ascending:false})
+    .limit(200);
+
+  if(!msgs || !msgs.length) {
+    document.getElementById('adminContent').innerHTML = '<div class="empty-state"><div class="ei">💬</div><h3>No messages yet</h3></div>';
+    return;
+  }
+
+  // Get all unique user IDs
+  const userIds = [...new Set([...msgs.map(m=>m.sender_id), ...msgs.map(m=>m.receiver_id)])];
+  const { data: profiles } = await _sb.from('profiles').select('id,name,role').in('id', userIds);
+  const pm = {};
+  (profiles||[]).forEach(p => pm[p.id] = p);
+
+  // Group messages by conversation
+  const convos = {};
+  msgs.forEach(m => {
+    const key = [m.sender_id, m.receiver_id].sort().join('_');
+    if(!convos[key]) convos[key] = { messages:[], sender_id:m.sender_id, receiver_id:m.receiver_id };
+    convos[key].messages.push(m);
+  });
+
+  const searchId = 'adminMsgSearch_' + Date.now();
+
+  document.getElementById('adminContent').innerHTML =
+    '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:24px">ALL <span style="color:var(--red)">MESSAGES</span></div>' +
+    '<input id="'+searchId+'" class="pay-input" placeholder="Search by name..." oninput="filterAdminMessages(this.value)" style="margin-bottom:20px;max-width:360px"/>' +
+    '<div id="adminMsgList">' +
+    Object.values(convos).map(conv => {
+      const s = pm[conv.sender_id] || {name:'Unknown',role:''};
+      const r = pm[conv.receiver_id] || {name:'Unknown',role:''};
+      const lastMsg = conv.messages[0];
+      const hasBypass = conv.messages.some(m =>
+        m.text.toLowerCase().includes('whatsapp') ||
+        m.text.toLowerCase().includes('direct') ||
+        m.text.toLowerCase().includes('outside') ||
+        m.text.toLowerCase().includes('bypass') ||
+        m.text.toLowerCase().includes('without collabinst')
+      );
+      return '<div class="brand-post" style="margin-bottom:12px;'+(hasBypass?'border-color:var(--red);background:rgba(232,25,44,0.05)':'')+'" data-names="'+(s.name+' '+r.name).toLowerCase()+'">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">' +
+        '<div style="display:flex;align-items:center;gap:12px">' +
+        '<div style="font-size:14px;font-weight:700">'+s.name+'<span style="color:var(--grey);font-size:11px;margin-left:6px">'+s.role+'</span></div>' +
+        '<div style="color:var(--grey);font-size:12px">↔</div>' +
+        '<div style="font-size:14px;font-weight:700">'+r.name+'<span style="color:var(--grey);font-size:11px;margin-left:6px">'+r.role+'</span></div>' +
+        '</div>' +
+        (hasBypass?'<span style="background:var(--red);color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:2px">⚠️ BYPASS DETECTED</span>':'') +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;background:var(--black3);border-radius:4px;padding:12px">' +
+        conv.messages.slice().reverse().map(m => {
+          const sender = pm[m.sender_id]||{name:'Unknown'};
+          const isBypass = m.text.toLowerCase().includes('whatsapp')||m.text.toLowerCase().includes('direct')||m.text.toLowerCase().includes('outside')||m.text.toLowerCase().includes('bypass');
+          return '<div style="margin-bottom:8px">' +
+            '<span style="font-size:11px;font-weight:700;color:'+(isBypass?'var(--red)':'var(--grey)')+'">'+sender.name+'</span>' +
+            '<span style="font-size:10px;color:var(--grey);margin-left:8px">'+new Date(m.created_at).toLocaleString()+'</span>' +
+            '<div style="font-size:13px;color:'+(isBypass?'var(--red)':'var(--white2)')+';margin-top:2px;'+(isBypass?'font-weight:600':'')+'">'+m.text+'</div>' +
+            '</div>';
+        }).join('') +
+        '</div>' +
+        '</div>';
+    }).join('') +
+    '</div>';
+}
+
+function filterAdminMessages(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('#adminMsgList .brand-post').forEach(el => {
+    const names = el.getAttribute('data-names') || '';
+    el.style.display = names.includes(q) ? 'block' : 'none';
+  });
+}
 
 // ── PROOF OF POSTING ─────────────────────────────
 function openProofModal(dealId) {
