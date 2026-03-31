@@ -401,7 +401,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
   <div class="stats-bar">
     <div class="stat"><div class="stat-num">2,400+</div><div class="stat-label">Active Creators</div></div>
     <div class="stat"><div class="stat-num">680+</div><div class="stat-label">Brands Listed</div></div>
-    <div class="stat"><div class="stat-num">$1.2M+</div><div class="stat-label">Deals Closed</div></div>
+    <div class="stat"><div class="stat-num">PKR 1.2M+</div><div class="stat-label">Deals Closed</div></div>
     <div class="stat"><div class="stat-num">80%</div><div class="stat-label">Creator Payout</div></div>
   </div>
   <div class="section">
@@ -464,7 +464,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
           <div class="form-group"><label>Instagram Handle</label><input type="text" id="signupHandle" placeholder="@yourhandle"/></div>
           <div class="form-group"><label>Your Niche</label><select id="signupNiche"><option value="">Select niche...</option><option>Fashion &amp; Style</option><option>Fitness &amp; Health</option><option>Food &amp; Cooking</option><option>Tech &amp; Gadgets</option><option>Travel &amp; Lifestyle</option><option>Gaming</option><option>Beauty &amp; Skincare</option><option>Sports</option><option>Other</option></select></div>
           <div class="form-group"><label>Follower Count</label><select id="signupFollowers"><option value="">Select range...</option><option>1K - 10K</option><option>10K - 50K</option><option>50K - 100K</option><option>100K - 500K</option><option>500K+</option></select></div>
-          <div class="form-group"><label>Price per Reel (USD)</label><input type="number" id="signupPrice" placeholder="e.g. 150"/></div>
+          <div class="form-group"><label>Price per Reel (PKR)</label><input type="number" id="signupPrice" placeholder="e.g. 150"/></div>
         </div>
         <div id="brandExtra" class="hidden">
           <div class="form-group"><label>Brand / Company Name</label><input type="text" id="signupBrand" placeholder="Your brand name"/></div>
@@ -755,7 +755,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
     <div class="modal-sub" id="dealModalSub">Propose a deal to this creator</div>
 
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
-      <input class="pay-input" type="number" id="dealAmount" placeholder="Deal amount in USD" oninput="updateSplit()"/>
+      <input class="pay-input" type="number" id="dealAmount" placeholder="Deal amount in PKR (e.g. 5000)" oninput="updateSplit()"/>
       <input class="pay-input" type="text" id="dealDesc" placeholder="Content description (e.g. 30-sec reel, product review)"/>
       <input class="pay-input" type="text" id="dealDeadline" placeholder="Deadline (e.g. 7 days)"/>
     </div>
@@ -779,14 +779,6 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
     </div>
 
     <div class="payment-split" id="dealSplit"></div>
-
-    <div class="payment-instructions">
-      <h4>💳 How to Pay</h4>
-      <div class="pay-method"><div class="pay-method-icon">📱</div><div><div class="pay-method-label">Easypaisa / JazzCash</div><div class="pay-method-val">0314-2459992</div></div></div>
-      <div class="pay-method"><div class="pay-method-icon">🏦</div><div><div class="pay-method-label">Bank Transfer (HBL)</div><div class="pay-method-val">0314-2459992 — Akash Alam</div></div></div>
-      <div class="pay-method"><div class="pay-method-icon">💬</div><div><div class="pay-method-label">After Paying</div><div class="pay-method-val">Send screenshot to WhatsApp: +923142459992</div></div></div>
-      <div style="margin-top:12px;font-size:12px;color:var(--grey);line-height:1.6">⚠️ Deal will be activated only after payment is confirmed by CollabInst admin. Your payment is held securely until content is approved.</div>
-    </div>
 
     <div style="margin-bottom:16px;font-size:12px;color:var(--grey)">By sending this deal you agree to our <a href="#" onclick="closeModal('dealModal');showPage('tos');return false;" style="color:var(--red)">Terms of Service</a>.</div>
 
@@ -821,7 +813,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
       <div class="form-group" id="editHandleWrap"><label>Instagram Handle</label><input type="text" id="editHandle" class="pay-input"/></div>
       <div class="form-group" id="editNicheWrap"><label>Niche</label><select id="editNiche" class="post-select"><option value="">Select niche...</option><option>Fashion &amp; Style</option><option>Fitness &amp; Health</option><option>Food &amp; Cooking</option><option>Tech &amp; Gadgets</option><option>Travel &amp; Lifestyle</option><option>Gaming</option><option>Beauty &amp; Skincare</option><option>Sports</option><option>Other</option></select></div>
       <div class="form-group" id="editFollowersWrap"><label>Follower Count</label><select id="editFollowers" class="post-select"><option value="">Select...</option><option>1K - 10K</option><option>10K - 50K</option><option>50K - 100K</option><option>100K - 500K</option><option>500K+</option></select></div>
-      <div class="form-group" id="editPriceWrap"><label>Price per Reel (USD)</label><input type="number" id="editPrice" class="pay-input"/></div>
+      <div class="form-group" id="editPriceWrap"><label>Price per Reel (PKR)</label><input type="number" id="editPrice" class="pay-input"/></div>
       <div class="form-group" id="editBrandWrap"><label>Brand Name</label><input type="text" id="editBrand" class="pay-input"/></div>
       <div class="form-group"><label>Bio</label><textarea id="editBio" class="post-textarea" placeholder="Tell brands about yourself..."></textarea></div>
       <button class="auth-submit" id="editSaveBtn" onclick="saveProfile()">Save Changes →</button>
@@ -1259,7 +1251,7 @@ else if(d.status==='revision')
     '<div style="background:var(--black3);border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:10px;font-size:11px">' +
     '📱 <strong>Easypaisa/JazzCash:</strong> 0314-2459992<br/>' +
     '🏦 <strong>HBL Bank:</strong> Akash Alam<br/>' +
-    '💰 <strong>Amount:</strong> $'+d.amount+' USD<br/><br/>' +
+    '💰 <strong>Amount:</strong> PKR '+d.amount+' USD<br/><br/>' +
     '<input id="pkrAmount_'+d.id+'" class="pay-input" type="number" placeholder="Enter PKR amount you are sending" style="font-size:11px;padding:6px 10px;margin-top:4px"/><br/><br/>' +
     '💬 <strong>After paying</strong> send screenshot to WhatsApp: +923142459992' +
     '</div>' +
@@ -1279,7 +1271,7 @@ else if(d.status==='revision')
   reel = '<span style="font-size:12px;color:var(--grey)">Awaiting upload</span>';
 }
     }
-    return '<tr><td>' + (d.description||'Deal') + '</td><td><strong>$' + d.amount + '</strong></td><td style="color:#22c55e;font-weight:700">$' + Math.floor(d.amount*0.8) + '</td><td><span class="deal-status ' + sc + '">' + sl + '</span></td><td>' + reel + '</td><td>' + new Date(d.created_at).toLocaleDateString() + '</td></tr>';
+    return '<tr><td>' + (d.description||'Deal') + '</td><td><strong>$' + d.amount + '</strong></td><td style="color:#22c55e;font-weight:700">PKR ' + Math.floor(d.amount*0.8) + '</td><td><span class="deal-status ' + sc + '">' + sl + '</span></td><td>' + reel + '</td><td>' + new Date(d.created_at).toLocaleDateString() + '</td></tr>';
   }).join('');
   wrap.innerHTML = '<table class="deals-table"><thead><tr><th>Description</th><th>Amount</th><th>' + (isInf?'Your Cut':'Creator Gets') + ' (80%)</th><th>Status</th><th>Reel</th><th>Date</th></tr></thead><tbody>' + rows + '</tbody></table>';
 }
@@ -1450,13 +1442,15 @@ function updateSplit() {
   const part2 = cut - part1;
   const isSplit = ['creator_post','both'].includes(USAGE_SEL);
   document.getElementById('dealSplit').innerHTML =
-    '<div class="split-row"><span class="split-label">Deal Amount</span><span class="split-val">$'+amt.toFixed(2)+'</span></div>' +
-    '<div class="split-row"><span class="split-label">CollabInst Fee (20%)</span><span class="split-val red">-$'+fee.toFixed(2)+'</span></div>' +
+    '<div class="split-row"><span class="split-label">Deal Amount</span><span class="split-val">PKR '+amt.toLocaleString()+'</span></div>' +
+    '<div class="split-row"><span class="split-label">CollabInst Fee (20%)</span><span class="split-val red">-PKR '+fee.toLocaleString()
+
++'</span></div>' +
     (isSplit ?
-      '<div class="split-row"><span class="split-label">Creator Gets on Delivery (40%)</span><span class="split-val green">$'+part1.toFixed(2)+'</span></div>' +
-      '<div class="split-row"><span class="split-label">Creator Gets after 30 Days (40%)</span><span class="split-val green">$'+part2.toFixed(2)+'</span></div>'
+      '<div class="split-row"><span class="split-label">Creator Gets on Delivery (40%)</span><span class="split-val green">PKR '+part1.toFixed(2)+'</span></div>' +
+      '<div class="split-row"><span class="split-label">Creator Gets after 30 Days (40%)</span><span class="split-val green">PKR '+part2.toFixed(2)+'</span></div>'
     :
-      '<div class="split-row"><span class="split-label">Creator Receives (80%)</span><span class="split-val green">$'+cut.toFixed(2)+'</span></div>'
+      '<div class="split-row"><span class="split-label">Creator Receives (80%)</span><span class="split-val green">PKR '+cut.toLocaleString()+'</span></div>'
     );
 }
 
@@ -1526,7 +1520,7 @@ async function submitDeal() {
   const usageMsg = USAGE_SEL !== 'brand_only' ? ' Content usage: '+usageLabels[USAGE_SEL]+'. Payment will be split 40% on delivery, 40% after 30-day posting period.' : '';
   await _sb.from('messages').insert({
     sender_id:CU.id, receiver_id:DEAL_TARGET.id,
-    text:'Hi! I sent you a deal proposal: "'+description+'" for $'+amount+'.'+usageMsg+' Please check your deals and I will send payment confirmation shortly!'
+    text:'Hi! I sent you a deal proposal: "'+description+'" for PKR '+amount+'.'+usageMsg+' Please check your deals and I will send payment confirmation shortly!'
   });
   closeModal('dealModal');
   toast('Deal sent! Please complete payment and send screenshot to WhatsApp. 🎉','success');
@@ -1548,7 +1542,7 @@ async function renderProfile() {
   document.getElementById('profileHero').innerHTML =
     '<div class="profile-big-avatar" style="background:'+col+'20;color:'+col+';border-color:'+col+'">'+ini+'</div>' +
     '<div class="profile-info"><div class="profile-name">'+(user.name||'User')+'</div><div class="profile-handle">'+(user.handle||'@user')+'</div><div class="profile-niche-tag">'+(user.niche||'Creator')+'</div>' +
-    '<div class="profile-stats-row"><div><div class="profile-stat-val">'+(user.followers||'N/A')+'</div><div class="profile-stat-label">Followers</div></div><div><div class="profile-stat-val">$'+(user.price||0)+'</div><div class="profile-stat-label">Per Reel</div></div></div>' +
+    '<div class="profile-stats-row"><div><div class="profile-stat-val">'+(user.followers||'N/A')+'</div><div class="profile-stat-label">Followers</div></div><div><div class="profile-stat-val">PKR '+(user.price||0)+'</div><div class="profile-stat-label">Per Reel</div></div></div>' +
     '<div class="profile-actions-row">' +
     (isOwn ? '<button class="btn-hero-red" onclick="openEditModal()">Edit Profile ✏️</button><button class="btn-hero-outline" onclick="showPage(\'dashboard\')" style="margin-left:8px">Dashboard</button>'
            : '<button class="btn-hero-red" onclick="openDeal(\''+user.id+'\',\''+(user.name||'Creator').replace(/'/g,'')+'\','+(user.price||0)+')">Send Deal →</button><button class="btn-hero-outline" onclick="msgUser(\''+user.id+'\');showPage(\'messages\')" style="margin-left:8px">Message</button>') +
@@ -1627,7 +1621,7 @@ async function loadNotifications() {
     _sb.from('messages').select('*').eq('receiver_id',CU.id).order('created_at',{ascending:false}).limit(10)
   ]);
   const notifs = [];
-  (deals||[]).forEach(d => notifs.push({ icon:'💼', title:'New Deal Proposal', body:'Deal for $'+d.amount+': '+d.description, time:timeAgo(d.created_at), unread:d.status==='pending' }));
+  (deals||[]).forEach(d => notifs.push({ icon:'💼', title:'New Deal Proposal', body:'Deal for PKR '+d.amount+': '+d.description, time:timeAgo(d.created_at), unread:d.status==='pending' }));
   (msgs||[]).forEach(m => notifs.push({ icon:'💬', title:'New Message', body:m.text.slice(0,80), time:timeAgo(m.created_at), unread:true }));
   list.innerHTML = notifs.length ? notifs.map(n =>
     '<div class="notif-item'+(n.unread?' unread':'')+'"><div class="notif-icon">'+n.icon+'</div><div class="notif-content"><div class="notif-title">'+n.title+'</div><div class="notif-body">'+n.body+'</div><div class="notif-time">'+n.time+'</div></div></div>'
@@ -1768,8 +1762,8 @@ async function adminStats() {
     '<div class="admin-stat-card"><div class="admin-stat-num">'+(br.count||0)+'</div><div class="admin-stat-label">Brands</div></div>' +
     '<div class="admin-stat-card"><div class="admin-stat-num">'+(d.count||0)+'</div><div class="admin-stat-label">Total Deals</div></div>' +
     '<div class="admin-stat-card"><div class="admin-stat-num">'+(po.count||0)+'</div><div class="admin-stat-label">Brand Posts</div></div>' +
-    '<div class="admin-stat-card"><div class="admin-stat-num" style="color:#22c55e">$'+total+'</div><div class="admin-stat-label">Total Deal Value</div></div>' +
-    '<div class="admin-stat-card"><div class="admin-stat-num" style="color:#22c55e">$'+Math.floor(total*0.2)+'</div><div class="admin-stat-label">Your 20% Cut</div></div>' +
+    '<div class="admin-stat-card"><div class="admin-stat-num" style="color:#22c55e">PKR '+total+'</div><div class="admin-stat-label">Total Deal Value</div></div>' +
+    '<div class="admin-stat-card"><div class="admin-stat-num" style="color:#22c55e">PKR '+Math.floor(total*0.2)+'</div><div class="admin-stat-label">Your 20% Cut</div></div>' +
     '<div class="admin-stat-card" style="border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.05)">' +
     '<div class="admin-stat-num" style="color:#f59e0b" id="pendingReviewCount">...</div>' +
     '<div class="admin-stat-label">Reels to Review</div></div>' +
@@ -1825,16 +1819,19 @@ async function adminDeals() {
       }
 
       let actionCell = '';
-      if(d.status==='pending'||d.status==='revision') {
-        actionCell += '<button class="admin-ok-btn" onclick="adminOkDeal(\''+d.id+'\')" title="Force complete for disputes only">⚠️ Override</button>';
-      }
-      actionCell += '<button class="admin-del-btn" onclick="adminDelDeal(\''+d.id+'\')">Delete</button>';
+if(d.status==='active' && !d.payment_confirmed) {
+  actionCell += '<button class="admin-ok-btn" onclick="adminConfirmPayment(\''+d.id+'\',\''+d.creator_id+'\')">💳 Confirm Payment</button>';
+}
+if(d.status==='pending'||d.status==='revision') {
+  actionCell += '<button class="admin-ok-btn" onclick="adminOkDeal(\''+d.id+'\')" title="Force complete for disputes only">⚠️ Override</button>';
+}
+actionCell += '<button class="admin-del-btn" onclick="adminDelDeal(\''+d.id+'\')">Delete</button>';
 
       rows += '<tr style="'+(d.status==='under_review'?'background:rgba(245,158,11,0.05);border-left:2px solid #f59e0b':'')+'">' +
         '<td>'+(d.description||'Deal')+'</td>' +
-        '<td><strong>$'+d.amount+'</strong></td>' +
-        '<td style="color:var(--red)">$'+Math.floor(d.amount*0.2)+'</td>' +
-        '<td style="color:#22c55e">$'+Math.floor(d.amount*0.8)+'</td>' +
+        '<td><strong>PKR '+d.amount+'</strong></td>' +
+        '<td style="color:var(--red)">PKR '+Math.floor(d.amount*0.2)+'</td>' +
+        '<td style="color:#22c55e">PKR '+Math.floor(d.amount*0.8)+'</td>' +
         '<td><span class="deal-status '+sc+'">'+d.status+'</span></td>' +
         '<td style="font-size:12px">'+usageLabel+'</td>' +
         '<td>'+reelCell+'</td>' +
@@ -1856,6 +1853,18 @@ async function adminDeals() {
     '</tbody></table>';
 }
 async function adminOkDeal(id) { await _sb.from('deals').update({status:'completed'}).eq('id',id); toast('Deal completed!','success'); adminDeals(); }
+
+async function adminConfirmPayment(dealId, creatorId) {
+  if(!confirm('Confirm payment received for this deal?')) return;
+  await _sb.from('deals').update({ payment_confirmed: true }).eq('id', dealId);
+  await _sb.from('messages').insert({
+    sender_id: '00000000-0000-0000-0000-000000000000',
+    receiver_id: creatorId,
+    text: '✅ Payment has been confirmed by CollabInst! You can now start working on the reel. Upload it through your deals section when ready.'
+  });
+  toast('Payment confirmed! Creator has been notified.', 'success');
+  adminDeals();
+}
 
 async function adminApproveReel(dealId, creatorId) {
   if(!confirm('Approve this reel? The brand will now be able to review it.')) return;
@@ -1889,7 +1898,7 @@ async function adminPosts() {
   document.getElementById('adminContent').innerHTML =
     '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:24px">BRAND <span style="color:var(--red)">POSTS</span> ('+(posts?posts.length:0)+')</div>' +
     '<table class="admin-table"><thead><tr><th>Brand</th><th>Title</th><th>Niche</th><th>Budget</th><th>Posted</th><th>Action</th></tr></thead><tbody>' +
-    (posts&&posts.length?posts.map(p=>'<tr><td><strong>'+p.brand_name+'</strong></td><td>'+p.title+'</td><td>'+(p.niche||'-')+'</td><td style="color:#22c55e">$'+p.budget+'</td><td>'+new Date(p.created_at).toLocaleDateString()+'</td><td><button class="admin-del-btn" onclick="adminDelPost(\''+p.id+'\')">Delete</button></td></tr>').join(''):'<tr><td colspan="6" style="text-align:center;color:var(--grey);padding:40px">No posts yet</td></tr>') +
+    (posts&&posts.length?posts.map(p=>'<tr><td><strong>'+p.brand_name+'</strong></td><td>'+p.title+'</td><td>'+(p.niche||'-')+'</td><td style="color:#22c55e">PKR '+p.budget+'</td><td>'+new Date(p.created_at).toLocaleDateString()+'</td><td><button class="admin-del-btn" onclick="adminDelPost(\''+p.id+'\')">Delete</button></td></tr>').join(''):'<tr><td colspan="6" style="text-align:center;color:var(--grey);padding:40px">No posts yet</td></tr>') +
     '</tbody></table>';
 }
 async function adminDelPost(id) { if(!confirm('Delete this post?')) return; await _sb.from('brand_posts').delete().eq('id',id); toast('Deleted.'); adminPosts(); }
