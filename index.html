@@ -1311,7 +1311,7 @@ function creatorCard(c) {
     '<div class="inf-niche">' + (c.niche||'Creator') + '</div></div></div>' +
     '<div class="inf-card-stats"><div class="inf-stat-item"><div class="inf-stat-val">' + (c.followers||'N/A') + '</div><div class="inf-stat-label">Followers</div></div></div>' +
     '<div class="inf-card-footer"><div class="inf-price">From <strong>PKR ' + (c.price||0).toLocaleString() + '</strong>/reel</div>' +
-    '<button class="btn-msg" onclick="event.stopPropagation();openDeal(\'' + c.id + '\',\'' + (c.name||'Creator').replace(/'/g,'') + '\',' + (c.price||0) + ')">Send Deal</button></div></div>';
+    (MODE === 'brand' || !CU ? '<button class="btn-msg" onclick="event.stopPropagation();openDeal(\'' + c.id + '\',\'' + (c.name||'Creator').replace(/'/g,'') + '\',' + (c.price||0) + ')">Send Deal</button>' : '') + '</div></div>';
 }
 function filterNiche(niche, btn) {
   NICHE_FILTER = niche;
