@@ -1553,7 +1553,7 @@ async function renderProfile() {
     '<div class="profile-stats-row"><div><div class="profile-stat-val">'+(user.followers||'N/A')+'</div><div class="profile-stat-label">Followers</div></div><div><div class="profile-stat-val">PKR '+(user.price||0)+'</div><div class="profile-stat-label">Per Reel</div></div></div>' +
     '<div class="profile-actions-row">' +
     (isOwn ? '<button class="btn-hero-red" onclick="openEditModal()">Edit Profile ✏️</button><button class="btn-hero-outline" onclick="showPage(\'dashboard\')" style="margin-left:8px">Dashboard</button>'
-           : '<button class="btn-hero-red" onclick="openDeal(\''+user.id+'\',\''+(user.name||'Creator').replace(/'/g,'')+'\','+(user.price||0)+')">Send Deal →</button><button class="btn-hero-outline" onclick="msgUser(\''+user.id+'\');showPage(\'messages\')" style="margin-left:8px">Message</button>') +
+           : (MODE === 'brand' || !CU ? '<button class="btn-hero-red" onclick="openDeal(\''+user.id+'\',\''+(user.name||'Creator').replace(/'/g,'')+'\','+(user.price||0)+')">Send Deal →</button>' : '') + '<button class="btn-hero-outline" onclick="msgUser(\''+user.id+'\');showPage(\'messages\')" style="margin-left:8px">Message</button>') +
     '</div></div>';
   document.getElementById('profileBody').innerHTML =
     '<div style="max-width:800px"><div class="section-label">About</div><p style="font-size:15px;color:var(--white2);line-height:1.7">'+(user.bio||(isOwn?'Add a bio to attract more brands!':'No bio yet.'))+'</p></div>';
