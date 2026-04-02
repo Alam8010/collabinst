@@ -1399,7 +1399,7 @@ async function openThread(pid, el) {
   const ini = getInitials(partner?partner.name:'U');
   win.innerHTML =
     '<div class="msg-window-header"><div class="msg-thread-avatar" style="background:'+col+'20;color:'+col+'">'+ini+'</div><div><div class="msg-header-name">'+(partner?partner.name:'User')+'</div><div class="msg-header-role">'+(partner?(partner.role==='influencer'?'Creator':'Brand'):'')+'</div></div>' +
-    '<button class="btn-msg" style="margin-left:auto" onclick="openDeal(\''+pid+'\',\''+(partner?partner.name.replace(/'/g,''):'User')+'\','+(partner?partner.price||0:0)+')">📋 Propose Deal</button></div>' +
+    (MODE === 'brand' || !CU ? '<button class="btn-msg" style="margin-left:auto" onclick="openDeal(\''+pid+'\',\''+(partner?partner.name.replace(/'/g,''):'User')+'\','+(partner?partner.price||0:0)+')">📋 Propose Deal</button>' : '') + '</div>' +
     '<div class="msg-body" id="msgBody">' +
     ((msgs&&msgs.length)?msgs.map(m=>{
       const mine = m.sender_id===CU.id;
