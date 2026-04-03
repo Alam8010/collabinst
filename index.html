@@ -1505,21 +1505,55 @@ async function rejectDeal(dealId, brandId) {
   loadDashDeals();
 }
 async function confirmPaymentSent(dealId) {
-  const pkrInput = document.getElementById('pkrAmount_'+dealId);
-  const pkrAmount = pkrInput ? pkrInput.value.trim() : '';
-  if(!pkrAmount){ toast('Please enter the PKR amount you sent.'); return; }
+  const pkrAmount = document.getElementById('pkrAmount_'+dealId)?.value.trim();
+  const payMethod = document.getElementById('payMethod_'+dealId)?.value;
+  const payAccount = document.getElementById('payAccount_'+dealId)?.value.trim();
+  const payTrx = document.getElementById('payTrx_'+dealId)?.value.trim();
+  const payScreenshot = window['payProof_'+dealId] || null;
+  if(!pkrAmount){ toast('Please enter the amount you sent.'); return; }
+  if(!payMethod){ toast('Please select a payment method.'); return; }
+  if(!payAccount){ toast('Please enter the account/number you used.'); return; }
+  if(!payTrx){ toast('Please enter the transaction ID.'); return; }
+  if(!payScreenshot){ toast('Please upload a screenshot of your payment.'); return; }
   const { error } = await _sb.from('deals')
-    .update({ payment_confirmed: false, pkr_amount: pkrAmount })
+    .update({
+      payment_confirmed: false,
+      pkr_amount: pkrAmount,
+      payment_method: payMethod,
+      payment_account: payAccount,
+      payment_trx_id: payTrx,
+      payment_screenshot: payScreenshot
+    })
     .eq('id', dealId);
   if(error){ toast('Error: '+error.message); return; }
-  await _sb.from('messages').insert({
-    sender_id: CU.id,
-    receiver_id: dealId,
-    text: '💳 Payment sent! PKR Amount: '+pkrAmount+'. Screenshot sent to WhatsApp. Waiting for admin confirmation.'
-  });
-  toast('Payment notification sent! Admin will confirm shortly.', 'success');
+  toast('Payment submitted! Admin will verify shortly. ✅', 'success');
   loadDashDeals();
 }
+
+function uploadPayProof(e, dealId) {
+  const file = e.target.files[0];
+  if(!file) return;
+  if(file.size > 10*1024*1024){ toast('Image too large. Max 10MB.'); return; }
+  const status = document.getElementById('payProofStatus_'+dealId);
+  status.textContent = 'Uploading...';
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CL_PRESET);
+  fd.append('cloud_name', CL_CLOUD);
+  const xhr = new XMLHttpRequest();
+  xhr.addEventListener('load', () => {
+    if(xhr.status===200) {
+      const d = JSON.parse(xhr.responseText);
+      window['payProof_'+dealId] = d.secure_url;
+      status.innerHTML = '<img src="'+d.secure_url+'" style="width:100%;border-radius:4px;margin-top:4px"/><div style="color:#22c55e;font-weight:600;margin-top:4px">✅ Screenshot uploaded!</div>';
+    } else {
+      status.textContent = '❌ Upload failed. Try again.';
+    }
+  });
+  xhr.open('POST', 'https://api.cloudinary.com/v1_1/'+CL_CLOUD+'/image/upload');
+  xhr.send(fd);
+}
+
 async function submitDeal() {
   if(!CU||!DEAL_TARGET) return;
   const amount = parseInt(document.getElementById('dealAmount').value);
@@ -1847,7 +1881,15 @@ async function adminDeals() {
 
       let actionCell = '';
 if(d.status==='active' && !d.payment_confirmed) {
-  actionCell += '<button class="admin-ok-btn" onclick="adminConfirmPayment(\''+d.id+'\',\''+d.creator_id+'\')">💳 Confirm Payment</button>';
+  actionCell += '<div style="background:var(--black3);border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:10px;font-size:11px;margin-bottom:6px;display:flex;flex-direction:column;gap:4px">' +
+'<div style="font-weight:700;color:#22c55e;margin-bottom:4px">💳 Payment Details</div>' +
+'<div><strong>Method:</strong> '+(d.payment_method||'—')+'</div>' +
+'<div><strong>Account:</strong> '+(d.payment_account||'—')+'</div>' +
+'<div><strong>TRX ID:</strong> '+(d.payment_trx_id||'—')+'</div>' +
+'<div><strong>Amount:</strong> PKR '+(d.pkr_amount||'—')+'</div>' +
+(d.payment_screenshot?'<a href="'+d.payment_screenshot+'" target="_blank" style="color:var(--red);font-size:11px;font-weight:600;margin-top:4px">🖼 View Screenshot →</a>':'<div style="color:var(--grey);margin-top:2px">No screenshot yet</div>') +
+'</div>' +
+'<button class="admin-ok-btn" onclick="adminConfirmPayment(\''+d.id+'\',\''+d.creator_id+'\')">💳 Confirm Payment</button>';
 }
 if(d.status==='pending'||d.status==='revision') {
   actionCell += '<button class="admin-ok-btn" onclick="adminOkDeal(\''+d.id+'\')" title="Force complete for disputes only">⚠️ Override</button>';
