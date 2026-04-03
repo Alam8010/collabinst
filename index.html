@@ -377,14 +377,22 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
     <button class="btn-red" onclick="showPage('auth')">Join Free</button>
   </div>
   <button class="nav-mobile-toggle" onclick="toggleMobileMenu()">☰</button>
-</nav>
 <div class="nav-mobile-menu" id="mobileMenu">
   <a href="#" onclick="showPage('landing');toggleMobileMenu();return false;">Home</a>
   <a href="#" onclick="showPage('browse');toggleMobileMenu();return false;">Creators</a>
   <a href="#" onclick="showPage('board');toggleMobileMenu();return false;">Brand Board</a>
-  <a href="#" onclick="showPage('auth');toggleMobileMenu();return false;">Login / Sign Up</a>
+  <div id="mobileNavGuest">
+    <a href="#" onclick="showPage('auth');toggleMobileMenu();return false;">Login / Sign Up</a>
+  </div>
+  <div id="mobileNavUser" style="display:none;flex-direction:column;align-items:center;gap:32px">
+    <a href="#" onclick="showPage('dashboard');toggleMobileMenu();return false;">Dashboard</a>
+    <a href="#" onclick="showPage('messages');toggleMobileMenu();return false;">Messages</a>
+    <a href="#" onclick="showPage('notifications');toggleMobileMenu();return false;">Notifications</a>
+    <a href="#" onclick="showPage('profile');toggleMobileMenu();return false;">My Profile</a>
+    <a href="#" onclick="switchMode();toggleMobileMenu();return false;" style="color:var(--red)">Switch Mode</a>
+    <a href="#" onclick="logout();toggleMobileMenu();return false;" style="color:var(--grey);font-size:24px">Log Out</a>
+  </div>
 </div>
-
 <!-- LANDING PAGE -->
 <div id="page-landing" class="page active">
   <div class="hero">
@@ -1597,7 +1605,7 @@ async function submitDeal() {
     text: '📋 Your deal has been sent! Once the creator accepts, you will see payment instructions in your deals section. Payment details: Easypaisa/JazzCash: 0314-2459992 | HBL Bank: Akash Alam. Amount to send: PKR '+amount+'.'
   });
   closeModal('dealModal');
-  toast('Deal sent! Please complete payment and send screenshot to WhatsApp. 🎉','success');
+  toast('Deal sent! Once the creator accepts, go to your Deals section to complete payment. 🎉','success');
 }
 
 // ── PROFILE ───────────────────────────────────────
