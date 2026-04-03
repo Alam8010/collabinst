@@ -1,0 +1,2166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CollabInst — Where Brands Meet Creators</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --red:#e8192c; --red-dark:#b01020; --red-glow:rgba(232,25,44,0.3);
+  --black:#080808; --black2:#111111; --black3:#1a1a1a; --black4:#222222;
+  --white:#f5f5f5; --white2:#cccccc; --grey:#888888; --border:rgba(255,255,255,0.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:'Barlow',sans-serif;overflow-x:hidden;}
+a{color:inherit;text-decoration:none;}
+button{cursor:pointer;border:none;outline:none;font-family:'Barlow',sans-serif;}
+input,textarea,select{font-family:'Barlow',sans-serif;outline:none;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--black2);}
+::-webkit-scrollbar-thumb{background:var(--red);border-radius:2px;}
+
+/* PAGES */
+.page{display:none;min-height:100vh;}
+.page.active{display:block;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:64px;background:rgba(8,8,8,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;}
+.nav-logo span{color:var(--red);}
+.nav-links{display:flex;align-items:center;gap:32px;}
+.nav-links a{font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--white2);transition:color 0.2s;}
+.nav-links a:hover{color:var(--white);}
+.nav-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.btn-ghost{padding:8px 18px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--white2);font-size:13px;font-weight:600;transition:all 0.2s;}
+.btn-ghost:hover{border-color:var(--red);color:var(--white);}
+.btn-red{padding:8px 18px;border-radius:4px;background:var(--red);color:var(--white);font-size:13px;font-weight:700;transition:all 0.2s;}
+.btn-red:hover{background:var(--red-dark);}
+.nav-mobile-toggle{display:none;background:none;color:var(--white);font-size:22px;}
+.nav-mobile-menu{display:none;position:fixed;top:64px;left:0;right:0;bottom:0;background:var(--black2);z-index:999;flex-direction:column;align-items:center;justify-content:center;gap:32px;}
+.nav-mobile-menu.open{display:flex;}
+.nav-mobile-menu a{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:var(--white2);}
+@media(max-width:768px){.nav-links,.nav-actions{display:none;}.nav-mobile-toggle{display:block;}nav{padding:0 20px;}}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 20px 60px;position:relative;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 60% 50% at 50% 60%,rgba(232,25,44,0.12) 0%,transparent 70%),repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(255,255,255,0.015) 60px,rgba(255,255,255,0.015) 61px),repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(255,255,255,0.015) 60px,rgba(255,255,255,0.015) 61px);}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:20px;border:1px solid rgba(232,25,44,0.4);background:rgba(232,25,44,0.08);font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:28px;position:relative;z-index:1;animation:fadeUp 0.6s ease both;}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.4)}}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,10vw,110px);line-height:0.92;letter-spacing:3px;position:relative;z-index:1;animation:fadeUp 0.7s 0.1s ease both;}
+.hero h1 em{color:var(--red);font-style:normal;}
+.hero-sub{max-width:520px;margin:24px auto 0;font-size:17px;font-weight:300;color:var(--white2);line-height:1.6;position:relative;z-index:1;animation:fadeUp 0.7s 0.2s ease both;}
+.hero-ctas{display:flex;gap:14px;margin-top:40px;flex-wrap:wrap;justify-content:center;position:relative;z-index:1;animation:fadeUp 0.7s 0.3s ease both;}
+.btn-hero-red{padding:14px 36px;border-radius:4px;background:var(--red);color:var(--white);font-size:15px;font-weight:700;transition:all 0.2s;box-shadow:0 0 30px var(--red-glow);border:none;cursor:pointer;}
+.btn-hero-red:hover{background:var(--red-dark);transform:translateY(-2px);}
+.btn-hero-outline{padding:14px 36px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--white2);font-size:15px;font-weight:600;transition:all 0.2s;cursor:pointer;}
+.btn-hero-outline:hover{border-color:var(--red);color:var(--white);transform:translateY(-2px);}
+
+/* STATS */
+.stats-bar{display:flex;justify-content:center;gap:60px;flex-wrap:wrap;padding:40px 20px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--black2);}
+.stat{text-align:center;}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--red);letter-spacing:2px;}
+.stat-label{font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey);margin-top:4px;}
+
+/* SECTIONS */
+.section{padding:100px 40px;max-width:1200px;margin:0 auto;}
+.section-label{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:16px;}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,60px);letter-spacing:2px;line-height:1;margin-bottom:60px;}
+.how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:2px;}
+.how-card{background:var(--black2);padding:40px 32px;border:1px solid var(--border);transition:border-color 0.3s,transform 0.3s;position:relative;overflow:hidden;}
+.how-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--red);transform:scaleX(0);transform-origin:left;transition:transform 0.3s;}
+.how-card:hover{border-color:rgba(232,25,44,0.3);transform:translateY(-4px);}
+.how-card:hover::before{transform:scaleX(1);}
+.how-num{font-family:'Bebas Neue',sans-serif;font-size:72px;color:rgba(232,25,44,0.12);line-height:1;margin-bottom:16px;letter-spacing:2px;}
+.how-card h3{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;letter-spacing:1px;margin-bottom:10px;}
+.how-card p{font-size:14px;color:var(--white2);line-height:1.6;}
+.roles-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+@media(max-width:600px){.roles-grid{grid-template-columns:1fr;}}
+.role-card{background:var(--black2);border:1px solid var(--border);border-radius:4px;padding:48px 40px;transition:border-color 0.3s;}
+.role-card:hover{border-color:var(--red);}
+.role-tag{display:inline-block;padding:4px 12px;border-radius:2px;background:var(--red);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;}
+.role-card h3{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;margin-bottom:16px;}
+.role-list{list-style:none;display:flex;flex-direction:column;gap:10px;}
+.role-list li{font-size:14px;color:var(--white2);padding-left:20px;position:relative;}
+.role-list li::before{content:'→';position:absolute;left:0;color:var(--red);font-size:12px;}
+.cta-section{background:var(--black2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:100px 40px;text-align:center;}
+.cta-section h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,6vw,72px);letter-spacing:3px;margin-bottom:16px;}
+.cta-section p{font-size:16px;color:var(--white2);margin-bottom:40px;}
+footer{background:var(--black);border-top:1px solid var(--border);padding:48px 40px 32px;}
+.footer-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:32px;margin-bottom:40px;}
+.footer-logo{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;}
+.footer-logo span{color:var(--red);}
+.footer-links{display:flex;gap:48px;flex-wrap:wrap;}
+.footer-col h5{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--grey);margin-bottom:16px;}
+.footer-col a{display:block;font-size:14px;color:var(--white2);margin-bottom:10px;transition:color 0.2s;}
+.footer-col a:hover{color:var(--red);}
+.footer-bottom{border-top:1px solid var(--border);padding-top:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.footer-bottom p{font-size:12px;color:var(--grey);}
+
+/* AUTH */
+.auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:80px 20px;background:var(--black);background-image:radial-gradient(ellipse 50% 60% at 50% 50%,rgba(232,25,44,0.06) 0%,transparent 70%);}
+.auth-box{width:100%;max-width:460px;background:var(--black2);border:1px solid var(--border);border-radius:6px;padding:48px 40px;}
+@media(max-width:480px){.auth-box{padding:32px 24px;}}
+.auth-logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;text-align:center;margin-bottom:32px;}
+.auth-logo span{color:var(--red);}
+.auth-tabs{display:flex;margin-bottom:32px;border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+.auth-tab{flex:1;padding:10px;background:transparent;color:var(--grey);font-size:13px;font-weight:600;transition:all 0.2s;border:none;cursor:pointer;}
+.auth-tab.active{background:var(--red);color:var(--white);}
+.auth-form{display:flex;flex-direction:column;gap:16px;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-group label{font-size:12px;font-weight:600;letter-spacing:0.5px;color:var(--grey);text-transform:uppercase;}
+.form-group input,.form-group select{background:var(--black3);border:1px solid var(--border);border-radius:4px;padding:12px 16px;color:var(--white);font-size:14px;transition:border-color 0.2s;}
+.form-group input:focus,.form-group select:focus{border-color:var(--red);}
+.form-group select option{background:var(--black3);}
+.role-selector{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.role-opt{padding:16px 12px;border-radius:4px;border:1px solid var(--border);background:var(--black3);cursor:pointer;text-align:center;transition:all 0.2s;}
+.role-opt.selected{border-color:var(--red);background:rgba(232,25,44,0.08);}
+.role-opt-icon{font-size:24px;margin-bottom:6px;}
+.role-opt-label{font-size:13px;font-weight:700;display:block;}
+.role-opt-sub{font-size:11px;color:var(--grey);display:block;margin-top:2px;}
+.auth-submit{width:100%;padding:14px;border-radius:4px;background:var(--red);color:var(--white);font-size:15px;font-weight:700;transition:all 0.2s;margin-top:8px;cursor:pointer;border:none;}
+.auth-submit:hover{background:var(--red-dark);}
+.auth-submit:disabled{opacity:0.6;cursor:not-allowed;}
+.auth-divider{text-align:center;font-size:12px;color:var(--grey);margin:4px 0;}
+.auth-error{font-size:13px;color:var(--red);padding:8px 12px;background:rgba(232,25,44,0.08);border-radius:4px;border:1px solid rgba(232,25,44,0.2);display:none;}
+
+/* DASHBOARD */
+.dashboard-layout{display:flex;min-height:100vh;padding-top:64px;}
+.sidebar{width:240px;background:var(--black2);border-right:1px solid var(--border);position:fixed;top:64px;bottom:0;left:0;overflow-y:auto;display:flex;flex-direction:column;}
+.sidebar-user{padding:24px 20px;border-bottom:1px solid var(--border);}
+.sidebar-avatar{width:44px;height:44px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:20px;margin-bottom:10px;}
+.sidebar-name{font-size:15px;font-weight:700;}
+.sidebar-role{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--red);margin-top:2px;}
+.sidebar-switch{margin-top:10px;padding:6px 12px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--grey);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s;width:100%;text-align:left;}
+.sidebar-switch:hover{border-color:var(--red);color:var(--white);}
+.sidebar-nav{padding:16px 0;flex:1;}
+.sidebar-nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;font-size:14px;font-weight:500;color:var(--grey);cursor:pointer;transition:all 0.2s;border-left:2px solid transparent;}
+.sidebar-nav-item:hover{color:var(--white);background:rgba(255,255,255,0.03);}
+.sidebar-nav-item.active{color:var(--white);border-left-color:var(--red);background:rgba(232,25,44,0.06);}
+.sidebar-nav-item .icon{font-size:18px;width:20px;text-align:center;}
+.dashboard-main{margin-left:240px;flex:1;padding:40px;}
+@media(max-width:768px){.sidebar{display:none;}.dashboard-main{margin-left:0;padding:20px;}}
+.dash-header{margin-bottom:32px;}
+.dash-greeting{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;}
+.dash-greeting span{color:var(--red);}
+.dash-sub{font-size:14px;color:var(--grey);margin-top:4px;}
+.dash-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:40px;}
+.dash-card{background:var(--black2);border:1px solid var(--border);border-radius:4px;padding:24px;transition:border-color 0.2s;}
+.dash-card:hover{border-color:rgba(232,25,44,0.3);}
+.dash-card-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey);margin-bottom:10px;}
+.dash-card-val{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--white);letter-spacing:2px;}
+.dash-card-val.red{color:var(--red);}
+.dash-card-sub{font-size:12px;color:var(--grey);margin-top:4px;}
+.dash-section-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:1px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.dash-section-title button{font-size:12px;font-weight:600;color:var(--red);background:none;border:none;cursor:pointer;}
+
+/* BROWSE */
+.browse-page{padding-top:64px;min-height:100vh;}
+.browse-header{background:var(--black2);border-bottom:1px solid var(--border);padding:40px 40px 32px;}
+.browse-title{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:3px;margin-bottom:20px;}
+.browse-title span{color:var(--red);}
+.browse-filters{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;}
+.filter-pill{padding:8px 18px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--white2);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;}
+.filter-pill.active,.filter-pill:hover{border-color:var(--red);color:var(--white);background:rgba(232,25,44,0.08);}
+.browse-search input{background:var(--black3);border:1px solid var(--border);border-radius:4px;padding:10px 16px;color:var(--white);font-size:14px;width:100%;max-width:360px;margin-top:12px;}
+.browse-search input:focus{border-color:var(--red);}
+.browse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding:40px;}
+.inf-card{background:var(--black2);border:1px solid var(--border);border-radius:6px;overflow:hidden;transition:all 0.3s;cursor:pointer;}
+.inf-card:hover{border-color:var(--red);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.4);}
+.inf-card-top{padding:24px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--border);}
+.inf-avatar{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:22px;flex-shrink:0;}
+.inf-name{font-size:16px;font-weight:700;}
+.inf-handle{font-size:13px;color:var(--red);margin-top:2px;}
+.inf-niche{display:inline-block;padding:3px 10px;border-radius:2px;background:rgba(255,255,255,0.06);font-size:11px;font-weight:600;color:var(--white2);margin-top:6px;}
+.inf-card-stats{display:flex;padding:16px 24px;gap:24px;}
+.inf-stat-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--white);letter-spacing:1px;}
+.inf-stat-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--grey);margin-top:2px;}
+.inf-card-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.inf-price{font-size:13px;color:var(--grey);}
+.inf-price strong{color:var(--white);font-size:16px;}
+.btn-msg{padding:8px 18px;border-radius:4px;background:var(--red);color:var(--white);font-size:12px;font-weight:700;transition:background 0.2s;border:none;cursor:pointer;}
+.btn-msg:hover{background:var(--red-dark);}
+
+/* BOARD */
+.board-page{padding-top:64px;min-height:100vh;}
+.board-header{background:var(--black2);border-bottom:1px solid var(--border);padding:40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;}
+.board-title{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:3px;}
+.board-title span{color:var(--red);}
+.board-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;padding:40px;}
+.brand-post{background:var(--black2);border:1px solid var(--border);border-radius:6px;padding:28px;transition:border-color 0.2s;}
+.brand-post:hover{border-color:rgba(232,25,44,0.3);}
+.brand-post-header{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.brand-avatar{width:44px;height:44px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--black3);}
+.brand-name-txt{font-size:15px;font-weight:700;}
+.brand-verified{font-size:11px;color:var(--red);font-weight:600;margin-top:2px;}
+.brand-post-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;margin-bottom:8px;}
+.brand-post-body{font-size:13px;color:var(--white2);line-height:1.6;margin-bottom:16px;}
+.brand-post-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.brand-tag{padding:4px 10px;border-radius:2px;background:var(--black3);border:1px solid var(--border);font-size:11px;font-weight:600;color:var(--grey);}
+.brand-post-footer{display:flex;align-items:center;justify-content:space-between;padding-top:16px;border-top:1px solid var(--border);}
+.brand-budget{font-size:13px;color:var(--grey);}
+.brand-budget strong{color:var(--white);font-size:16px;}
+.post-new-btn{padding:10px 24px;border-radius:4px;background:var(--red);color:var(--white);font-size:13px;font-weight:700;transition:background 0.2s;border:none;cursor:pointer;}
+.post-new-btn:hover{background:var(--red-dark);}
+
+/* MESSAGES */
+.messages-layout{display:flex;height:calc(100vh - 64px);padding-top:64px;}
+.msg-list{width:300px;border-right:1px solid var(--border);background:var(--black2);overflow-y:auto;flex-shrink:0;}
+.msg-list-header{padding:20px;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:1px;}
+.msg-thread{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.2s;}
+.msg-thread:hover,.msg-thread.active{background:rgba(232,25,44,0.06);}
+.msg-thread-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:16px;flex-shrink:0;}
+.msg-thread-name{font-size:14px;font-weight:700;}
+.msg-thread-preview{font-size:12px;color:var(--grey);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.msg-window{flex:1;display:flex;flex-direction:column;background:var(--black);}
+.msg-window-header{padding:16px 24px;border-bottom:1px solid var(--border);background:var(--black2);display:flex;align-items:center;gap:14px;}
+.msg-header-name{font-size:16px;font-weight:700;}
+.msg-header-role{font-size:12px;color:var(--red);font-weight:600;}
+.msg-body{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px;}
+.msg-bubble-wrap{display:flex;gap:10px;align-items:flex-end;}
+.msg-bubble-wrap.mine{flex-direction:row-reverse;}
+.msg-bub-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:13px;flex-shrink:0;}
+.msg-bubble{max-width:360px;padding:12px 16px;border-radius:4px;font-size:14px;line-height:1.5;}
+.msg-bubble.theirs{background:var(--black3);color:var(--white);border-bottom-left-radius:0;}
+.msg-bubble.mine{background:var(--red);color:var(--white);border-bottom-right-radius:0;}
+.msg-bubble-time{font-size:10px;color:var(--grey);margin-top:4px;text-align:right;}
+.msg-input-area{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:12px;}
+.msg-input{flex:1;background:var(--black2);border:1px solid var(--border);border-radius:4px;padding:12px 16px;color:var(--white);font-size:14px;resize:none;height:44px;transition:border-color 0.2s;}
+.msg-input:focus{border-color:var(--red);}
+.msg-send{padding:0 20px;border-radius:4px;background:var(--red);color:var(--white);font-size:13px;font-weight:700;transition:background 0.2s;border:none;cursor:pointer;}
+.msg-send:hover{background:var(--red-dark);}
+
+/* PROFILE */
+.profile-hero{background:var(--black2);border-bottom:1px solid var(--border);padding:60px 40px 40px;display:flex;align-items:flex-end;gap:32px;flex-wrap:wrap;}
+.profile-big-avatar{width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:40px;flex-shrink:0;border:3px solid var(--red);}
+.profile-name{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:2px;}
+.profile-handle{font-size:16px;color:var(--red);margin-top:4px;}
+.profile-niche-tag{display:inline-block;margin-top:8px;padding:4px 12px;border-radius:2px;background:rgba(255,255,255,0.06);font-size:12px;font-weight:600;color:var(--white2);}
+.profile-stats-row{display:flex;gap:40px;margin-top:20px;flex-wrap:wrap;}
+.profile-stat-val{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--white);letter-spacing:1px;}
+.profile-stat-label{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--grey);margin-top:2px;}
+.profile-actions-row{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;}
+.profile-body-wrap{padding:40px;}
+
+/* DEALS TABLE */
+.deals-table{width:100%;border-collapse:collapse;}
+.deals-table th{text-align:left;padding:12px 16px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey);border-bottom:1px solid var(--border);}
+.deals-table td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:14px;color:var(--white2);}
+.deals-table tr:last-child td{border-bottom:none;}
+.deals-table tr:hover td{background:rgba(255,255,255,0.02);}
+.deal-status{display:inline-block;padding:3px 10px;border-radius:2px;font-size:11px;font-weight:700;letter-spacing:0.5px;}
+.deal-status.pending{background:rgba(234,179,8,0.15);color:#eab308;}
+.deal-status.active{background:rgba(34,197,94,0.15);color:#22c55e;}
+.deal-status.completed{background:rgba(99,102,241,0.15);color:#818cf8;}
+.delivered-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:2px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#22c55e;font-size:11px;font-weight:700;}
+
+/* NOTIFICATIONS */
+.notif-list{display:flex;flex-direction:column;gap:2px;}
+.notif-item{display:flex;align-items:flex-start;gap:14px;padding:16px 20px;background:var(--black2);border:1px solid var(--border);border-radius:4px;transition:border-color 0.2s;}
+.notif-item.unread{border-left:2px solid var(--red);background:rgba(232,25,44,0.04);}
+.notif-icon{font-size:20px;flex-shrink:0;margin-top:2px;}
+.notif-title{font-size:14px;font-weight:600;margin-bottom:4px;}
+.notif-body{font-size:13px;color:var(--grey);line-height:1.5;}
+.notif-time{font-size:11px;color:var(--grey);margin-top:4px;}
+
+/* MODALS */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--black2);border:1px solid var(--border);border-radius:6px;width:100%;max-width:480px;padding:40px;position:relative;animation:fadeUp 0.3s ease;max-height:90vh;overflow-y:auto;}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:8px;}
+.modal-sub{font-size:14px;color:var(--grey);margin-bottom:28px;}
+.modal-close{position:absolute;top:16px;right:20px;background:none;color:var(--grey);font-size:22px;cursor:pointer;border:none;}
+.modal-close:hover{color:var(--white);}
+.pay-input{background:var(--black3);border:1px solid var(--border);border-radius:4px;padding:12px 16px;color:var(--white);font-size:14px;width:100%;transition:border-color 0.2s;font-family:'Barlow',sans-serif;}
+.pay-input:focus{border-color:var(--red);}
+.payment-split{background:var(--black3);border:1px solid var(--border);border-radius:4px;padding:20px;margin-bottom:24px;}
+.split-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;}
+.split-row+.split-row{border-top:1px solid var(--border);}
+.split-label{font-size:13px;color:var(--grey);}
+.split-val{font-size:15px;font-weight:700;}
+.split-val.red{color:var(--red);}
+.split-val.green{color:#22c55e;}
+.post-input,.post-textarea,.post-select{background:var(--black3);border:1px solid var(--border);border-radius:4px;padding:12px 16px;color:var(--white);font-size:14px;width:100%;transition:border-color 0.2s;font-family:'Barlow',sans-serif;}
+.post-textarea{resize:vertical;min-height:100px;}
+.post-input:focus,.post-textarea:focus,.post-select:focus{border-color:var(--red);}
+.post-select option{background:var(--black3);}
+
+/* UPLOAD */
+.upload-zone{border:2px dashed var(--border);border-radius:6px;padding:40px;text-align:center;cursor:pointer;transition:all 0.3s;background:var(--black3);position:relative;}
+.upload-zone:hover{border-color:var(--red);background:rgba(232,25,44,0.05);}
+.upload-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-icon{font-size:40px;margin-bottom:12px;}
+.upload-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;margin-bottom:6px;}
+.upload-sub{font-size:13px;color:var(--grey);}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:16px;}
+.progress-fill{height:100%;background:var(--red);border-radius:2px;transition:width 0.3s;width:0%;}
+.progress-label{font-size:12px;color:var(--grey);margin-top:6px;text-align:center;}
+.video-preview{margin-top:16px;border-radius:6px;overflow:hidden;border:1px solid var(--border);}
+.video-preview video{width:100%;max-height:280px;display:block;}
+
+/* ADMIN */
+.admin-tab{padding:16px 24px;background:transparent;color:var(--grey);font-size:13px;font-weight:600;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all 0.2s;font-family:'Barlow',sans-serif;white-space:nowrap;}
+.admin-tab:hover{color:var(--white);}
+.admin-tab.active{color:var(--white);border-bottom-color:var(--red);}
+.admin-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:40px;}
+.admin-stat-card{background:var(--black2);border:1px solid var(--border);border-radius:4px;padding:24px;text-align:center;}
+.admin-stat-num{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--red);letter-spacing:2px;}
+.admin-stat-label{font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey);margin-top:4px;}
+.admin-table{width:100%;border-collapse:collapse;background:var(--black2);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+.admin-table th{text-align:left;padding:12px 16px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey);border-bottom:1px solid var(--border);background:var(--black3);}
+.admin-table td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:13px;color:var(--white2);}
+.admin-table tr:last-child td{border-bottom:none;}
+.admin-table tr:hover td{background:rgba(255,255,255,0.02);}
+.admin-del-btn{padding:5px 12px;border-radius:3px;background:rgba(232,25,44,0.1);border:1px solid rgba(232,25,44,0.3);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.admin-del-btn:hover{background:var(--red);color:var(--white);}
+.admin-ok-btn{padding:5px 12px;border-radius:3px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.admin-ok-btn:hover{background:#22c55e;color:var(--white);}
+
+/* UTILS */
+.hidden{display:none!important;}
+.text-red{color:var(--red);}
+.text-grey{color:var(--grey);}
+.empty-state{text-align:center;padding:80px 20px;color:var(--grey);}
+.empty-state .ei{font-size:48px;margin-bottom:16px;}
+.empty-state h3{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;color:var(--white2);margin-bottom:8px;}
+.empty-state p{font-size:14px;line-height:1.6;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+  /* WHATSAPP FLOAT BUTTON */
+  .wa-float{position:fixed;bottom:32px;right:32px;z-index:99999;display:flex;align-items:center;gap:10px;background:#25D366;color:white;padding:12px 20px;border-radius:50px;font-size:14px;font-weight:700;box-shadow:0 4px 20px rgba(37,211,102,0.4);text-decoration:none;transition:all 0.3s;font-family:'Barlow',sans-serif;}
+  .wa-float:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(37,211,102,0.5);background:#20bd5a;color:white;}
+  .wa-float svg{width:20px;height:20px;fill:white;flex-shrink:0;}
+  @media(max-width:480px){.wa-float span{display:none;}.wa-float{padding:14px;border-radius:50%;bottom:20px;right:16px;}}
+
+  /* DEAL FLOW EXTRAS */
+  .usage-opts{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:4px;}
+  .usage-opt{padding:12px 16px;border-radius:4px;border:1px solid var(--border);background:var(--black3);cursor:pointer;transition:all 0.2s;display:flex;align-items:flex-start;gap:10px;}
+  .usage-opt.selected{border-color:var(--red);background:rgba(232,25,44,0.08);}
+  .usage-opt input[type="radio"]{margin-top:2px;accent-color:var(--red);flex-shrink:0;}
+  .usage-opt-label{font-size:13px;font-weight:600;display:block;}
+  .usage-opt-sub{font-size:11px;color:var(--grey);display:block;margin-top:2px;}
+  .payment-instructions{background:var(--black3);border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:20px;margin-bottom:20px;}
+  .payment-instructions h4{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:0.5px;color:#22c55e;margin-bottom:12px;}
+  .pay-method{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .pay-method:last-child{border-bottom:none;}
+  .pay-method-icon{font-size:20px;flex-shrink:0;}
+  .pay-method-label{font-size:12px;color:var(--grey);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+  .pay-method-val{font-size:14px;font-weight:700;color:var(--white);}
+  .proof-upload-zone{border:2px dashed var(--border);border-radius:6px;padding:24px;text-align:center;cursor:pointer;transition:all 0.3s;background:var(--black3);position:relative;margin-top:8px;}
+  .proof-upload-zone:hover{border-color:var(--red);background:rgba(232,25,44,0.05);}
+  .proof-upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .timer-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:2px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:#f59e0b;font-size:11px;font-weight:700;}
+  .tos-section{margin-bottom:24px;}
+  .tos-section h3{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:0.5px;margin-bottom:8px;color:var(--white);}
+  .tos-section p,.tos-section li{font-size:13px;color:var(--white2);line-height:1.7;margin-bottom:6px;}
+  .tos-section ul{padding-left:20px;}
+  .watermark-notice{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:4px;padding:10px 14px;font-size:12px;color:#f59e0b;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <div class="nav-logo">Collab<span>Inst</span></div>
+  <div class="nav-links">
+    <a href="#" onclick="showPage('landing');return false;">Home</a>
+    <a href="#" onclick="showPage('browse');return false;">Browse Creators</a>
+    <a href="#" onclick="showPage('board');return false;">Brand Board</a>
+  </div>
+  <div class="nav-actions" id="navActions">
+    <button class="btn-ghost" onclick="showPage('auth')">Log In</button>
+    <button class="btn-red" onclick="showPage('auth')">Join Free</button>
+  </div>
+  <button class="nav-mobile-toggle" onclick="toggleMobileMenu()">☰</button>
+</nav>
+<div class="nav-mobile-menu" id="mobileMenu">
+  <a href="#" onclick="showPage('landing');toggleMobileMenu();return false;">Home</a>
+  <a href="#" onclick="showPage('browse');toggleMobileMenu();return false;">Creators</a>
+  <a href="#" onclick="showPage('board');toggleMobileMenu();return false;">Brand Board</a>
+  <a href="#" onclick="showPage('auth');toggleMobileMenu();return false;">Login / Sign Up</a>
+</div>
+
+<!-- LANDING PAGE -->
+<div id="page-landing" class="page active">
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-badge">🔴 Live Platform — Join Today</div>
+    <h1>WHERE<br><em>BRANDS</em><br>MEET<br><em>CREATORS</em></h1>
+    <p class="hero-sub">CollabInst connects emerging Instagram influencers with brands ready to pay. Post deals, message directly, and get paid — all in one place.</p>
+    <div class="hero-ctas">
+      <button class="btn-hero-red" onclick="showPage('auth')">Join as Creator</button>
+      <button class="btn-hero-outline" onclick="showPage('auth')">I'm a Brand →</button>
+      <a class="btn-hero-outline" href="https://wa.me/923142459992?text=Hi!%20I%20need%20help%20with%20CollabInst%20%F0%9F%9A%80" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none"><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:#25D366;flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>Talk to our Bot</a>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num">2,400+</div><div class="stat-label">Active Creators</div></div>
+    <div class="stat"><div class="stat-num">680+</div><div class="stat-label">Brands Listed</div></div>
+    <div class="stat"><div class="stat-num">PKR 1.2M+</div><div class="stat-label">Deals Closed</div></div>
+    <div class="stat"><div class="stat-num">80%</div><div class="stat-label">Creator Payout</div></div>
+  </div>
+  <div class="section">
+    <div class="section-label">The Process</div>
+    <div class="section-title">HOW IT WORKS</div>
+    <div class="how-grid">
+      <div class="how-card reveal"><div class="how-num">01</div><h3>Create Your Profile</h3><p>Sign up in seconds. Link your Instagram, choose your niche, set your price. One account works for both creators and brands.</p></div>
+      <div class="how-card reveal"><div class="how-num">02</div><h3>Connect & Message</h3><p>Brands browse creators. Influencers browse brand opportunities. Message directly on the platform to discuss deals.</p></div>
+      <div class="how-card reveal"><div class="how-num">03</div><h3>Seal the Deal</h3><p>Agree on terms. Brand pays through CollabInst. Funds held securely until the content is delivered.</p></div>
+      <div class="how-card reveal"><div class="how-num">04</div><h3>Deliver & Get Paid</h3><p>Creator uploads the reel. Brand reviews and approves. 80% released to creator instantly.</p></div>
+    </div>
+  </div>
+  <div class="section" style="padding-top:0">
+    <div class="section-label">Who It's For</div>
+    <div class="section-title">ONE ACCOUNT.<br>TWO ROLES.</div>
+    <div class="roles-grid">
+      <div class="role-card"><div class="role-tag">Creator</div><h3>For Influencers</h3><ul class="role-list"><li>Showcase your Instagram & niche</li><li>Get discovered by paying brands</li><li>Browse brand opportunities posted daily</li><li>Receive deal offers via direct message</li><li>Get paid 80% of every deal — guaranteed</li></ul></div>
+      <div class="role-card"><div class="role-tag">Brand</div><h3>For Brands</h3><ul class="role-list"><li>Post what you need — reels, stories, reviews</li><li>Browse thousands of real creators</li><li>Filter by niche, followers, and price</li><li>Message influencers directly</li><li>Pay securely — only released on delivery</li></ul></div>
+    </div>
+  </div>
+  <div class="cta-section">
+    <h2>READY TO<br><span class="text-red">START EARNING?</span></h2>
+    <p>Join creators and brands already on the platform.</p>
+    <button class="btn-hero-red" onclick="showPage('auth')">Create Free Account</button>
+  </div>
+  <footer>
+    <div class="footer-top">
+      <div><div class="footer-logo">Collab<span>Inst</span></div><div style="font-size:13px;color:var(--grey);margin-top:6px">Where Brands Meet Creators</div></div>
+      <div class="footer-links">
+        <div class="footer-col"><h5>Platform</h5><a href="#" onclick="showPage('browse');return false;">Browse Creators</a><a href="#" onclick="showPage('board');return false;">Brand Board</a><a href="#" onclick="showPage('auth');return false;">Sign Up</a></div>
+        <div class="footer-col"><h5>Legal</h5><a href="#">Privacy Policy</a><a href="#" onclick="showPage('tos');return false;">Terms of Service</a></div>
+      </div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 CollabInst. All rights reserved.</p><p>CollabInst takes a 20% platform fee on all deals.</p></div>
+  </footer>
+</div>
+
+<!-- AUTH PAGE -->
+<div id="page-auth" class="page">
+  <div class="auth-page">
+    <div class="auth-box">
+      <div class="auth-logo">Collab<span>Inst</span></div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabSignup" onclick="switchAuthTab('signup')">Sign Up</button>
+        <button class="auth-tab" id="tabLogin" onclick="switchAuthTab('login')">Log In</button>
+      </div>
+      <!-- SIGNUP -->
+      <div id="formSignup" class="auth-form">
+        <div class="form-group"><label>Full Name</label><input type="text" id="signupName" placeholder="Your name"/></div>
+        <div class="form-group"><label>Email</label><input type="email" id="signupEmail" placeholder="your@email.com"/></div>
+        <div class="form-group"><label>Password</label><input type="password" id="signupPass" placeholder="Min 6 characters"/></div>
+        <div class="form-group">
+          <label>I am joining as</label>
+          <div class="role-selector">
+            <div class="role-opt selected" id="roleInfluencer" onclick="selectRole('influencer')"><div class="role-opt-icon">📸</div><span class="role-opt-label">Creator</span><span class="role-opt-sub">I make content</span></div>
+            <div class="role-opt" id="roleBrand" onclick="selectRole('brand')"><div class="role-opt-icon">🏢</div><span class="role-opt-label">Brand</span><span class="role-opt-sub">I need content</span></div>
+          </div>
+        </div>
+        <div id="infExtra">
+          <div class="form-group"><label>Instagram Handle</label><input type="text" id="signupHandle" placeholder="@yourhandle"/></div>
+          <div class="form-group"><label>Your Niche</label><select id="signupNiche"><option value="">Select niche...</option><option>Fashion &amp; Style</option><option>Fitness &amp; Health</option><option>Food &amp; Cooking</option><option>Tech &amp; Gadgets</option><option>Travel &amp; Lifestyle</option><option>Gaming</option><option>Beauty &amp; Skincare</option><option>Sports</option><option>Other</option></select></div>
+          <div class="form-group"><label>Follower Count</label><select id="signupFollowers"><option value="">Select range...</option><option>1K - 10K</option><option>10K - 50K</option><option>50K - 100K</option><option>100K - 500K</option><option>500K+</option></select></div>
+          <div class="form-group"><label>Price per Reel (PKR)</label><input type="number" id="signupPrice" placeholder="e.g. 150"/></div>
+        </div>
+        <div id="brandExtra" class="hidden">
+          <div class="form-group"><label>Brand / Company Name</label><input type="text" id="signupBrand" placeholder="Your brand name"/></div>
+          <div class="form-group"><label>Industry</label><select id="signupIndustry"><option value="">Select industry...</option><option>Fashion &amp; Apparel</option><option>Food &amp; Beverage</option><option>Tech &amp; Software</option><option>Health &amp; Wellness</option><option>Beauty &amp; Cosmetics</option><option>Sports &amp; Fitness</option><option>Other</option></select></div>
+        </div>
+        <div class="auth-error" id="signupError"></div>
+        <button class="auth-submit" id="signupBtn" onclick="handleSignup()">Create Account →</button>
+        <div class="auth-divider">Already have an account? <a href="#" onclick="switchAuthTab('login');return false;" style="color:var(--red)">Log in</a></div>
+      </div>
+      <!-- LOGIN -->
+      <div id="formLogin" class="auth-form hidden">
+        <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="your@email.com"/></div>
+        <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="Your password"/></div>
+        <div class="auth-error" id="loginError"></div>
+        <button class="auth-submit" id="loginBtn" onclick="handleLogin()">Log In →</button>
+        <div class="auth-divider"><a href="#" onclick="switchAuthTab('forgot');return false;" style="color:var(--grey)">Forgot your password?</a></div>
+        <div class="auth-divider">No account? <a href="#" onclick="switchAuthTab('signup');return false;" style="color:var(--red)">Sign up free</a></div>
+      </div>
+      <!-- VERIFY -->
+      <div id="formVerify" class="hidden" style="text-align:center;padding:20px 0">
+        <div style="font-size:48px;margin-bottom:20px">📧</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:12px">CHECK YOUR EMAIL</div>
+        <div style="font-size:14px;color:var(--white2);line-height:1.7;margin-bottom:24px">We sent a verification link to<br><strong id="verifyEmailShow" style="color:var(--red)"></strong><br><br>Click the link to activate your account, then come back and log in.</div>
+        <div style="font-size:12px;color:var(--grey);margin-bottom:20px">Didn't get it? Check your spam folder.</div>
+        <button class="auth-submit" onclick="resendVerify()">Resend Verification Email</button>
+        <div style="margin-top:16px"><a href="#" onclick="switchAuthTab('login');return false;" style="color:var(--red);font-size:13px">← Back to Login</a></div>
+      </div>
+
+      <!-- FORGOT PASSWORD -->
+      <div id="formForgot" class="hidden" style="text-align:center;padding:10px 0">
+        <div style="font-size:48px;margin-bottom:16px">🔑</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:8px">FORGOT PASSWORD</div>
+        <div style="font-size:14px;color:var(--white2);line-height:1.6;margin-bottom:24px">Enter your email and we will send you a link to reset your password.</div>
+        <div class="form-group" style="text-align:left;margin-bottom:12px">
+          <label>Email</label>
+          <input type="email" id="forgotEmail" class="pay-input" placeholder="your@email.com"/>
+        </div>
+        <div class="auth-error" id="forgotError"></div>
+        <button class="auth-submit" id="forgotBtn" onclick="sendResetLink()" style="margin-top:8px">Send Reset Link →</button>
+        <div style="margin-top:16px"><a href="#" onclick="switchAuthTab('login');return false;" style="color:var(--red);font-size:13px">← Back to Login</a></div>
+      </div>
+
+      <!-- FORGOT SUCCESS -->
+      <div id="formForgotSent" class="hidden" style="text-align:center;padding:20px 0">
+        <div style="font-size:48px;margin-bottom:16px">📬</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:12px">CHECK YOUR EMAIL</div>
+        <div style="font-size:14px;color:var(--white2);line-height:1.7;margin-bottom:24px">We sent a password reset link to<br><strong id="forgotEmailShow" style="color:var(--red)"></strong><br><br>Click the link in your email to set a new password.</div>
+        <div style="font-size:12px;color:var(--grey);margin-bottom:20px">Didn't get it? Check your spam folder.</div>
+        <div style="margin-top:16px"><a href="#" onclick="switchAuthTab('login');return false;" style="color:var(--red);font-size:13px">← Back to Login</a></div>
+      </div>
+
+      <!-- RESET PASSWORD (shown after clicking email link) -->
+      <div id="formReset" class="hidden" style="text-align:center;padding:10px 0">
+        <div style="font-size:48px;margin-bottom:16px">🔐</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:8px">SET NEW PASSWORD</div>
+        <div style="font-size:14px;color:var(--white2);line-height:1.6;margin-bottom:24px">Choose a new password for your account.</div>
+        <div class="form-group" style="text-align:left;margin-bottom:12px">
+          <label>New Password</label>
+          <input type="password" id="resetPass1" class="pay-input" placeholder="Min 6 characters"/>
+        </div>
+        <div class="form-group" style="text-align:left;margin-bottom:12px">
+          <label>Confirm Password</label>
+          <input type="password" id="resetPass2" class="pay-input" placeholder="Repeat your password"/>
+        </div>
+        <div class="auth-error" id="resetError"></div>
+        <button class="auth-submit" id="resetBtn" onclick="submitNewPassword()" style="margin-top:8px">Save New Password →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD PAGE -->
+<div id="page-dashboard" class="page">
+  <div class="dashboard-layout">
+    <div class="sidebar">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebarAvatar">A</div>
+        <div class="sidebar-name" id="sidebarName">User</div>
+        <div class="sidebar-role" id="sidebarRole">Creator Mode</div>
+        <button class="sidebar-switch" onclick="switchMode()" id="switchModeBtn">Switch to Brand Mode →</button>
+      </div>
+      <div class="sidebar-nav" id="sidebarNav"></div>
+    </div>
+    <div class="dashboard-main" id="dashMain"></div>
+  </div>
+</div>
+
+<!-- BROWSE PAGE -->
+<div id="page-browse" class="page">
+  <div class="browse-page">
+    <div class="browse-header">
+      <div class="browse-title">BROWSE <span>CREATORS</span></div>
+      <div class="browse-search"><input type="text" id="browseSearch" placeholder="Search by name, niche, handle..." oninput="filterCreators()"/></div>
+      <div class="browse-filters">
+        <button class="filter-pill active" onclick="filterNiche('all',this)">All</button>
+        <button class="filter-pill" onclick="filterNiche('Fashion &amp; Style',this)">Fashion</button>
+        <button class="filter-pill" onclick="filterNiche('Fitness &amp; Health',this)">Fitness</button>
+        <button class="filter-pill" onclick="filterNiche('Food &amp; Cooking',this)">Food</button>
+        <button class="filter-pill" onclick="filterNiche('Tech &amp; Gadgets',this)">Tech</button>
+        <button class="filter-pill" onclick="filterNiche('Travel &amp; Lifestyle',this)">Travel</button>
+        <button class="filter-pill" onclick="filterNiche('Gaming',this)">Gaming</button>
+        <button class="filter-pill" onclick="filterNiche('Beauty &amp; Skincare',this)">Beauty</button>
+      </div>
+    </div>
+    <div class="browse-grid" id="browseGrid"></div>
+  </div>
+</div>
+
+<!-- BOARD PAGE -->
+<div id="page-board" class="page">
+  <div class="board-page">
+    <div class="board-header">
+      <div><div class="board-title">BRAND <span>BOARD</span></div><div style="font-size:14px;color:var(--grey);margin-top:4px">Browse what brands are looking for</div></div>
+      <button class="post-new-btn" onclick="openPostModal()">+ Post Opportunity</button>
+    </div>
+    <div class="board-grid" id="boardGrid"></div>
+  </div>
+</div>
+
+<!-- MESSAGES PAGE -->
+<div id="page-messages" class="page">
+  <div class="messages-layout">
+    <div class="msg-list" id="msgList"><div class="msg-list-header">Messages</div></div>
+    <div class="msg-window" id="msgWindow"><div class="empty-state" style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center"><div class="ei">💬</div><h3>Select a conversation</h3></div></div>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS PAGE -->
+<div id="page-notifications" class="page">
+  <div style="padding-top:80px;max-width:720px;margin:0 auto;padding-left:40px;padding-right:40px;padding-bottom:40px">
+    <div class="section-label">Inbox</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:2px;margin-bottom:32px">NOTIFICATIONS</div>
+    <div class="notif-list" id="notifList"></div>
+  </div>
+</div>
+
+<!-- PROFILE PAGE -->
+<div id="page-profile" class="page">
+  <div style="padding-top:64px">
+    <div class="profile-hero" id="profileHero"></div>
+    <div class="profile-body-wrap" id="profileBody"></div>
+  </div>
+</div>
+
+<!-- ADMIN PAGE -->
+<div id="page-admin" class="page">
+  <div style="padding-top:64px;min-height:100vh">
+    <div id="adminLoginWrap" style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 64px);padding:20px">
+      <div style="background:var(--black2);border:1px solid var(--border);border-radius:6px;padding:48px 40px;width:100%;max-width:400px;text-align:center">
+        <div style="font-size:40px;margin-bottom:16px">🔐</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;margin-bottom:8px">ADMIN ACCESS</div>
+        <div style="font-size:13px;color:var(--grey);margin-bottom:28px">Restricted to CollabInst administrators only.</div>
+        <div style="font-size:14px;color:var(--white2);margin-bottom:16px">
+  You must be logged in with an admin account to access this panel.
+</div>
+<div id="adminUserShow" style="font-size:13px;color:var(--grey);margin-bottom:16px"></div>
+        <div class="auth-error" id="adminPassError" style="margin-bottom:12px"></div>
+        <button onclick="checkAdminPass()" class="auth-submit">Verify Admin Access →</button>
+      </div>
+    </div>
+    <div id="adminDashWrap" style="display:none">
+      <div style="background:var(--black2);border-bottom:1px solid var(--border);padding:0 40px;display:flex;align-items:center;gap:0;overflow-x:auto">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;margin-right:32px;color:var(--red);white-space:nowrap">ADMIN PANEL</div>
+        <button class="admin-tab active" onclick="adminTab('stats',this)">📊 Stats</button>
+        <button class="admin-tab" onclick="adminTab('users',this)">👥 Users</button>
+        <button class="admin-tab" onclick="adminTab('deals',this)">💼 Deals</button>
+        <button class="admin-tab" onclick="adminTab('posts',this)">📢 Posts</button>
+        <button class="admin-tab" onclick="adminTab('messages',this)">💬 Messages</button>
+      </div>
+      <div id="adminContent" style="padding:40px;max-width:1200px;margin:0 auto"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- TERMS OF SERVICE PAGE -->
+<div id="page-tos" class="page">
+  <div style="padding-top:80px;max-width:800px;margin:0 auto;padding-left:40px;padding-right:40px;padding-bottom:60px">
+    <div class="section-label">Legal</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:3px;margin-bottom:8px">TERMS OF <span style="color:var(--red)">SERVICE</span></div>
+    <div style="font-size:13px;color:var(--grey);margin-bottom:40px">Last updated: March 2026 — CollabInst Platform</div>
+
+    <div class="tos-section">
+      <h3>1. Platform Overview</h3>
+      <p>CollabInst is a marketplace connecting Instagram creators with brands. We facilitate deals, content delivery and payments. CollabInst takes a 20% platform fee on every completed deal.</p>
+    </div>
+
+    <div class="tos-section">
+      <h3>2. Content Ownership & Copyright</h3>
+      <ul>
+        <li>All content created by a creator remains their intellectual property until full payment is confirmed and rights are formally transferred.</li>
+        <li>Preview versions of reels are watermarked and are strictly for review purposes only.</li>
+        <li>Brands may not use, download, share or publish any watermarked preview content under any circumstances.</li>
+        <li>Using preview content without completing payment constitutes copyright infringement and will result in immediate account termination and legal action.</li>
+        <li>Content rights transfer to the brand only after full payment is confirmed by CollabInst admin.</li>
+      </ul>
+    </div>
+
+    <div class="tos-section">
+      <h3>3. Creator Obligations</h3>
+      <ul>
+        <li>Creators must deliver original, high quality content that matches the agreed deal description.</li>
+        <li>Creators must not upload inappropriate, sexual, violent or misleading content. Violations result in immediate permanent ban.</li>
+        <li>If the deal includes posting on the creator's Instagram account, the post must remain live for a minimum of 30 days.</li>
+        <li>Early deletion of a required Instagram post before the 30-day period will result in withholding of the second payment instalment.</li>
+        <li>Creators must provide proof of posting (Instagram post URL and screenshot) within 48 hours of the agreed posting date.</li>
+        <li>All uploaded content is reviewed by CollabInst admin before being shown to brands. This is non-negotiable.</li>
+      </ul>
+    </div>
+
+    <div class="tos-section">
+      <h3>4. Brand Obligations</h3>
+      <ul>
+        <li>Brands must clearly describe the content they need before a deal is initiated.</li>
+        <li>Brands must pay the full agreed amount to CollabInst before content creation begins.</li>
+        <li>Brands may not use preview/watermarked content for any purpose.</li>
+        <li>Brands must review and respond to delivered content within 7 days. Failure to respond will be treated as automatic approval.</li>
+        <li>Brands may request one free revision per deal. Additional revisions may incur extra charges agreed between brand and creator.</li>
+        <li>Attempting to steal, copy or use content without proper payment will result in permanent ban and legal action.</li>
+      </ul>
+    </div>
+
+    <div class="tos-section">
+      <h3>5. Payment Terms</h3>
+      <ul>
+        <li>All payments are made to CollabInst first. CollabInst holds funds in escrow until content is approved.</li>
+        <li>Creator receives 80% of the agreed deal amount. CollabInst retains 20% as platform fee.</li>
+        <li>For deals requiring Instagram posting, payment is split: 40% on reel delivery and approval, 40% after 30-day posting period is complete.</li>
+        <li>CollabInst reserves the right to withhold or refund payment in case of disputes, fraud or policy violations.</li>
+        <li>All payments are final once released. No refunds after content is approved and rights transferred.</li>
+      </ul>
+    </div>
+  <div class="tos-section">
+  <h3>6. Message Monitoring & Privacy</h3>
+  <ul>
+    <li>All messages sent on CollabInst are stored securely and may be reviewed by CollabInst admin for fraud detection, dispute resolution and platform safety purposes.</li>
+    <li>CollabInst monitors messages to detect platform bypass attempts — where brands and creators agree to conduct deals outside the platform to avoid platform fees.</li>
+    <li>Any attempt to move deals outside CollabInst will result in immediate permanent ban of both parties.</li>
+    <li>Messages are never shared with third parties and are only used for internal platform safety purposes.</li>
+    <li>By using CollabInst you consent to this message monitoring policy.</li>
+  </ul>
+</div>
+    <div class="tos-section">
+      <h3>6. Content Moderation</h3>
+      <ul>
+        <li>All uploaded reels are reviewed by CollabInst admin before being shown to brands.</li>
+        <li>CollabInst reserves the right to reject any content that violates our community guidelines.</li>
+        <li>Rejected content will be returned to the creator with a reason. Creator may resubmit revised content.</li>
+        <li>Repeated violations will result in permanent account termination.</li>
+      </ul>
+    </div>
+
+    <div class="tos-section">
+      <h3>7. Dispute Resolution</h3>
+      <ul>
+        <li>In case of disputes between brands and creators, CollabInst admin has final authority.</li>
+        <li>Both parties must provide evidence to support their claims.</li>
+        <li>CollabInst will make a fair decision based on the deal terms, delivered content and platform policies.</li>
+        <li>CollabInst is not liable for disputes arising from unclear deal descriptions or undocumented agreements made outside the platform.</li>
+      </ul>
+    </div>
+
+    <div class="tos-section">
+      <h3>8. Account Termination</h3>
+      <ul>
+        <li>CollabInst reserves the right to terminate any account that violates these terms.</li>
+        <li>Terminated accounts forfeit any pending payments if termination is due to policy violations.</li>
+        <li>Users may delete their own accounts at any time from their profile settings.</li>
+      </ul>
+    </div>
+
+    <div class="tos-section">
+      <h3>9. Contact</h3>
+      <p>For disputes, reports or questions contact CollabInst via WhatsApp: +923142459992</p>
+      <p>Platform: https://alam8010.github.io/collabinst</p>
+      <p>Founders: Akash Alam & Mustafa Bro — IBA Karachi, Batch of 2028</p>
+    </div>
+
+    <div style="margin-top:40px;padding-top:24px;border-top:1px solid var(--border)">
+      <button class="btn-hero-red" onclick="showPage('landing')">← Back to Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<!-- Deal Modal -->
+<div class="modal-overlay" id="dealModal">
+  <div class="modal-box" style="max-width:560px">
+    <button class="modal-close" onclick="closeModal('dealModal')">✕</button>
+    <div class="modal-title">SEND A DEAL</div>
+    <div class="modal-sub" id="dealModalSub">Propose a deal to this creator</div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+      <input class="pay-input" type="number" id="dealAmount" placeholder="Deal amount in PKR (e.g. 5000)" oninput="updateSplit()"/>
+      <input class="pay-input" type="text" id="dealDesc" placeholder="Content description (e.g. 30-sec reel, product review)"/>
+      <input class="pay-input" type="text" id="dealDeadline" placeholder="Deadline (e.g. 7 days)"/>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:600;letter-spacing:0.5px;color:var(--grey);text-transform:uppercase;margin-bottom:10px">Content Usage Rights</div>
+      <div class="usage-opts" id="usageOpts">
+        <label class="usage-opt selected" onclick="selectUsage('brand_only',this)">
+          <input type="radio" name="usage" value="brand_only" checked/>
+          <div><span class="usage-opt-label">🏢 Brand Use Only</span><span class="usage-opt-sub">Creator delivers reel. Brand posts on their account. Creator is not required to post.</span></div>
+        </label>
+        <label class="usage-opt" onclick="selectUsage('creator_post',this)">
+          <input type="radio" name="usage" value="creator_post"/>
+          <div><span class="usage-opt-label">📸 Creator Posts on Instagram</span><span class="usage-opt-sub">Creator posts on their account tagging the brand. Brand gets organic reach. 40/40 split payment.</span></div>
+        </label>
+        <label class="usage-opt" onclick="selectUsage('both',this)">
+          <input type="radio" name="usage" value="both"/>
+          <div><span class="usage-opt-label">🤝 Both — Creator Posts + Brand Gets Reel</span><span class="usage-opt-sub">Creator posts on their account AND delivers reel to brand. 40/40 split payment.</span></div>
+        </label>
+      </div>
+    </div>
+
+    <div class="payment-split" id="dealSplit"></div>
+
+    <div style="margin-bottom:16px;font-size:12px;color:var(--grey)">By sending this deal you agree to our <a href="#" onclick="closeModal('dealModal');showPage('tos');return false;" style="color:var(--red)">Terms of Service</a>.</div>
+
+    <button class="auth-submit" onclick="submitDeal()">Send Deal Proposal →</button>
+  </div>
+</div>
+
+<!-- Post Opportunity Modal -->
+<div class="modal-overlay" id="postModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('postModal')">✕</button>
+    <div class="modal-title">POST OPPORTUNITY</div>
+    <div class="modal-sub">Tell creators what you're looking for</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <input class="post-input" type="text" id="postTitle" placeholder="e.g. Looking for Fashion Creator for Reel"/>
+      <textarea class="post-textarea" id="postBody" placeholder="Describe the content you need..."></textarea>
+      <select class="post-select" id="postNiche"><option value="">Target niche...</option><option>Fashion &amp; Style</option><option>Fitness &amp; Health</option><option>Food &amp; Cooking</option><option>Tech &amp; Gadgets</option><option>Travel &amp; Lifestyle</option><option>Gaming</option><option>Beauty &amp; Skincare</option><option>Sports</option><option>Other</option></select>
+      <input class="post-input" type="number" id="postBudget" placeholder="Budget in PKR (e.g. 5000)"/>
+      <button class="auth-submit" onclick="submitPost()">Post Opportunity →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+    <div class="modal-title">EDIT PROFILE</div>
+    <div class="modal-sub">Update your public profile</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="form-group"><label>Full Name</label><input type="text" id="editName" class="pay-input"/></div>
+      <div class="form-group" id="editHandleWrap"><label>Instagram Handle</label><input type="text" id="editHandle" class="pay-input"/></div>
+      <div class="form-group" id="editNicheWrap"><label>Niche</label><select id="editNiche" class="post-select"><option value="">Select niche...</option><option>Fashion &amp; Style</option><option>Fitness &amp; Health</option><option>Food &amp; Cooking</option><option>Tech &amp; Gadgets</option><option>Travel &amp; Lifestyle</option><option>Gaming</option><option>Beauty &amp; Skincare</option><option>Sports</option><option>Other</option></select></div>
+      <div class="form-group" id="editFollowersWrap"><label>Follower Count</label><select id="editFollowers" class="post-select"><option value="">Select...</option><option>1K - 10K</option><option>10K - 50K</option><option>50K - 100K</option><option>100K - 500K</option><option>500K+</option></select></div>
+      <div class="form-group" id="editPriceWrap"><label>Price per Reel (PKR)</label><input type="number" id="editPrice" class="pay-input"/></div>
+      <div class="form-group" id="editBrandWrap"><label>Brand Name</label><input type="text" id="editBrand" class="pay-input"/></div>
+      <div class="form-group"><label>Bio</label><textarea id="editBio" class="post-textarea" placeholder="Tell brands about yourself..."></textarea></div>
+      <button class="auth-submit" id="editSaveBtn" onclick="saveProfile()">Save Changes →</button>
+    </div>
+    <div style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:700;color:var(--grey);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">Danger Zone</div>
+      <button onclick="confirmDelete()" style="width:100%;padding:12px;border-radius:4px;border:1px solid rgba(232,25,44,0.4);background:rgba(232,25,44,0.06);color:var(--red);font-size:13px;font-weight:700;cursor:pointer;">🗑️ Delete My Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box" style="max-width:420px;text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+    <div class="modal-title" style="font-size:28px">ARE YOU SURE?</div>
+    <div style="font-size:14px;color:var(--white2);line-height:1.7;margin:16px 0 28px">This will permanently delete your account and all data. <strong style="color:var(--red)">This cannot be undone.</strong></div>
+    <div style="display:flex;gap:12px">
+      <button onclick="closeModal('deleteModal')" style="flex:1;padding:12px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--white2);font-size:14px;font-weight:600;cursor:pointer;">Cancel</button>
+      <button onclick="deleteMyAccount()" id="deleteConfirmBtn" style="flex:1;padding:12px;border-radius:4px;background:var(--red);color:var(--white);font-size:14px;font-weight:700;cursor:pointer;border:none;">Yes, Delete Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- Video Upload Modal -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('uploadModal')">✕</button>
+    <div class="modal-title">DELIVER YOUR REEL</div>
+    <div class="modal-sub" id="uploadModalSub">Upload your completed reel</div>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="videoFileInput" accept="video/*" onchange="onFileSelected(event)"/>
+      <div class="upload-icon">🎬</div>
+      <div class="upload-title">Drop your reel here</div>
+      <div class="upload-sub">MP4, MOV — Max 100MB</div>
+    </div>
+    <div id="uploadProgressWrap" style="display:none;margin-top:16px">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">Uploading...</div>
+    </div>
+    <div id="videoPreviewWrap"></div>
+    <button class="auth-submit" id="submitVideoBtn" onclick="submitVideo()" style="display:none;margin-top:16px">Submit Reel →</button>
+  </div>
+</div>
+
+<!-- Video Review Modal -->
+<div class="modal-overlay" id="reviewModal">
+  <div class="modal-box" style="max-width:560px">
+    <button class="modal-close" onclick="closeModal('reviewModal')">✕</button>
+    <div class="modal-title">REVIEW REEL</div>
+    <div class="modal-sub" id="reviewModalSub">Review the delivered content</div>
+    <div id="reviewVideoWrap" style="margin:20px 0"></div>
+    <div style="display:flex;gap:12px" id="reviewActions"></div>
+  </div>
+</div>
+
+<!-- WHATSAPP FLOAT BUTTON -->
+<a class="wa-float" href="https://wa.me/923142459992?text=Hi!%20I%20need%20help%20with%20CollabInst%20%F0%9F%9A%80" target="_blank" rel="noopener">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+  <span>Talk to our Bot</span>
+</a>
+
+
+<!-- Proof of Posting Modal -->
+<div class="modal-overlay" id="proofModal">
+  <div class="modal-box" style="max-width:500px">
+    <button class="modal-close" onclick="closeModal('proofModal')">✕</button>
+    <div class="modal-title">PROOF OF POST</div>
+    <div class="modal-sub">Submit proof that you posted the reel on your Instagram</div>
+
+    <div class="watermark-notice">⚠️ Your remaining 40% payment will be held for 30 days after submission to verify the post stays live.</div>
+
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="form-group">
+        <label>Instagram Post URL</label>
+        <input class="pay-input" type="url" id="proofUrl" placeholder="https://www.instagram.com/p/XXXXXXX"/>
+        <div style="font-size:11px;color:var(--grey);margin-top:4px">Paste the direct link to your Instagram post</div>
+      </div>
+      <div class="form-group">
+        <label>Screenshot of Post</label>
+        <div class="proof-upload-zone" id="proofUploadZone">
+          <input type="file" id="proofScreenshot" accept="image/*" onchange="onProofSelected(event)"/>
+          <div style="font-size:28px;margin-bottom:8px">📸</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px">Upload Screenshot</div>
+          <div style="font-size:12px;color:var(--grey)">Show your username, post content and date</div>
+        </div>
+        <div id="proofPreview" style="margin-top:8px"></div>
+      </div>
+      <div class="auth-error" id="proofError"></div>
+      <button class="auth-submit" id="proofSubmitBtn" onclick="submitProof()">Submit Proof →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:32px;left:32px;z-index:3000;background:var(--black2);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:4px;padding:14px 20px;min-width:280px;font-size:14px;color:var(--white);transform:translateY(100px);opacity:0;transition:all 0.4s ease;pointer-events:none;"></div>
+
+<script>
+// ── SUPABASE ──────────────────────────────────────
+const _sb = supabase.createClient(
+  'https://ooxiczotsroebhjzftha.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9veGljem90c3JvZWJoanpmdGhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMzY2OTAsImV4cCI6MjA4OTkxMjY5MH0.56dGSlzMJ6ujQ_FUQQR7S-5JGLS27xQ6Izh9gur492A'
+);
+
+// ── CLOUDINARY ────────────────────────────────────
+const CL_CLOUD = 'dwy5loxsn';
+const CL_PRESET = 'collabinst_uploads';
+
+// ── STATE ─────────────────────────────────────────
+let CU = null; // current user profile object
+let MODE = 'influencer';
+let ROLE_SEL = 'influencer';
+let PENDING_EMAIL = null;
+let CREATORS = [];
+let NICHE_FILTER = 'all';
+let DEAL_TARGET = null;
+let UPLOAD_DEAL_ID = null;
+let REVIEW_DEAL = null;
+let UPLOADED_URL = null;
+let MSG_PARTNER = null;
+let USAGE_SEL = 'brand_only';
+let PROOF_DEAL_ID = null;
+let PROOF_SCREENSHOT_URL = null;
+
+// ── HELPERS ───────────────────────────────────────
+const AVATAR_COLORS = ['#e8192c','#7c3aed','#ea580c','#0ea5e9','#10b981','#f59e0b','#ec4899','#14b8a6'];
+function getColor(str) {
+  if(!str) return AVATAR_COLORS[0];
+  let h = 0;
+  for(let i=0;i<str.length;i++) h = str.charCodeAt(i) + ((h<<5)-h);
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+}
+function getInitials(name) {
+  if(!name) return '?';
+  return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+}
+function timeAgo(ts) {
+  const d = Math.floor((Date.now() - new Date(ts)) / 1000);
+  if(d < 60) return 'just now';
+  if(d < 3600) return Math.floor(d/60) + 'm ago';
+  if(d < 86400) return Math.floor(d/3600) + 'h ago';
+  return Math.floor(d/86400) + 'd ago';
+}
+function getWatermarkedUrl(url) {
+  return url.replace('/upload/', '/upload/l_text:Arial_40:COLLABINST%20PREVIEW%20ONLY,co_white,o_40,g_center/');
+}
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderLeftColor = type === 'success' ? '#22c55e' : 'var(--red)';
+  t.style.transform = 'translateY(0)';
+  t.style.opacity = '1';
+  setTimeout(() => { t.style.transform = 'translateY(100px)'; t.style.opacity = '0'; }, 3500);
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+document.addEventListener('click', e => {
+  if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
+});
+function toggleMobileMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.style.display = 'block';
+}
+function hideErr(id) { document.getElementById(id).style.display = 'none'; }
+
+// ── ROUTING ───────────────────────────────────────
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  window.scrollTo(0,0);
+  updateNav();
+  if(page === 'browse') loadBrowse();
+  if(page === 'board') loadBoard();
+  if(page === 'messages') loadMessages();
+  if(page === 'notifications') loadNotifications();
+  if(page === 'dashboard') renderDashboard();
+  if(page === 'profile') renderProfile();
+  if(page === 'admin') {
+  const el = document.getElementById('adminUserShow');
+  if(el) {
+    el.textContent = CU ? 'Logged in as: ' + CU.name + ' (' + CU.email + ')' : 'Not logged in — please log in first.';
+  }
+}
+  setTimeout(() => {
+    document.querySelectorAll('.reveal').forEach(el => {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.disconnect(); }});
+      }, {threshold:0.1});
+      obs.observe(el);
+    });
+  }, 100);
+}
+function updateNav() {
+  const el = document.getElementById('navActions');
+  if(CU) {
+    el.innerHTML = '<button class="btn-ghost" onclick="showPage(\'notifications\')">🔔</button>' +
+      '<button class="btn-ghost" onclick="showPage(\'messages\')">💬 Messages</button>' +
+      '<button class="btn-red" onclick="showPage(\'dashboard\')">Dashboard</button>' +
+      '<button class="btn-ghost" onclick="logout()" style="color:var(--grey)">Log Out</button>';
+  } else {
+    el.innerHTML = '<button class="btn-ghost" onclick="showPage(\'auth\')">Log In</button>' +
+      '<button class="btn-red" onclick="showPage(\'auth\')">Join Free</button>';
+  }
+}
+
+// ── AUTH ─────────────────────────────────────────
+function switchAuthTab(tab) {
+  const allForms = ['formSignup','formLogin','formVerify','formForgot','formForgotSent','formReset'];
+  allForms.forEach(f => document.getElementById(f).classList.add('hidden'));
+  if(tab === 'signup') document.getElementById('formSignup').classList.remove('hidden');
+  if(tab === 'login') document.getElementById('formLogin').classList.remove('hidden');
+  if(tab === 'verify') document.getElementById('formVerify').classList.remove('hidden');
+  if(tab === 'forgot') document.getElementById('formForgot').classList.remove('hidden');
+  if(tab === 'forgotSent') document.getElementById('formForgotSent').classList.remove('hidden');
+  if(tab === 'reset') document.getElementById('formReset').classList.remove('hidden');
+  document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  hideErr('signupError'); hideErr('loginError');
+  if(tab === 'forgot') { hideErr('forgotError'); }
+}
+function selectRole(role) {
+  ROLE_SEL = role;
+  document.getElementById('roleInfluencer').classList.toggle('selected', role === 'influencer');
+  document.getElementById('roleBrand').classList.toggle('selected', role === 'brand');
+  document.getElementById('infExtra').classList.toggle('hidden', role !== 'influencer');
+  document.getElementById('brandExtra').classList.toggle('hidden', role !== 'brand');
+}
+async function handleSignup() {
+  hideErr('signupError');
+  const name = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const pass = document.getElementById('signupPass').value;
+  if(!name) { showErr('signupError','Please enter your full name.'); return; }
+  if(!email || !email.includes('@')) { showErr('signupError','Please enter a valid email.'); return; }
+  if(pass.length < 6) { showErr('signupError','Password must be at least 6 characters.'); return; }
+  const btn = document.getElementById('signupBtn');
+  btn.textContent = 'Creating...'; btn.disabled = true;
+  const meta = {
+    name, role: ROLE_SEL,
+    handle: document.getElementById('signupHandle').value || '@' + name.toLowerCase().replace(/\s+/g,''),
+    niche: document.getElementById('signupNiche').value || '',
+    followers: document.getElementById('signupFollowers').value || '',
+    price: parseInt(document.getElementById('signupPrice').value) || 0,
+    brand_name: document.getElementById('signupBrand').value || name,
+  };
+  const { error } = await _sb.auth.signUp({ email, password: pass, options: { data: meta } });
+  btn.textContent = 'Create Account →'; btn.disabled = false;
+  if(error) { showErr('signupError', error.message); return; }
+  PENDING_EMAIL = email;
+  document.getElementById('verifyEmailShow').textContent = email;
+  document.getElementById('formSignup').classList.add('hidden');
+  document.getElementById('formVerify').classList.remove('hidden');
+  document.getElementById('tabSignup').classList.remove('active');
+  document.getElementById('tabLogin').classList.remove('active');
+}
+async function resendVerify() {
+  if(!PENDING_EMAIL) return;
+  const { error } = await _sb.auth.resend({ type:'signup', email: PENDING_EMAIL });
+  if(error) toast('Could not resend: ' + error.message);
+  else toast('Verification email resent!', 'success');
+}
+
+async function sendResetLink() {
+  hideErr('forgotError');
+  const email = document.getElementById('forgotEmail').value.trim();
+  if(!email || !email.includes('@')) { showErr('forgotError', 'Please enter a valid email address.'); return; }
+  const btn = document.getElementById('forgotBtn');
+  btn.textContent = 'Sending...'; btn.disabled = true;
+  const { error } = await _sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://alam8010.github.io/collabinst'
+  });
+  btn.textContent = 'Send Reset Link →'; btn.disabled = false;
+  if(error) { showErr('forgotError', error.message); return; }
+  document.getElementById('forgotEmailShow').textContent = email;
+  switchAuthTab('forgotSent');
+}
+
+async function submitNewPassword() {
+  hideErr('resetError');
+  const p1 = document.getElementById('resetPass1').value;
+  const p2 = document.getElementById('resetPass2').value;
+  if(p1.length < 6) { showErr('resetError', 'Password must be at least 6 characters.'); return; }
+  if(p1 !== p2) { showErr('resetError', 'Passwords do not match.'); return; }
+  const btn = document.getElementById('resetBtn');
+  btn.textContent = 'Saving...'; btn.disabled = true;
+  const { error } = await _sb.auth.updateUser({ password: p1 });
+  btn.textContent = 'Save New Password →'; btn.disabled = false;
+  if(error) { showErr('resetError', error.message); return; }
+  toast('Password updated successfully! Please log in.', 'success');
+  await _sb.auth.signOut();
+  switchAuthTab('login');
+}
+async function handleLogin() {
+  hideErr('loginError');
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  if(!email || !email.includes('@')) { showErr('loginError','Please enter a valid email.'); return; }
+  if(!pass) { showErr('loginError','Please enter your password.'); return; }
+  const btn = document.getElementById('loginBtn');
+  btn.textContent = 'Logging in...'; btn.disabled = true;
+  const { data, error } = await _sb.auth.signInWithPassword({ email, password: pass });
+  btn.textContent = 'Log In →'; btn.disabled = false;
+  if(error) {
+    const msg = error.message.toLowerCase();
+    if(msg.includes('email not confirmed')) showErr('loginError','Please verify your email first.');
+    else if(msg.includes('invalid')) showErr('loginError','Incorrect email or password.');
+    else showErr('loginError', error.message);
+    return;
+  }
+  if(!data.user.email_confirmed_at) {
+    PENDING_EMAIL = email;
+    document.getElementById('verifyEmailShow').textContent = email;
+    document.getElementById('formLogin').classList.add('hidden');
+    document.getElementById('formVerify').classList.remove('hidden');
+    return;
+  }
+  await loadProfile(data.user);
+  toast('Welcome back, ' + CU.name.split(' ')[0] + '! 👋', 'success');
+  setTimeout(() => showPage('dashboard'), 500);
+}
+async function loadProfile(authUser) {
+  const { data: p } = await _sb.from('profiles').select('*').eq('id', authUser.id).single();
+  if(p) {
+    CU = { id:p.id, name:p.name, email:p.email, role:p.role, handle:p.handle, niche:p.niche, followers:p.followers, price:p.price, brandName:p.brand_name, bio:p.bio||'' };
+  } else {
+    const m = authUser.user_metadata || {};
+    CU = { id:authUser.id, name:m.name||authUser.email.split('@')[0], email:authUser.email, role:m.role||'influencer', handle:m.handle||'@user', niche:m.niche||'', followers:m.followers||'', price:m.price||0, brandName:m.brand_name||'', bio:'' };
+    await _sb.from('profiles').insert({ id:CU.id, name:CU.name, email:CU.email, role:CU.role, handle:CU.handle, niche:CU.niche, followers:CU.followers, price:CU.price, brand_name:CU.brandName, bio:CU.bio });
+  }
+  MODE = CU.role;
+}
+async function logout() {
+  await _sb.auth.signOut();
+  CU = null; MODE = 'influencer';
+  updateNav();
+  toast('Logged out.');
+  showPage('landing');
+}
+
+// ── DASHBOARD ─────────────────────────────────────
+function renderDashboard() {
+  if(!CU) { showPage('auth'); return; }
+  const isInf = MODE === 'influencer';
+  document.getElementById('sidebarAvatar').textContent = getInitials(CU.name);
+  document.getElementById('sidebarName').textContent = CU.name;
+  document.getElementById('sidebarRole').textContent = isInf ? 'Creator Mode' : 'Brand Mode';
+  document.getElementById('switchModeBtn').textContent = isInf ? 'Switch to Brand Mode →' : 'Switch to Creator Mode →';
+  const items = isInf
+    ? [{icon:'🏠',label:'Overview',key:'overview'},{icon:'💬',label:'Messages',key:'messages'},{icon:'🔔',label:'Notifications',key:'notifications'},{icon:'💼',label:'My Deals',key:'deals'},{icon:'👤',label:'My Profile',key:'profile'},{icon:'🔍',label:'Brand Board',key:'board'}]
+    : [{icon:'🏠',label:'Overview',key:'overview'},{icon:'💬',label:'Messages',key:'messages'},{icon:'🔔',label:'Notifications',key:'notifications'},{icon:'💼',label:'My Deals',key:'deals'},{icon:'🔍',label:'Browse Creators',key:'browse'},{icon:'📢',label:'Post Opportunity',key:'board'}];
+  document.getElementById('sidebarNav').innerHTML = items.map(i =>
+    '<div class="sidebar-nav-item' + (i.key==='overview'?' active':'') + '" onclick="dashNav(\'' + i.key + '\',this)"><span class="icon">' + i.icon + '</span>' + i.label + '</div>'
+  ).join('');
+  loadDashOverview();
+}
+function dashNav(key, el) {
+  document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('active'));
+  if(el) el.classList.add('active');
+  if(key==='messages'){showPage('messages');return;}
+  if(key==='notifications'){showPage('notifications');return;}
+  if(key==='browse'){showPage('browse');return;}
+  if(key==='board'){showPage('board');return;}
+  if(key==='profile'){showPage('profile');return;}
+  if(key==='deals') loadDashDeals();
+  else loadDashOverview();
+}
+function switchMode() {
+  MODE = MODE === 'influencer' ? 'brand' : 'influencer';
+  toast('Switched to ' + (MODE==='influencer'?'Creator':'Brand') + ' Mode', 'success');
+  renderDashboard();
+}
+async function loadDashOverview() {
+  const isInf = MODE === 'influencer';
+  document.getElementById('dashMain').innerHTML =
+    '<div class="dash-header"><div class="dash-greeting">WELCOME BACK, <span>' + CU.name.split(' ')[0].toUpperCase() + '</span></div><div class="dash-sub">' + (isInf?'Creator':'Brand') + ' Dashboard</div></div>' +
+    '<div class="dash-cards">' +
+    '<div class="dash-card"><div class="dash-card-label">Mode</div><div class="dash-card-val red">' + (isInf?'Creator':'Brand') + '</div></div>' +
+    '<div class="dash-card"><div class="dash-card-label">Active Deals</div><div class="dash-card-val" id="dc1">...</div></div>' +
+    '<div class="dash-card"><div class="dash-card-label">Messages</div><div class="dash-card-val" id="dc2">...</div></div>' +
+    '<div class="dash-card"><div class="dash-card-label">Profile</div><div class="dash-card-val red">Live</div></div>' +
+    '</div>' +
+    '<div class="dash-section-title">' + (isInf?'Brand Opportunities':'Discover Creators') + ' <button onclick="showPage(\'' + (isInf?'board':'browse') + '\')">View All →</button></div>' +
+    '<div id="dashQuick" class="browse-grid" style="padding:0;margin-bottom:40px"><div style="color:var(--grey);font-size:14px;padding:20px">Loading...</div></div>';
+
+  const { data: deals } = await _sb.from('deals').select('id,status').or('brand_id.eq.' + CU.id + ',creator_id.eq.' + CU.id);
+  const active = (deals||[]).filter(d => d.status === 'active' || d.status === 'delivered').length;
+  const el1 = document.getElementById('dc1');
+  if(el1) el1.textContent = active;
+
+  const { data: msgs } = await _sb.from('messages').select('id').or('sender_id.eq.' + CU.id + ',receiver_id.eq.' + CU.id);
+  const el2 = document.getElementById('dc2');
+  if(el2) el2.textContent = (msgs||[]).length;
+
+  const qEl = document.getElementById('dashQuick');
+  if(!qEl) return;
+  if(isInf) {
+    const { data: posts } = await _sb.from('brand_posts').select('*').order('created_at',{ascending:false}).limit(4);
+    qEl.innerHTML = posts && posts.length ? posts.map(boardCard).join('') : '<div class="empty-state"><div class="ei">📢</div><h3>No posts yet</h3></div>';
+  } else {
+    const { data: creators } = await _sb.from('profiles').select('*').eq('role','influencer').limit(4);
+    qEl.innerHTML = creators && creators.length ? creators.map(creatorCard).join('') : '<div class="empty-state"><div class="ei">👤</div><h3>No creators yet</h3></div>';
+  }
+}
+async function loadDashDeals() {
+  const isInf = MODE === 'influencer';
+  const main = document.getElementById('dashMain');
+  main.innerHTML = '<div class="dash-header"><div class="dash-greeting">MY <span>DEALS</span></div></div><div id="dealsWrap" style="background:var(--black2);border:1px solid var(--border);border-radius:4px;overflow:hidden"><div style="padding:24px;color:var(--grey)">Loading...</div></div>';
+  const { data: deals } = await _sb.from('deals').select('*').or('brand_id.eq.' + CU.id + ',creator_id.eq.' + CU.id).order('created_at',{ascending:false});
+  const wrap = document.getElementById('dealsWrap');
+  if(!wrap) return;
+  if(!deals || !deals.length) { wrap.innerHTML = '<div class="empty-state"><div class="ei">💼</div><h3>No deals yet</h3><p>Deals will appear here once created.</p></div>'; return; }
+  let rows = deals.map(d => {
+    const sc = d.status==='completed'?'completed':d.status==='delivered'||d.status==='active'?'active':'pending';
+    const sl = d.status==='delivered'?'📦 Delivered':d.status==='revision'?'🔄 Revision':d.status;
+    let reel = '-';
+    if(isInf) {
+      if(d.status==='pending')
+  reel = '<div style="display:flex;gap:6px">' +
+    '<button class="admin-ok-btn" onclick="acceptDeal(\''+d.id+'\',\''+d.brand_id+'\')">✅ Accept</button>' +
+    '<button class="admin-del-btn" onclick="rejectDeal(\''+d.id+'\',\''+d.brand_id+'\')">❌ Reject</button>' +
+    '</div>';
+else if(d.status==='active' && d.payment_confirmed)
+  reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openUpload(\''+d.id+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\')">📤 Upload Reel</button>';
+else if(d.status==='active' && !d.payment_confirmed)
+  reel = '<span style="font-size:11px;color:#f59e0b;font-weight:600;padding:4px 10px;background:rgba(245,158,11,0.15);border-radius:2px">⏳ Awaiting Payment</span>';
+else if(d.status==='revision')
+  reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openUpload(\''+d.id+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\')">🔄 Re-upload</button>';
+      else if(d.status==='delivered') reel = '<span class="delivered-badge">📦 Awaiting Review</span>';
+      else if(d.status==='completed') reel = '<span class="delivered-badge">✅ Approved</span>';
+    } else {
+   if(d.status==='under_review') {
+  reel = '<span style="font-size:12px;color:#f59e0b;font-weight:600;padding:4px 10px;background:rgba(245,158,11,0.15);border-radius:2px">🔍 Being Reviewed by Admin</span>';
+} else if(d.status==='active' && !d.payment_confirmed) {
+  reel = '<div style="display:flex;flex-direction:column;gap:6px">' +
+    '<span style="font-size:11px;font-weight:700;color:#22c55e">✅ Creator Accepted!</span>' +
+    '<span style="font-size:11px;color:var(--white2)">Please complete payment:</span>' +
+    '<div style="background:var(--black3);border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:12px;font-size:11px;display:flex;flex-direction:column;gap:8px">' +
+    '<div style="font-size:12px;font-weight:700;color:#22c55e;margin-bottom:4px">💰 Total to Pay: PKR '+Number(d.amount).toLocaleString()+'</div>' +
+    '<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:10px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:0.5px">Payment Method</label>' +
+    '<select id="payMethod_'+d.id+'" class="post-select" style="font-size:12px;padding:6px 10px"><option value="">Select method...</option><option>Easypaisa</option><option>JazzCash</option><option>HBL Bank Transfer</option><option>Other</option></select></div>' +
+    '<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:10px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:0.5px">Your Account / Number Used</label>' +
+    '<input id="payAccount_'+d.id+'" class="pay-input" type="text" placeholder="e.g. 0300-1234567" style="font-size:12px;padding:6px 10px"/></div>' +
+    '<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:10px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:0.5px">Transaction ID</label>' +
+    '<input id="payTrx_'+d.id+'" class="pay-input" type="text" placeholder="e.g. TRX123456789" style="font-size:12px;padding:6px 10px"/></div>' +
+    '<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:10px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:0.5px">Amount Sent (PKR)</label>' +
+    '<input id="pkrAmount_'+d.id+'" class="pay-input" type="number" placeholder="Enter exact amount sent" style="font-size:12px;padding:6px 10px"/></div>' +
+    '<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:10px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:0.5px">Payment Screenshot</label>' +
+    '<div style="border:2px dashed var(--border);border-radius:4px;padding:12px;text-align:center;cursor:pointer;position:relative;background:var(--black2)">' +
+    '<input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="uploadPayProof(event,\''+d.id+'\')" />' +
+    '<div id="payProofStatus_'+d.id+'" style="font-size:11px;color:var(--grey)">📎 Click to upload screenshot</div>' +
+    '</div></div>' +
+    '</div>' +
+    '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:#22c55e;margin-top:4px" onclick="confirmPaymentSent(\''+d.id+'\')">💳 Submit Payment →</button>' +
+    '</div>';
+} else if(d.status==='active' && d.payment_confirmed) {
+  reel = '<span style="font-size:12px;color:#22c55e;font-weight:600">✅ Payment Confirmed — Awaiting Reel</span>';
+} else if(d.video_url && d.status==='delivered') {
+  const previewUrl = getWatermarkedUrl(d.video_url);
+  reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openReview(\''+d.id+'\',\''+previewUrl+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">🎬 Review Reel</button>';
+} else if(d.video_url && d.status==='completed') {
+  reel = '<div style="display:flex;flex-direction:column;gap:6px">' +
+    '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:var(--black4)" onclick="openReview(\''+d.id+'\',\''+d.video_url+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">▶ View Reel</button>' +
+    '<a href="'+d.video_url+'" download target="_blank" style="display:inline-block;padding:5px 10px;border-radius:4px;background:#22c55e;color:white;font-size:11px;font-weight:700;text-align:center;text-decoration:none">⬇️ Download Reel</a>' +
+    '</div>';
+} else {
+  reel = '<span style="font-size:12px;color:var(--grey)">Awaiting upload</span>';
+}
+    }
+    return '<tr><td>' + (d.description||'Deal') + '</td><td><strong>PKR ' + Number(d.amount).toLocaleString() + '</strong></td><td style="color:#22c55e;font-weight:700">PKR ' + Math.floor(d.amount*0.8) + '</td><td><span class="deal-status ' + sc + '">' + sl + '</span></td><td>' + reel + '</td><td>' + new Date(d.created_at).toLocaleDateString() + '</td></tr>';
+  }).join('');
+  wrap.innerHTML = '<table class="deals-table"><thead><tr><th>Description</th><th>Amount</th><th>' + (isInf?'Your Cut':'Creator Gets') + ' (80%)</th><th>Status</th><th>Reel</th><th>Date</th></tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+// ── BROWSE ────────────────────────────────────────
+async function loadBrowse() {
+  document.getElementById('browseGrid').innerHTML = '<div style="padding:40px;color:var(--grey)">Loading creators...</div>';
+  let query = _sb.from('profiles').select('*').eq('role','influencer').order('created_at',{ascending:false});
+  // Exclude current user from browse list
+  if(CU) query = query.neq('id', CU.id);
+  const { data } = await query;
+  CREATORS = data || [];
+  renderCreators(CREATORS);
+}
+function renderCreators(list) {
+  document.getElementById('browseGrid').innerHTML = list.length ? list.map(creatorCard).join('') : '<div class="empty-state" style="grid-column:1/-1"><div class="ei">🔍</div><h3>No creators found</h3></div>';
+}
+function creatorCard(c) {
+  const col = getColor(c.name||c.id);
+  const ini = getInitials(c.name||'U');
+  const handle = c.handle || '@user';
+  const igUser = handle.replace('@','').trim();
+  const igUrl = 'https://instagram.com/' + igUser;
+  const igIcon = '<svg viewBox="0 0 24 24" style="width:11px;height:11px;fill:var(--red);flex-shrink:0"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>';
+  return '<div class="inf-card" onclick="viewProfile(\'' + c.id + '\')">' +
+    '<div class="inf-card-top"><div class="inf-avatar" style="background:' + col + '20;color:' + col + '">' + ini + '</div>' +
+    '<div><div class="inf-name">' + (c.name||'Creator') + '</div>' +
+    '<a href="' + igUrl + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:4px;color:var(--red);font-size:13px;text-decoration:none;margin-top:2px" title="View on Instagram">' + igIcon + handle + '</a>' +
+    '<div class="inf-niche">' + (c.niche||'Creator') + '</div></div></div>' +
+    '<div class="inf-card-stats"><div class="inf-stat-item"><div class="inf-stat-val">' + (c.followers||'N/A') + '</div><div class="inf-stat-label">Followers</div></div></div>' +
+    '<div class="inf-card-footer"><div class="inf-price">From <strong>PKR ' + (c.price||0).toLocaleString() + '</strong>/reel</div>' +
+    (MODE === 'brand' || !CU ? '<button class="btn-msg" onclick="event.stopPropagation();openDeal(\'' + c.id + '\',\'' + (c.name||'Creator').replace(/'/g,'') + '\',' + (c.price||0) + ')">Send Deal</button>' : '') + '</div></div>';
+}
+function filterNiche(niche, btn) {
+  NICHE_FILTER = niche;
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterCreators();
+}
+function filterCreators() {
+  const q = (document.getElementById('browseSearch').value||'').toLowerCase();
+  const f = CREATORS.filter(c => {
+    const mn = NICHE_FILTER==='all' || c.niche===NICHE_FILTER;
+    const mq = !q || (c.name&&c.name.toLowerCase().includes(q)) || (c.handle&&c.handle.toLowerCase().includes(q)) || (c.niche&&c.niche.toLowerCase().includes(q));
+    return mn && mq;
+  });
+  renderCreators(f);
+}
+
+// ── BOARD ─────────────────────────────────────────
+async function loadBoard() {
+  document.getElementById('boardGrid').innerHTML = '<div style="padding:40px;color:var(--grey)">Loading...</div>';
+  const { data } = await _sb.from('brand_posts').select('*').order('created_at',{ascending:false});
+  document.getElementById('boardGrid').innerHTML = data && data.length ? data.map(boardCard).join('') : '<div class="empty-state" style="grid-column:1/-1"><div class="ei">📢</div><h3>No opportunities yet</h3><p>Be the first to post one!</p></div>';
+}
+function boardCard(p) {
+  return '<div class="brand-post"><div class="brand-post-header"><div class="brand-avatar">🏢</div><div><div class="brand-name-txt">' + (p.brand_name||'Brand') + '</div><div class="brand-verified">✦ Verified Brand</div></div></div>' +
+    '<div class="brand-post-title">' + p.title + '</div><div class="brand-post-body">' + p.body + '</div>' +
+    '<div class="brand-post-tags"><span class="brand-tag">' + (p.niche||'General') + '</span></div>' +
+    '<div class="brand-post-footer"><div class="brand-budget">Budget: <strong>PKR ' + Number(p.budget||0).toLocaleString() + '</strong></div>' +
+    '<button class="btn-msg" onclick="msgUser(\'' + p.user_id + '\')">Apply Now</button></div></div>';
+}
+function openPostModal() { if(!CU){showPage('auth');return;} openModal('postModal'); }
+async function submitPost() {
+  if(!CU) return;
+  const title = document.getElementById('postTitle').value.trim();
+  const body = document.getElementById('postBody').value.trim();
+  const budget = parseInt(document.getElementById('postBudget').value)||0;
+  const niche = document.getElementById('postNiche').value;
+  if(!title||!body){toast('Please fill in title and description');return;}
+  const { error } = await _sb.from('brand_posts').insert({ user_id:CU.id, brand_name:CU.brandName||CU.name, title, body, niche, budget });
+  if(error){toast('Error: '+error.message);return;}
+  closeModal('postModal');
+  toast('Opportunity posted!','success');
+  document.getElementById('postTitle').value='';
+  document.getElementById('postBody').value='';
+  document.getElementById('postBudget').value='';
+  loadBoard();
+}
+
+// ── MESSAGES ─────────────────────────────────────
+async function loadMessages() {
+  if(!CU){document.getElementById('msgWindow').innerHTML='<div class="empty-state" style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center"><div class="ei">🔒</div><h3>Please log in</h3></div>';return;}
+  const list = document.getElementById('msgList');
+  list.innerHTML = '<div class="msg-list-header">Messages</div><div style="padding:20px;color:var(--grey);font-size:13px">Loading...</div>';
+  const { data: msgs } = await _sb.from('messages').select('*').or('sender_id.eq.'+CU.id+',receiver_id.eq.'+CU.id).order('created_at',{ascending:false});
+  const partnerIds = [...new Set((msgs||[]).map(m => m.sender_id===CU.id?m.receiver_id:m.sender_id))];
+  if(!partnerIds.length) {
+    list.innerHTML='<div class="msg-list-header">Messages</div><div class="empty-state" style="padding:40px 20px"><div class="ei">💬</div><h3>No messages yet</h3><p>Browse creators or brands and start a conversation!</p></div>';
+    document.getElementById('msgWindow').innerHTML='<div class="empty-state" style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center"><div class="ei">💬</div><h3>No conversations yet</h3></div>';
+    return;
+  }
+  const { data: partners } = await _sb.from('profiles').select('*').in('id', partnerIds);
+  const pm = {};
+  (partners||[]).forEach(p => pm[p.id]=p);
+  list.innerHTML = '<div class="msg-list-header">Messages</div>' +
+    partnerIds.map((pid,i) => {
+      const p = pm[pid]||{name:'User',id:pid};
+      const last = (msgs||[]).find(m => m.sender_id===pid||m.receiver_id===pid);
+      const col = getColor(p.name||pid);
+      return '<div class="msg-thread' + (i===0?' active':'') + '" onclick="openThread(\'' + pid + '\',this)"><div class="msg-thread-avatar" style="background:'+col+'20;color:'+col+'">' + getInitials(p.name||'U') + '</div><div style="flex:1;min-width:0"><div class="msg-thread-name">' + (p.name||'User') + '</div><div class="msg-thread-preview">' + (last?last.text.slice(0,40):'No messages') + '</div></div></div>';
+    }).join('');
+  if(MSG_PARTNER && partnerIds.includes(MSG_PARTNER)) openThread(MSG_PARTNER, list.querySelector('[onclick*="'+MSG_PARTNER+'"]'));
+  else if(partnerIds.length) openThread(partnerIds[0], list.querySelector('.msg-thread'));
+  MSG_PARTNER = null;
+}
+async function openThread(pid, el) {
+  document.querySelectorAll('.msg-thread').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const win = document.getElementById('msgWindow');
+  win.innerHTML = '<div style="padding:24px;color:var(--grey)">Loading...</div>';
+  const [{ data: partner }, { data: msgs }] = await Promise.all([
+    _sb.from('profiles').select('*').eq('id',pid).single(),
+    _sb.from('messages').select('*').or('and(sender_id.eq.'+CU.id+',receiver_id.eq.'+pid+'),and(sender_id.eq.'+pid+',receiver_id.eq.'+CU.id+')').order('created_at',{ascending:true})
+  ]);
+  const col = getColor(partner?partner.name:pid);
+  const ini = getInitials(partner?partner.name:'U');
+  win.innerHTML =
+    '<div class="msg-window-header"><div class="msg-thread-avatar" style="background:'+col+'20;color:'+col+'">'+ini+'</div><div><div class="msg-header-name">'+(partner?partner.name:'User')+'</div><div class="msg-header-role">'+(partner?(partner.role==='influencer'?'Creator':'Brand'):'')+'</div></div>' +
+    (MODE === 'brand' || !CU ? '<button class="btn-msg" style="margin-left:auto" onclick="openDeal(\''+pid+'\',\''+(partner?partner.name.replace(/'/g,''):'User')+'\','+(partner?partner.price||0:0)+')">📋 Propose Deal</button>' : '') + '</div>' +
+    '<div class="msg-body" id="msgBody">' +
+    ((msgs&&msgs.length)?msgs.map(m=>{
+      const mine = m.sender_id===CU.id;
+      return '<div class="msg-bubble-wrap'+(mine?' mine':'')+'"><div class="msg-bub-avatar" style="background:'+(mine?'var(--red)':col)+'">'+(mine?getInitials(CU.name):ini)+'</div><div><div class="msg-bubble '+(mine?'mine':'theirs')+'">'+m.text+'</div><div class="msg-bubble-time">'+timeAgo(m.created_at)+'</div></div></div>';
+    }).join('') : '<div style="text-align:center;color:var(--grey);padding:40px;font-size:13px">Say hello!</div>') +
+    '</div>' +
+    '<div class="msg-input-area"><textarea class="msg-input" id="msgInput" placeholder="Type a message..." onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();sendMsg(\''+pid+'\')}"></textarea><button class="msg-send" onclick="sendMsg(\''+pid+'\')">Send</button></div>';
+  const body = document.getElementById('msgBody');
+  if(body) body.scrollTop = body.scrollHeight;
+}
+async function sendMsg(pid) {
+  if(!CU) return;
+  const inp = document.getElementById('msgInput');
+  const text = inp.value.trim();
+  if(!text) return;
+  inp.value = '';
+  await _sb.from('messages').insert({ sender_id:CU.id, receiver_id:pid, text });
+  const body = document.getElementById('msgBody');
+  if(body) {
+    const el = document.createElement('div');
+    el.className = 'msg-bubble-wrap mine';
+    el.innerHTML = '<div class="msg-bub-avatar" style="background:var(--red)">'+getInitials(CU.name)+'</div><div><div class="msg-bubble mine">'+text+'</div><div class="msg-bubble-time">just now</div></div>';
+    body.appendChild(el);
+    body.scrollTop = body.scrollHeight;
+  }
+}
+function msgUser(uid) {
+  if(!CU){showPage('auth');return;}
+  if(uid===CU.id){toast('You cannot message yourself!');return;}
+  MSG_PARTNER = uid;
+  showPage('messages');
+}
+
+// ── DEAL MODAL ────────────────────────────────────
+function openDeal(creatorId, creatorName, creatorPrice) {
+  if(!CU){showPage('auth');return;}
+  DEAL_TARGET = { id:creatorId, name:creatorName, price:creatorPrice };
+  document.getElementById('dealModalSub').textContent = 'Propose a deal to ' + creatorName;
+  document.getElementById('dealAmount').value = creatorPrice || '';
+  updateSplit();
+  openModal('dealModal');
+}
+function updateSplit() {
+  const amt = parseFloat(document.getElementById('dealAmount').value)||0;
+  const fee = Math.round(amt*0.20);
+  const cut = amt - fee;
+  const part1 = Math.floor(cut*0.5);
+  const part2 = cut - part1;
+  const isSplit = ['creator_post','both'].includes(USAGE_SEL);
+  document.getElementById('dealSplit').innerHTML =
+    '<div class="split-row"><span class="split-label">Deal Amount</span><span class="split-val">PKR '+amt.toLocaleString()+'</span></div>' +
+    '<div class="split-row"><span class="split-label">CollabInst Fee (20%)</span><span class="split-val red">-PKR '+fee.toLocaleString()
+
++'</span></div>' +
+    (isSplit ?
+      '<div class="split-row"><span class="split-label">Creator Gets on Delivery (40%)</span><span class="split-val green">PKR '+part1.toFixed(2)+'</span></div>' +
+      '<div class="split-row"><span class="split-label">Creator Gets after 30 Days (40%)</span><span class="split-val green">PKR '+part2.toFixed(2)+'</span></div>'
+    :
+      '<div class="split-row"><span class="split-label">Creator Receives (80%)</span><span class="split-val green">PKR '+cut.toLocaleString()+'</span></div>'
+    );
+}
+
+function selectUsage(val, el) {
+  USAGE_SEL = val;
+  document.querySelectorAll('.usage-opt').forEach(o => o.classList.remove('selected'));
+  if(el) el.classList.add('selected');
+  updateSplit();
+}
+async function acceptDeal(dealId, brandId) {
+  const { error } = await _sb.from('deals')
+    .update({ status:'active' })
+    .eq('id', dealId);
+  if(error){ toast('Error: '+error.message); return; }
+  await _sb.from('messages').insert({
+    sender_id: CU.id,
+    receiver_id: brandId,
+    text: '✅ I have accepted your deal proposal! Please complete the payment to get started. Send payment screenshot to WhatsApp: +923142459992'
+  });
+  toast('Deal accepted! Brand has been notified to pay.', 'success');
+  loadDashDeals();
+}
+
+async function rejectDeal(dealId, brandId) {
+  const { error } = await _sb.from('deals')
+    .update({ status:'rejected' })
+    .eq('id', dealId);
+  if(error){ toast('Error: '+error.message); return; }
+  await _sb.from('messages').insert({
+    sender_id: CU.id,
+    receiver_id: brandId,
+    text: '❌ Sorry, I am unable to accept this deal proposal at this time. Feel free to send a new proposal!'
+  });
+  toast('Deal rejected. Brand has been notified.', 'success');
+  loadDashDeals();
+}
+async function confirmPaymentSent(dealId) {
+  const pkrAmount = document.getElementById('pkrAmount_'+dealId)?.value.trim();
+  const payMethod = document.getElementById('payMethod_'+dealId)?.value;
+  const payAccount = document.getElementById('payAccount_'+dealId)?.value.trim();
+  const payTrx = document.getElementById('payTrx_'+dealId)?.value.trim();
+  const payScreenshot = window['payProof_'+dealId] || null;
+  if(!pkrAmount){ toast('Please enter the amount you sent.'); return; }
+  if(!payMethod){ toast('Please select a payment method.'); return; }
+  if(!payAccount){ toast('Please enter the account/number you used.'); return; }
+  if(!payTrx){ toast('Please enter the transaction ID.'); return; }
+  if(!payScreenshot){ toast('Please upload a screenshot of your payment.'); return; }
+  const { error } = await _sb.from('deals')
+    .update({
+      payment_confirmed: false,
+      pkr_amount: pkrAmount,
+      payment_method: payMethod,
+      payment_account: payAccount,
+      payment_trx_id: payTrx,
+      payment_screenshot: payScreenshot
+    })
+    .eq('id', dealId);
+  if(error){ toast('Error: '+error.message); return; }
+  toast('Payment submitted! Admin will verify shortly. ✅', 'success');
+  loadDashDeals();
+}
+
+function uploadPayProof(e, dealId) {
+  const file = e.target.files[0];
+  if(!file) return;
+  if(file.size > 10*1024*1024){ toast('Image too large. Max 10MB.'); return; }
+  const status = document.getElementById('payProofStatus_'+dealId);
+  status.textContent = 'Uploading...';
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CL_PRESET);
+  fd.append('cloud_name', CL_CLOUD);
+  const xhr = new XMLHttpRequest();
+  xhr.addEventListener('load', () => {
+    if(xhr.status===200) {
+      const d = JSON.parse(xhr.responseText);
+      window['payProof_'+dealId] = d.secure_url;
+      status.innerHTML = '<img src="'+d.secure_url+'" style="width:100%;border-radius:4px;margin-top:4px"/><div style="color:#22c55e;font-weight:600;margin-top:4px">✅ Screenshot uploaded!</div>';
+    } else {
+      status.textContent = '❌ Upload failed. Try again.';
+    }
+  });
+  xhr.open('POST', 'https://api.cloudinary.com/v1_1/'+CL_CLOUD+'/image/upload');
+  xhr.send(fd);
+}
+
+async function submitDeal() {
+  if(!CU||!DEAL_TARGET) return;
+  const amount = parseInt(document.getElementById('dealAmount').value);
+  const description = document.getElementById('dealDesc').value.trim();
+  const deadline = document.getElementById('dealDeadline').value.trim();
+  if(!amount||!description){toast('Please fill in amount and description');return;}
+  const usageLabels = {brand_only:'Brand Use Only',creator_post:'Creator Posts on Instagram',both:'Both — Creator Posts + Brand Gets Reel'};
+  const { error } = await _sb.from('deals').insert({
+    brand_id:CU.id, creator_id:DEAL_TARGET.id,
+    amount, description, deadline,
+    status:'pending',
+    usage_rights: USAGE_SEL,
+  });
+  if(error){toast('Error: '+error.message);return;}
+  const usageMsg = USAGE_SEL !== 'brand_only' ? ' Content usage: '+usageLabels[USAGE_SEL]+'. Payment will be split 40% on delivery, 40% after 30-day posting period.' : '';
+  await _sb.from('messages').insert({
+    sender_id:CU.id, receiver_id:DEAL_TARGET.id,
+    text:'Hi! I sent you a deal proposal: "'+description+'" for PKR '+amount+'.'+usageMsg+' Please check your deals and accept or reject the proposal!'
+  });
+  await _sb.from('messages').insert({
+    sender_id: CU.id,
+    receiver_id: CU.id,
+    text: '📋 Your deal has been sent! Once the creator accepts, you will see payment instructions in your deals section. Payment details: Easypaisa/JazzCash: 0314-2459992 | HBL Bank: Akash Alam. Amount to send: PKR '+amount+'.'
+  });
+  closeModal('dealModal');
+  toast('Deal sent! Please complete payment and send screenshot to WhatsApp. 🎉','success');
+}
+
+// ── PROFILE ───────────────────────────────────────
+function viewProfile(id) { window._pid = id; showPage('profile'); }
+async function renderProfile() {
+  const id = window._pid;
+  let user = null;
+  if(id) {
+    const { data } = await _sb.from('profiles').select('*').eq('id',id).single();
+    user = data;
+  } else if(CU) { user = CU; }
+  if(!user) { document.getElementById('profileHero').innerHTML='<div style="padding:40px;color:var(--grey)">Profile not found.</div>'; return; }
+  const col = getColor(user.name||user.id);
+  const ini = getInitials(user.name||'U');
+  const isOwn = CU && CU.id === (user.id||id);
+  document.getElementById('profileHero').innerHTML =
+    '<div class="profile-big-avatar" style="background:'+col+'20;color:'+col+';border-color:'+col+'">'+ini+'</div>' +
+    '<div class="profile-info"><div class="profile-name">'+(user.name||'User')+'</div><div class="profile-handle">'+(user.handle||'@user')+'</div><div class="profile-niche-tag">'+(user.niche||'Creator')+'</div>' +
+    '<div class="profile-stats-row"><div><div class="profile-stat-val">'+(user.followers||'N/A')+'</div><div class="profile-stat-label">Followers</div></div><div><div class="profile-stat-val">PKR '+(user.price||0)+'</div><div class="profile-stat-label">Per Reel</div></div></div>' +
+    '<div class="profile-actions-row">' +
+    (isOwn ? '<button class="btn-hero-red" onclick="openEditModal()">Edit Profile ✏️</button><button class="btn-hero-outline" onclick="showPage(\'dashboard\')" style="margin-left:8px">Dashboard</button>'
+           : (MODE === 'brand' || !CU ? '<button class="btn-hero-red" onclick="openDeal(\''+user.id+'\',\''+(user.name||'Creator').replace(/'/g,'')+'\','+(user.price||0)+')">Send Deal →</button>' : '') + '<button class="btn-hero-outline" onclick="msgUser(\''+user.id+'\');showPage(\'messages\')" style="margin-left:8px">Message</button>') +
+    '</div></div>';
+  document.getElementById('profileBody').innerHTML =
+    '<div style="max-width:800px"><div class="section-label">About</div><p style="font-size:15px;color:var(--white2);line-height:1.7">'+(user.bio||(isOwn?'Add a bio to attract more brands!':'No bio yet.'))+'</p></div>';
+}
+
+// ── EDIT PROFILE ──────────────────────────────────
+function openEditModal() {
+  if(!CU) return;
+  const isInf = CU.role === 'influencer';
+  document.getElementById('editName').value = CU.name||'';
+  document.getElementById('editHandle').value = CU.handle||'';
+  document.getElementById('editBio').value = CU.bio||'';
+  document.getElementById('editBrand').value = CU.brandName||'';
+  document.getElementById('editPrice').value = CU.price||'';
+  // set selects
+  const ns = document.getElementById('editNiche');
+  for(let i=0;i<ns.options.length;i++) if(ns.options[i].value===CU.niche){ns.selectedIndex=i;break;}
+  const fs = document.getElementById('editFollowers');
+  for(let i=0;i<fs.options.length;i++) if(fs.options[i].value===CU.followers){fs.selectedIndex=i;break;}
+  document.getElementById('editHandleWrap').style.display = isInf?'flex':'none';
+  document.getElementById('editNicheWrap').style.display = isInf?'flex':'none';
+  document.getElementById('editFollowersWrap').style.display = isInf?'flex':'none';
+  document.getElementById('editPriceWrap').style.display = isInf?'flex':'none';
+  document.getElementById('editBrandWrap').style.display = !isInf?'flex':'none';
+  openModal('editModal');
+}
+async function saveProfile() {
+  if(!CU) return;
+  const btn = document.getElementById('editSaveBtn');
+  btn.textContent = 'Saving...'; btn.disabled = true;
+  const upd = {
+    name: document.getElementById('editName').value.trim()||CU.name,
+    handle: document.getElementById('editHandle').value.trim()||CU.handle,
+    niche: document.getElementById('editNiche').value||CU.niche,
+    followers: document.getElementById('editFollowers').value||CU.followers,
+    price: parseInt(document.getElementById('editPrice').value)||CU.price,
+    brand_name: document.getElementById('editBrand').value.trim()||CU.brandName,
+    bio: document.getElementById('editBio').value.trim(),
+  };
+  const { error } = await _sb.from('profiles').update(upd).eq('id',CU.id);
+  btn.textContent = 'Save Changes →'; btn.disabled = false;
+  if(error){toast('Error: '+error.message);return;}
+  CU.name=upd.name; CU.handle=upd.handle; CU.niche=upd.niche; CU.followers=upd.followers; CU.price=upd.price; CU.brandName=upd.brand_name; CU.bio=upd.bio;
+  closeModal('editModal');
+  toast('Profile updated!','success');
+  renderProfile();
+}
+function confirmDelete() { closeModal('editModal'); openModal('deleteModal'); }
+async function deleteMyAccount() {
+  const btn = document.getElementById('deleteConfirmBtn');
+  btn.textContent = 'Deleting...'; btn.disabled = true;
+  try {
+    await _sb.from('messages').delete().eq('sender_id',CU.id);
+    await _sb.from('messages').delete().eq('receiver_id',CU.id);
+    await _sb.from('deals').delete().or('brand_id.eq.'+CU.id+',creator_id.eq.'+CU.id);
+    await _sb.from('brand_posts').delete().eq('user_id',CU.id);
+    await _sb.from('profiles').delete().eq('id',CU.id);
+    await _sb.auth.signOut();
+    CU = null; MODE = 'influencer';
+    closeModal('deleteModal'); updateNav();
+    toast('Account deleted.');
+    showPage('landing');
+  } catch(e) { btn.textContent='Yes, Delete Account'; btn.disabled=false; toast('Error. Try again.'); }
+}
+
+// ── NOTIFICATIONS ─────────────────────────────────
+async function loadNotifications() {
+  const list = document.getElementById('notifList');
+  if(!CU){list.innerHTML='<div class="empty-state"><div class="ei">🔒</div><h3>Please log in</h3></div>';return;}
+  list.innerHTML='<div style="color:var(--grey);font-size:14px;padding:20px">Loading...</div>';
+  const [{ data: deals }, { data: msgs }] = await Promise.all([
+    _sb.from('deals').select('*').eq('creator_id',CU.id).order('created_at',{ascending:false}).limit(10),
+    _sb.from('messages').select('*').eq('receiver_id',CU.id).order('created_at',{ascending:false}).limit(10)
+  ]);
+  const notifs = [];
+  (deals||[]).forEach(d => notifs.push({ icon:'💼', title:'New Deal Proposal', body:'Deal for PKR '+d.amount+': '+d.description, time:timeAgo(d.created_at), unread:d.status==='pending' }));
+  (msgs||[]).forEach(m => notifs.push({ icon:'💬', title:'New Message', body:m.text.slice(0,80), time:timeAgo(m.created_at), unread:true }));
+  list.innerHTML = notifs.length ? notifs.map(n =>
+    '<div class="notif-item'+(n.unread?' unread':'')+'"><div class="notif-icon">'+n.icon+'</div><div class="notif-content"><div class="notif-title">'+n.title+'</div><div class="notif-body">'+n.body+'</div><div class="notif-time">'+n.time+'</div></div></div>'
+  ).join('') : '<div class="empty-state"><div class="ei">🔔</div><h3>No notifications yet</h3></div>';
+}
+
+// ── VIDEO UPLOAD ──────────────────────────────────
+function openUpload(dealId, dealDesc) {
+  UPLOAD_DEAL_ID = dealId; UPLOADED_URL = null;
+  document.getElementById('uploadModalSub').textContent = 'Upload your reel for: ' + dealDesc;
+  document.getElementById('uploadProgressWrap').style.display = 'none';
+  document.getElementById('videoPreviewWrap').innerHTML = '';
+  document.getElementById('submitVideoBtn').style.display = 'none';
+  document.getElementById('submitVideoBtn').disabled = false;
+document.getElementById('submitVideoBtn').textContent = 'Submit Reel →';
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('progressFill').style.background = 'var(--red)';
+  document.getElementById('videoFileInput').value = '';
+  openModal('uploadModal');
+}
+function onFileSelected(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  if(file.size > 100*1024*1024){ toast('File too large. Max 100MB.'); return; }
+  uploadToCloudinary(file);
+}
+function uploadToCloudinary(file) {
+  const pw = document.getElementById('uploadProgressWrap');
+  const pf = document.getElementById('progressFill');
+  const pl = document.getElementById('progressLabel');
+  const sb = document.getElementById('submitVideoBtn');
+  pw.style.display = 'block';
+  pl.textContent = 'Uploading... 0%';
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CL_PRESET);
+  fd.append('cloud_name', CL_CLOUD);
+  const xhr = new XMLHttpRequest();
+  xhr.upload.addEventListener('progress', e => {
+    if(e.lengthComputable){ const p=Math.round(e.loaded/e.total*100); pf.style.width=p+'%'; pl.textContent='Uploading... '+p+'%'; }
+  });
+  xhr.addEventListener('load', () => {
+    if(xhr.status===200) {
+      const d = JSON.parse(xhr.responseText);
+      UPLOADED_URL = d.secure_url;
+console.log('Uploaded URL:', UPLOADED_URL);
+      pf.style.width='100%'; pf.style.background='#22c55e'; pl.textContent='Upload complete! ✅';
+      document.getElementById('videoPreviewWrap').innerHTML = '<div class="video-preview" style="margin-top:16px"><video controls src="'+UPLOADED_URL+'"></video></div><div style="margin-top:8px;font-size:13px;color:#22c55e;font-weight:600">✅ Reel uploaded! Review it above then submit.</div>';
+      sb.textContent = 'Submit Reel →';
+sb.disabled = false;
+sb.style.display = 'block';
+    } else { pl.textContent='Upload failed. Try again.'; pf.style.background='var(--red)'; }
+  });
+  xhr.addEventListener('error', () => { pl.textContent='Upload failed. Check connection.'; });
+  xhr.open('POST', 'https://api.cloudinary.com/v1_1/'+CL_CLOUD+'/video/upload');
+  xhr.send(fd);
+}
+async function submitVideo() {
+  if(!UPLOADED_URL||!UPLOAD_DEAL_ID) return;
+  const btn = document.getElementById('submitVideoBtn');
+  btn.textContent='Submitting...'; btn.disabled=true;
+  const { data: deal, error } = await _sb.from('deals').update({ video_url:UPLOADED_URL, status:'under_review' }).eq('id',UPLOAD_DEAL_ID).select().single();
+  if(error){ toast('Error: '+error.message); btn.textContent='Submit Reel →'; btn.disabled=false; return; }
+  if(deal) await _sb.from('messages').insert({ sender_id:CU.id, receiver_id:deal.brand_id, text:'I have submitted my reel for admin review. You will be notified once it is approved and ready for your review!' });
+  closeModal('uploadModal');
+  toast('Reel submitted for review! You will be notified once approved. 🎉','success');
+  loadDashDeals();
+}
+
+// ── VIDEO REVIEW ──────────────────────────────────
+function openReview(dealId, videoUrl, dealDesc, creatorId) {
+  REVIEW_DEAL = { id:dealId, creatorId };
+  document.getElementById('reviewModalSub').textContent = 'Reviewing: '+dealDesc;
+  document.getElementById('reviewVideoWrap').innerHTML = 
+  '<div style="position:relative;border-radius:6px;overflow:hidden;border:1px solid var(--border)">' +
+  '<video controls src="'+videoUrl+'" style="width:100%;max-height:340px;display:block"></video>' +
+  '<div style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">' +
+  '<div style="color:white;font-size:18px;font-weight:900;letter-spacing:3px;text-transform:uppercase;opacity:0.4;transform:rotate(-30deg);text-shadow:0 0 10px rgba(0,0,0,0.8);text-align:center">COLLABINST<br/>PREVIEW ONLY<br/>NOT FOR USE</div>' +
+  '</div></div>' +
+  '<div style="margin-top:10px;font-size:13px;color:var(--white2)">Review the reel carefully before approving payment.</div>';
+  document.getElementById('reviewActions').innerHTML =
+    '<button onclick="approveDeal()" style="flex:1;padding:12px;border-radius:4px;background:#22c55e;color:var(--white);font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:\'Barlow\',sans-serif">✅ Approve & Release Payment</button>' +
+    '<button onclick="requestRevision()" style="flex:1;padding:12px;border-radius:4px;background:rgba(232,25,44,0.1);border:1px solid rgba(232,25,44,0.3);color:var(--red);font-size:14px;font-weight:700;cursor:pointer;font-family:\'Barlow\',sans-serif">❌ Request Revision</button>';
+  openModal('reviewModal');
+}
+async function approveDeal() {
+  if(!REVIEW_DEAL) return;
+  await _sb.from('deals').update({ status:'completed' }).eq('id',REVIEW_DEAL.id);
+  await _sb.from('messages').insert({ sender_id:CU.id, receiver_id:REVIEW_DEAL.creatorId, text:'Great work! Your reel has been approved and payment released. Thank you!' });
+  closeModal('reviewModal');
+  toast('Deal approved! Payment released to creator. 🎉','success');
+  loadDashDeals();
+}
+async function requestRevision() {
+  if(!REVIEW_DEAL) return;
+  await _sb.from('deals').update({ status:'revision' }).eq('id',REVIEW_DEAL.id);
+  await _sb.from('messages').insert({ sender_id:CU.id, receiver_id:REVIEW_DEAL.creatorId, text:'Thanks for the reel! We would like to request a revision. Please check your deals.' });
+  closeModal('reviewModal');
+  toast('Revision requested. Creator notified.','success');
+  loadDashDeals();
+}
+
+// ── ADMIN ─────────────────────────────────────────
+async function checkAdminPass() {
+  if(!CU) {
+    showErr('adminPassError', 'Please log in to your CollabInst account first.');
+    return;
+  }
+  const { data: profile } = await _sb.from('profiles')
+    .select('is_admin')
+    .eq('id', CU.id)
+    .single();
+  if(profile && profile.is_admin === true) {
+    document.getElementById('adminLoginWrap').style.display='none';
+    document.getElementById('adminDashWrap').style.display='block';
+    adminTab('stats', document.querySelector('.admin-tab'));
+  } else {
+    showErr('adminPassError', 'Access denied. You do not have admin privileges.');
+  }
+}
+function adminTab(tab, el) {
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const c = document.getElementById('adminContent');
+  c.innerHTML='<div style="color:var(--grey);font-size:14px;padding:20px">Loading...</div>';
+  if(tab==='stats') adminStats();
+  if(tab==='users') adminUsers();
+  if(tab==='deals') adminDeals();
+  if(tab==='posts') adminPosts();
+  if(tab==='messages') adminMessages();
+}
+async function adminStats() {
+  const [u,inf,br,d,po,da] = await Promise.all([
+    _sb.from('profiles').select('*',{count:'exact',head:true}),
+    _sb.from('profiles').select('*',{count:'exact',head:true}).eq('role','influencer'),
+    _sb.from('profiles').select('*',{count:'exact',head:true}).eq('role','brand'),
+    _sb.from('deals').select('*',{count:'exact',head:true}),
+    _sb.from('brand_posts').select('*',{count:'exact',head:true}),
+    _sb.from('deals').select('amount'),
+  ]);
+  const total = (da.data||[]).reduce((s,x)=>s+(x.amount||0),0);
+  const { count: pendingCount } = await _sb.from('deals').select('*',{count:'exact',head:true}).eq('status','under_review');
+  document.getElementById('adminContent').innerHTML =
+    '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:24px">PLATFORM <span style="color:var(--red)">OVERVIEW</span></div>' +
+    '<div class="admin-stat-grid">' +
+    '<div class="admin-stat-card"><div class="admin-stat-num">'+(u.count||0)+'</div><div class="admin-stat-label">Total Users</div></div>' +
+    '<div class="admin-stat-card"><div class="admin-stat-num">'+(inf.count||0)+'</div><div class="admin-stat-label">Creators</div></div>' +
+    '<div class="admin-stat-card"><div class="admin-stat-num">'+(br.count||0)+'</div><div class="admin-stat-label">Brands</div></div>' +
+    '<div class="admin-stat-card"><div class="admin-stat-num">'+(d.count||0)+'</div><div class="admin-stat-label">Total Deals</div></div>' +
+    '<div class="admin-stat-card"><div class="admin-stat-num">'+(po.count||0)+'</div><div class="admin-stat-label">Brand Posts</div></div>' +
+    '<div class="admin-stat-card"><div class="admin-stat-num" style="color:#22c55e">PKR '+total+'</div><div class="admin-stat-label">Total Deal Value</div></div>' +
+    '<div class="admin-stat-card"><div class="admin-stat-num" style="color:#22c55e">PKR '+Math.floor(total*0.2)+'</div><div class="admin-stat-label">Your 20% Cut</div></div>' +
+    '<div class="admin-stat-card" style="border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.05)">' +
+    '<div class="admin-stat-num" style="color:#f59e0b" id="pendingReviewCount">...</div>' +
+    '<div class="admin-stat-label">Reels to Review</div></div>' +
+    '</div>';
+}
+async function adminUsers() {
+  const { data: users } = await _sb.from('profiles').select('*').order('created_at',{ascending:false});
+  document.getElementById('adminContent').innerHTML =
+    '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:24px">ALL <span style="color:var(--red)">USERS</span> ('+(users?users.length:0)+')</div>' +
+    '<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Handle</th><th>Joined</th><th>Action</th></tr></thead><tbody>' +
+    (users&&users.length?users.map(u=>'<tr><td><strong>'+u.name+'</strong></td><td style="color:var(--grey)">'+u.email+'</td><td><span style="padding:3px 10px;border-radius:2px;font-size:11px;font-weight:700;background:'+(u.role==='influencer'?'rgba(232,25,44,0.15)':'rgba(14,165,233,0.15)')+';color:'+(u.role==='influencer'?'var(--red)':'#0ea5e9')+'">'+u.role+'</span></td><td>'+(u.handle||'-')+'</td><td>'+new Date(u.created_at).toLocaleDateString()+'</td><td><button class="admin-del-btn" onclick="adminDelUser(\''+u.id+'\',\''+u.name+'\')">Delete</button></td></tr>').join(''):'<tr><td colspan="6" style="text-align:center;color:var(--grey);padding:40px">No users yet</td></tr>') +
+    '</tbody></table>';
+}
+async function adminDelUser(id, name) {
+  if(!confirm('Delete user '+name+'?')) return;
+  await _sb.from('messages').delete().eq('sender_id',id);
+  await _sb.from('messages').delete().eq('receiver_id',id);
+  await _sb.from('deals').delete().or('brand_id.eq.'+id+',creator_id.eq.'+id);
+  await _sb.from('brand_posts').delete().eq('user_id',id);
+  await _sb.from('profiles').delete().eq('id',id);
+  toast('User deleted.','success'); adminUsers();
+}
+async function adminDeals() {
+  const { data: deals } = await _sb.from('deals').select('*').order('created_at',{ascending:false});
+  const pendingReviews = (deals||[]).filter(d => d.status === 'under_review').length;
+  
+  let rows = '';
+  if(deals && deals.length) {
+    deals.forEach(d => {
+      const sc = d.status==='completed'?'completed':d.status==='delivered'||d.status==='active'?'active':'pending';
+      const usageLabel = d.usage_rights==='creator_post'?'📸 Creator Post':d.usage_rights==='both'?'🤝 Both':'🏢 Brand Only';
+      
+      let reelCell = '-';
+      if(d.status==='under_review' && d.video_url) {
+        reelCell = '<div style="display:flex;flex-direction:column;gap:4px">' +
+          '<a href="'+d.video_url+'" target="_blank" style="color:var(--red);font-size:12px;font-weight:600">▶ Watch Reel</a>' +
+          '<div style="display:flex;gap:4px;margin-top:4px">' +
+          '<button class="admin-ok-btn" onclick="adminApproveReel(\''+d.id+'\',\''+d.creator_id+'\')">✅ Approve</button>' +
+          '<button class="admin-del-btn" onclick="adminRejectReel(\''+d.id+'\',\''+d.creator_id+'\')">❌ Reject</button>' +
+          '</div></div>';
+      } else if(d.status==='delivered' && d.video_url) {
+        reelCell = '<div style="display:flex;flex-direction:column;gap:4px">' +
+          '<a href="'+d.video_url+'" target="_blank" style="color:var(--red);font-size:12px;font-weight:600">▶ View Reel</a>' +
+          '<span style="font-size:11px;color:#22c55e;font-weight:600">✅ Sent to Brand</span>' +
+          '</div>';
+      } else if(d.status==='completed' && d.video_url) {
+        reelCell = '<div style="display:flex;flex-direction:column;gap:4px">' +
+          '<a href="'+d.video_url+'" target="_blank" style="color:var(--red);font-size:12px;font-weight:600">▶ View Reel</a>' +
+          (d.post_url?'<a href="'+d.post_url+'" target="_blank" style="font-size:11px;color:#22c55e">View Post →</a>':'') +
+          '</div>';
+      } else if(!d.video_url) {
+        reelCell = '<span style="font-size:12px;color:var(--grey)">No reel yet</span>';
+      }
+
+      let actionCell = '';
+if(d.status==='active' && !d.payment_confirmed) {
+  actionCell += '<div style="background:var(--black3);border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:10px;font-size:11px;margin-bottom:6px;display:flex;flex-direction:column;gap:4px">' +
+'<div style="font-weight:700;color:#22c55e;margin-bottom:4px">💳 Payment Details</div>' +
+'<div><strong>Method:</strong> '+(d.payment_method||'—')+'</div>' +
+'<div><strong>Account:</strong> '+(d.payment_account||'—')+'</div>' +
+'<div><strong>TRX ID:</strong> '+(d.payment_trx_id||'—')+'</div>' +
+'<div><strong>Amount:</strong> PKR '+(d.pkr_amount||'—')+'</div>' +
+(d.payment_screenshot?'<a href="'+d.payment_screenshot+'" target="_blank" style="color:var(--red);font-size:11px;font-weight:600;margin-top:4px">🖼 View Screenshot →</a>':'<div style="color:var(--grey);margin-top:2px">No screenshot yet</div>') +
+'</div>' +
+'<button class="admin-ok-btn" onclick="adminConfirmPayment(\''+d.id+'\',\''+d.creator_id+'\')">💳 Confirm Payment</button>';
+}
+if(d.status==='pending'||d.status==='revision') {
+  actionCell += '<button class="admin-ok-btn" onclick="adminOkDeal(\''+d.id+'\')" title="Force complete for disputes only">⚠️ Override</button>';
+}
+actionCell += '<button class="admin-del-btn" onclick="adminDelDeal(\''+d.id+'\')">Delete</button>';
+
+      rows += '<tr style="'+(d.status==='under_review'?'background:rgba(245,158,11,0.05);border-left:2px solid #f59e0b':'')+'">' +
+        '<td>'+(d.description||'Deal')+'</td>' +
+        '<td><strong>PKR '+Number(d.amount).toLocaleString()+'</strong></td>' +
+        '<td style="color:var(--red)">PKR '+Math.floor(d.amount*0.2)+'</td>' +
+        '<td style="color:#22c55e">PKR '+Math.floor(d.amount*0.8)+'</td>' +
+        '<td><span class="deal-status '+sc+'">'+d.status+'</span></td>' +
+        '<td style="font-size:12px">'+usageLabel+'</td>' +
+        '<td>'+reelCell+'</td>' +
+        '<td>'+new Date(d.created_at).toLocaleDateString()+'</td>' +
+        '<td style="display:flex;gap:6px;flex-wrap:wrap">'+actionCell+'</td>' +
+        '</tr>';
+    });
+  } else {
+    rows = '<tr><td colspan="9" style="text-align:center;color:var(--grey);padding:40px">No deals yet</td></tr>';
+  }
+
+  document.getElementById('adminContent').innerHTML =
+    '<div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap">' +
+    '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:32px;letter-spacing:2px">ALL <span style="color:var(--red)">DEALS</span> ('+(deals?deals.length:0)+')</div>' +
+    (pendingReviews>0?'<span style="background:var(--red);color:white;font-size:13px;font-weight:700;padding:6px 14px;border-radius:20px">🔍 '+pendingReviews+' Reel'+(pendingReviews>1?'s':'')+' Awaiting Review</span>':'') +
+    '</div>' +
+    '<table class="admin-table"><thead><tr><th>Deal ID</th><th>Description</th><th>Amount</th><th>Platform Cut</th><th>Creator Gets</th><th>Status</th><th>Usage Rights</th><th>Reel</th><th>Date</th><th>Actions</th></tr></thead><tbody>' +
+    rows +
+    '</tbody></table>';
+}
+async function adminOkDeal(id) { await _sb.from('deals').update({status:'completed'}).eq('id',id); toast('Deal completed!','success'); adminDeals(); }
+
+async function adminConfirmPayment(dealId, creatorId) {
+  if(!confirm('Confirm payment received for this deal?')) return;
+  await _sb.from('deals').update({ payment_confirmed: true }).eq('id', dealId);
+  await _sb.from('messages').insert({
+    sender_id: '00000000-0000-0000-0000-000000000000',
+    receiver_id: creatorId,
+    text: '✅ Payment has been confirmed by CollabInst! You can now start working on the reel. Upload it through your deals section when ready.'
+  });
+  toast('Payment confirmed! Creator has been notified.', 'success');
+  adminDeals();
+}
+
+async function adminApproveReel(dealId, creatorId) {
+  if(!confirm('Approve this reel? The brand will now be able to review it.')) return;
+  await _sb.from('deals').update({ status:'delivered' }).eq('id', dealId);
+  // Notify creator
+  await _sb.from('messages').insert({
+    sender_id: '00000000-0000-0000-0000-000000000000',
+    receiver_id: creatorId,
+    text: '✅ Your reel has been reviewed and approved by CollabInst admin! The brand can now review it. Great work!'
+  });
+  toast('Reel approved! Brand can now review it.', 'success');
+  adminDeals();
+}
+
+async function adminRejectReel(dealId, creatorId) {
+  const reason = prompt('Enter rejection reason (will be sent to creator):');
+  if(reason === null) return;
+  await _sb.from('deals').update({ status:'revision', video_url: null }).eq('id', dealId);
+  // Notify creator
+  await _sb.from('messages').insert({
+    sender_id: '00000000-0000-0000-0000-000000000000',
+    receiver_id: creatorId,
+    text: '❌ Your reel was rejected by CollabInst admin. Reason: ' + (reason || 'Content does not meet platform guidelines') + '. Please upload a new reel.'
+  });
+  toast('Reel rejected. Creator has been notified.', 'success');
+  adminDeals();
+}
+async function adminDelDeal(id) { if(!confirm('Delete this deal?')) return; await _sb.from('deals').delete().eq('id',id); toast('Deleted.'); adminDeals(); }
+async function adminPosts() {
+  const { data: posts } = await _sb.from('brand_posts').select('*').order('created_at',{ascending:false});
+  document.getElementById('adminContent').innerHTML =
+    '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:24px">BRAND <span style="color:var(--red)">POSTS</span> ('+(posts?posts.length:0)+')</div>' +
+    '<table class="admin-table"><thead><tr><th>Brand</th><th>Title</th><th>Niche</th><th>Budget</th><th>Posted</th><th>Action</th></tr></thead><tbody>' +
+    (posts&&posts.length?posts.map(p=>'<tr><td><strong>'+p.brand_name+'</strong></td><td>'+p.title+'</td><td>'+(p.niche||'-')+'</td><td style="color:#22c55e">PKR '+p.budget+'</td><td>'+new Date(p.created_at).toLocaleDateString()+'</td><td><button class="admin-del-btn" onclick="adminDelPost(\''+p.id+'\')">Delete</button></td></tr>').join(''):'<tr><td colspan="6" style="text-align:center;color:var(--grey);padding:40px">No posts yet</td></tr>') +
+    '</tbody></table>';
+}
+async function adminDelPost(id) { if(!confirm('Delete this post?')) return; await _sb.from('brand_posts').delete().eq('id',id); toast('Deleted.'); adminPosts(); }
+async function adminMessages() {
+  const { data: msgs } = await _sb.from('messages')
+    .select('*')
+    .order('created_at', {ascending:false})
+    .limit(200);
+
+  if(!msgs || !msgs.length) {
+    document.getElementById('adminContent').innerHTML = '<div class="empty-state"><div class="ei">💬</div><h3>No messages yet</h3></div>';
+    return;
+  }
+
+  // Get all unique user IDs
+  const userIds = [...new Set([...msgs.map(m=>m.sender_id), ...msgs.map(m=>m.receiver_id)])];
+  const { data: profiles } = await _sb.from('profiles').select('id,name,role').in('id', userIds);
+  const pm = {};
+  (profiles||[]).forEach(p => pm[p.id] = p);
+
+  // Group messages by conversation
+  const convos = {};
+  msgs.forEach(m => {
+    const key = [m.sender_id, m.receiver_id].sort().join('_');
+    if(!convos[key]) convos[key] = { messages:[], sender_id:m.sender_id, receiver_id:m.receiver_id };
+    convos[key].messages.push(m);
+  });
+
+  const searchId = 'adminMsgSearch_' + Date.now();
+
+  document.getElementById('adminContent').innerHTML =
+    '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:24px">ALL <span style="color:var(--red)">MESSAGES</span></div>' +
+    '<input id="'+searchId+'" class="pay-input" placeholder="Search by name..." oninput="filterAdminMessages(this.value)" style="margin-bottom:20px;max-width:360px"/>' +
+    '<div id="adminMsgList">' +
+    Object.values(convos).map(conv => {
+      const s = pm[conv.sender_id] || {name:'Unknown',role:''};
+      const r = pm[conv.receiver_id] || {name:'Unknown',role:''};
+      const lastMsg = conv.messages[0];
+      const hasBypass = conv.messages.some(m =>
+        m.text.toLowerCase().includes('whatsapp') ||
+        m.text.toLowerCase().includes('direct') ||
+        m.text.toLowerCase().includes('outside') ||
+        m.text.toLowerCase().includes('bypass') ||
+        m.text.toLowerCase().includes('without collabinst')
+      );
+      return '<div class="brand-post" style="margin-bottom:12px;'+(hasBypass?'border-color:var(--red);background:rgba(232,25,44,0.05)':'')+'" data-names="'+(s.name+' '+r.name).toLowerCase()+'">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">' +
+        '<div style="display:flex;align-items:center;gap:12px">' +
+        '<div style="font-size:14px;font-weight:700">'+s.name+'<span style="color:var(--grey);font-size:11px;margin-left:6px">'+s.role+'</span></div>' +
+        '<div style="color:var(--grey);font-size:12px">↔</div>' +
+        '<div style="font-size:14px;font-weight:700">'+r.name+'<span style="color:var(--grey);font-size:11px;margin-left:6px">'+r.role+'</span></div>' +
+        '</div>' +
+        (hasBypass?'<span style="background:var(--red);color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:2px">⚠️ BYPASS DETECTED</span>':'') +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;background:var(--black3);border-radius:4px;padding:12px">' +
+        conv.messages.slice().reverse().map(m => {
+          const sender = pm[m.sender_id]||{name:'Unknown'};
+          const isBypass = m.text.toLowerCase().includes('whatsapp')||m.text.toLowerCase().includes('direct')||m.text.toLowerCase().includes('outside')||m.text.toLowerCase().includes('bypass');
+          return '<div style="margin-bottom:8px">' +
+            '<span style="font-size:11px;font-weight:700;color:'+(isBypass?'var(--red)':'var(--grey)')+'">'+sender.name+'</span>' +
+            '<span style="font-size:10px;color:var(--grey);margin-left:8px">'+new Date(m.created_at).toLocaleString()+'</span>' +
+            '<div style="font-size:13px;color:'+(isBypass?'var(--red)':'var(--white2)')+';margin-top:2px;'+(isBypass?'font-weight:600':'')+'">'+m.text+'</div>' +
+            '</div>';
+        }).join('') +
+        '</div>' +
+        '</div>';
+    }).join('') +
+    '</div>';
+}
+
+function filterAdminMessages(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('#adminMsgList .brand-post').forEach(el => {
+    const names = el.getAttribute('data-names') || '';
+    el.style.display = names.includes(q) ? 'block' : 'none';
+  });
+}
+
+// ── PROOF OF POSTING ─────────────────────────────
+function openProofModal(dealId) {
+  PROOF_DEAL_ID = dealId;
+  PROOF_SCREENSHOT_URL = null;
+  document.getElementById('proofUrl').value = '';
+  document.getElementById('proofPreview').innerHTML = '';
+  document.getElementById('proofError').style.display = 'none';
+  document.getElementById('proofSubmitBtn').textContent = 'Submit Proof →';
+  document.getElementById('proofSubmitBtn').disabled = false;
+  openModal('proofModal');
+}
+
+function onProofSelected(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  if(file.size > 10*1024*1024){ toast('Image too large. Max 10MB.'); return; }
+  uploadProofScreenshot(file);
+}
+
+function uploadProofScreenshot(file) {
+  const preview = document.getElementById('proofPreview');
+  preview.innerHTML = '<div style="font-size:12px;color:var(--grey);padding:8px">Uploading screenshot...</div>';
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CL_PRESET);
+  fd.append('cloud_name', CL_CLOUD);
+  const xhr = new XMLHttpRequest();
+  xhr.addEventListener('load', () => {
+    if(xhr.status===200) {
+      const d = JSON.parse(xhr.responseText);
+      PROOF_SCREENSHOT_URL = d.secure_url;
+      preview.innerHTML = '<img src="'+d.secure_url+'" style="width:100%;border-radius:4px;border:1px solid var(--border);margin-top:4px"/><div style="font-size:12px;color:#22c55e;margin-top:6px;font-weight:600">✅ Screenshot uploaded!</div>';
+    } else {
+      preview.innerHTML = '<div style="font-size:12px;color:var(--red)">Upload failed. Try again.</div>';
+    }
+  });
+  xhr.open('POST', 'https://api.cloudinary.com/v1_1/'+CL_CLOUD+'/image/upload');
+  xhr.send(fd);
+}
+
+async function submitProof() {
+  if(!PROOF_DEAL_ID) return;
+  const url = document.getElementById('proofUrl').value.trim();
+  const errEl = document.getElementById('proofError');
+  errEl.style.display = 'none';
+  if(!url || !url.includes('instagram.com')) {
+    errEl.textContent = 'Please enter a valid Instagram post URL.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if(!PROOF_SCREENSHOT_URL) {
+    errEl.textContent = 'Please upload a screenshot of your post.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const btn = document.getElementById('proofSubmitBtn');
+  btn.textContent = 'Submitting...'; btn.disabled = true;
+
+  // Save post_url, screenshot and set 30-day hold timer
+  const holdUntil = new Date(Date.now() + 30*24*60*60*1000).toISOString();
+  const { data: deal, error } = await _sb.from('deals')
+    .update({ post_url: url, proof_screenshot: PROOF_SCREENSHOT_URL, payment_hold_until: holdUntil })
+    .eq('id', PROOF_DEAL_ID)
+    .select().single();
+
+  if(error) { errEl.textContent = 'Error: '+error.message; errEl.style.display='block'; btn.textContent='Submit Proof →'; btn.disabled=false; return; }
+
+  // Notify admin via message (to yourself)
+  if(deal) {
+    await _sb.from('messages').insert({
+      sender_id: CU.id,
+      receiver_id: deal.brand_id,
+      text: 'I have posted the reel on my Instagram! Proof submitted. Post URL: '+url
+    });
+  }
+
+  closeModal('proofModal');
+  toast('Proof submitted! Your remaining payment will be released after 30 days. 🎉', 'success');
+  loadDashDeals();
+}
+
+// ── INIT ──────────────────────────────────────────
+async function init() {
+  // Check if this is a password reset redirect
+  const hash = window.location.hash;
+  const params = new URLSearchParams(hash.replace('#','?'));
+  const type = params.get('type');
+  const accessToken = params.get('access_token');
+
+  if(type === 'recovery' && accessToken) {
+    // Set the session from the reset token
+    await _sb.auth.setSession({
+      access_token: accessToken,
+      refresh_token: params.get('refresh_token') || ''
+    });
+    showPage('auth');
+    switchAuthTab('reset');
+    // Clean up URL
+    history.replaceState(null, '', window.location.pathname);
+    return;
+  }
+
+  const { data: { session } } = await _sb.auth.getSession();
+  if(session && session.user && session.user.email_confirmed_at) {
+    await loadProfile(session.user);
+  }
+  if(hash === '#admin') showPage('admin');
+  else showPage('landing');
+}
+init();
+</script>
+</body>
+</html>
