@@ -1411,8 +1411,9 @@ async function loadMessages() {
       const p = pm[pid]||{name:'User',id:pid};
       const last = (msgs||[]).find(m => m.sender_id===pid||m.receiver_id===pid);
       const col = getColor(p.name||pid);
-      const unread = (msgs||[]).some(m => m.sender_id===pid && m.receiver_id===CU.id);
-      return '<div class="msg-thread' + (i===0?' active':'') + '" onclick="openThread(\'' + pid + '\',this)"><div style="position:relative;flex-shrink:0"><div class="msg-thread-avatar" style="background:'+col+'20;color:'+col+'">' + getInitials(p.name||'U') + '</div>' + (unread?'<div style="position:absolute;top:0;right:0;width:10px;height:10px;border-radius:50%;background:var(--red);border:2px solid var(--black2)"></div>':'') + '</div><div style="flex:1;min-width:0"><div class="msg-thread-name">' + (p.name||'User') + '</div><div class="msg-thread-preview">' + (last?last.text.slice(0,40):'No messages') + '</div></div></div>';
+      const unreadMsgs = (msgs||[]).filter(m => m.sender_id===pid && m.receiver_id===CU.id && !m.is_read);
+      const unreadCount = unreadMsgs.length;
+      return '<div class="msg-thread' + (i===0?' active':'') + '" onclick="openThread(\'' + pid + '\',this)"><div class="msg-thread-avatar" style="background:'+col+'20;color:'+col+'">' + getInitials(p.name||'U') + '</div><div style="flex:1;min-width:0"><div class="msg-thread-name">' + (p.name||'User') + '</div><div class="msg-thread-preview" style="' + (unreadCount>0?'color:var(--white);font-weight:600':'') + '">' + (last?last.text.slice(0,40):'No messages') + '</div></div>' + (unreadCount>0?'<div style="min-width:20px;height:20px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+unreadCount+'</div>':'') + '</div>';
     }).join('');
   if(MSG_PARTNER && partnerIds.includes(MSG_PARTNER)) openThread(MSG_PARTNER, list.querySelector('[onclick*="'+MSG_PARTNER+'"]'));
   else if(partnerIds.length && window.innerWidth > 768) openThread(partnerIds[0], list.querySelector('.msg-thread'));
@@ -1431,6 +1432,7 @@ async function openThread(pid, el) {
     _sb.from('profiles').select('*').eq('id',pid).single(),
     _sb.from('messages').select('*').or('and(sender_id.eq.'+CU.id+',receiver_id.eq.'+pid+'),and(sender_id.eq.'+pid+',receiver_id.eq.'+CU.id+')').order('created_at',{ascending:true})
   ]);
+  await _sb.from('messages').update({ is_read: true }).eq('receiver_id', CU.id).eq('sender_id', pid);
   const col = getColor(partner?partner.name:pid);
   const ini = getInitials(partner?partner.name:'U');
   win.innerHTML =
