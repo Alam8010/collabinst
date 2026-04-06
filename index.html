@@ -371,9 +371,9 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
 
 <!-- NAV -->
 <nav id="mainNav">
-  <div class="nav-logo">Collab<span>Inst</span></div>
+  <div class="nav-logo" onclick="CU?showPage('dashboard'):showPage('landing')" style="cursor:pointer">Collab<span>Inst</span></div>
   <div class="nav-links">
-    <a href="#" onclick="showPage('landing');return false;">Home</a>
+    <a href="#" onclick="CU?showPage('dashboard'):showPage('landing');return false;">Home</a>
     <a href="#" onclick="showPage('browse');return false;">Browse Creators</a>
     <a href="#" onclick="showPage('board');return false;">Brand Board</a>
   </div>
@@ -384,7 +384,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
   <button class="nav-mobile-toggle" onclick="toggleMobileMenu()">☰</button>
 </nav>
 <div class="nav-mobile-menu" id="mobileMenu">
-  <a href="#" onclick="showPage('landing');toggleMobileMenu();return false;">Home</a>
+  <a href="#" onclick="CU?showPage('dashboard'):showPage('landing');toggleMobileMenu();return false;">Home</a>
   <a href="#" onclick="showPage('browse');toggleMobileMenu();return false;">Creators</a>
   <a href="#" onclick="showPage('board');toggleMobileMenu();return false;">Brand Board</a>
   <div id="mobileGuest">
