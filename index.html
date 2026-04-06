@@ -382,8 +382,19 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
   <a href="#" onclick="showPage('landing');toggleMobileMenu();return false;">Home</a>
   <a href="#" onclick="showPage('browse');toggleMobileMenu();return false;">Creators</a>
   <a href="#" onclick="showPage('board');toggleMobileMenu();return false;">Brand Board</a>
-  <a href="#" onclick="showPage('auth');toggleMobileMenu();return false;">Login / Sign Up</a>
+  <div id="mobileGuest">
+    <a href="#" onclick="showPage('auth');toggleMobileMenu();return false;">Login / Sign Up</a>
+  </div>
+  <div id="mobileUser" style="display:none;flex-direction:column;align-items:center;gap:32px;">
+    <a href="#" onclick="showPage('dashboard');toggleMobileMenu();return false;">Dashboard</a>
+    <a href="#" onclick="showPage('messages');toggleMobileMenu();return false;">Messages</a>
+    <a href="#" onclick="showPage('notifications');toggleMobileMenu();return false;">Notifications</a>
+    <a href="#" onclick="showPage('profile');toggleMobileMenu();return false;">My Profile</a>
+    <a href="#" onclick="switchMode();toggleMobileMenu();return false;" style="color:var(--red);">Switch Mode</a>
+    <a href="#" onclick="logout();toggleMobileMenu();return false;" style="color:var(--grey);font-size:24px;">Log Out</a>
+  </div>
 </div>
+
 <!-- LANDING PAGE -->
 <div id="page-landing" class="page active">
   <div class="hero">
@@ -1013,14 +1024,20 @@ function showPage(page) {
 }
 function updateNav() {
   const el = document.getElementById('navActions');
+  const mobileGuest = document.getElementById('mobileGuest');
+  const mobileUser = document.getElementById('mobileUser');
   if(CU) {
     el.innerHTML = '<button class="btn-ghost" onclick="showPage(\'notifications\')">🔔</button>' +
       '<button class="btn-ghost" onclick="showPage(\'messages\')">💬 Messages</button>' +
       '<button class="btn-red" onclick="showPage(\'dashboard\')">Dashboard</button>' +
       '<button class="btn-ghost" onclick="logout()" style="color:var(--grey)">Log Out</button>';
+    if(mobileGuest) mobileGuest.style.display = 'none';
+    if(mobileUser) mobileUser.style.display = 'flex';
   } else {
     el.innerHTML = '<button class="btn-ghost" onclick="showPage(\'auth\')">Log In</button>' +
       '<button class="btn-red" onclick="showPage(\'auth\')">Join Free</button>';
+    if(mobileGuest) mobileGuest.style.display = 'block';
+    if(mobileUser) mobileUser.style.display = 'none';
   }
 }
 
@@ -1259,7 +1276,7 @@ else if(d.status==='revision')
     '<div style="font-size:12px;font-weight:700;color:#22c55e;margin-bottom:4px">💰 Total to Pay: PKR '+Number(d.amount).toLocaleString()+'</div>' +
     '<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:10px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:0.5px">Payment Method</label>' +
     '<select id="payMethod_'+d.id+'" class="post-select" style="font-size:12px;padding:6px 10px" onchange="showPayAccount(\''+d.id+'\',this.value)"><option value="">Select method...</option><option>Easypaisa</option><option>JazzCash</option><option>HBL Bank Transfer</option><option>Other</option></select></div>' +
-    '<div id="payAccountInfo_'+d.id+'" style="display:none;background:var(--black2);border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:10px;font-size:12px;color:#22c55e;font-weight:600;margin-top:4px"></div>' +
+    '<div id="payAccountInfo_'+d.id+'" style="display:none;background:var(--black2);border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:10px;font-size:12px;color:#22c55e;font-weight:600"></div>' +
     '<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:10px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:0.5px">Your Account / Number Used</label>' +
     '<input id="payAccount_'+d.id+'" class="pay-input" type="text" placeholder="e.g. 0300-1234567" style="font-size:12px;padding:6px 10px"/></div>' +
     '<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:10px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:0.5px">Transaction ID</label>' +
@@ -1530,23 +1547,6 @@ async function confirmPaymentSent(dealId) {
   loadDashDeals();
 }
 
-function showPayAccount(dealId, method) {
-  const el = document.getElementById('payAccountInfo_'+dealId);
-  if(!el) return;
-  const accounts = {
-    'Easypaisa': '📱 Send to Easypaisa: 0314-2459992 (Akash Alam)',
-    'JazzCash': '📱 Send to JazzCash: 0314-2459992 (Akash Alam)',
-    'HBL Bank Transfer': '🏦 Send to HBL Bank: Akash Alam | Account: 12345678901',
-    'Other': '💬 Contact: 0314-2459992'
-  };
-  if(method && accounts[method]) {
-    el.textContent = '➡ ' + accounts[method];
-    el.style.display = 'block';
-  } else {
-    el.style.display = 'none';
-  }
-}
-
 function uploadPayProof(e, dealId) {
   const file = e.target.files[0];
   if(!file) return;
@@ -1569,6 +1569,23 @@ function uploadPayProof(e, dealId) {
   });
   xhr.open('POST', 'https://api.cloudinary.com/v1_1/'+CL_CLOUD+'/image/upload');
   xhr.send(fd);
+}
+
+function showPayAccount(dealId, method) {
+  const el = document.getElementById('payAccountInfo_'+dealId);
+  if(!el) return;
+  const accounts = {
+    'Easypaisa': '📱 Easypaisa: 0314-2459992 (Akash Alam)',
+    'JazzCash': '📱 JazzCash: 0314-2459992 (Akash Alam)',
+    'HBL Bank Transfer': '🏦 HBL Bank: Akash Alam | IBAN: PK00HBL0000000000000000',
+    'Other': '💬 Contact us on WhatsApp: 0314-2459992'
+  };
+  if(method && accounts[method]) {
+    el.textContent = '➡ Send to: ' + accounts[method];
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
 }
 
 async function submitDeal() {
@@ -1596,7 +1613,7 @@ async function submitDeal() {
     text: '📋 Your deal has been sent! Once the creator accepts, you will see payment instructions in your deals section. Payment details: Easypaisa/JazzCash: 0314-2459992 | HBL Bank: Akash Alam. Amount to send: PKR '+amount+'.'
   });
   closeModal('dealModal');
-  toast('Deal sent! Once the creator accepts, go to your Deals section to complete payment. 🎉','success');
+  toast('Deal sent! Once the creator accepts, go to your Deals to complete payment. 🎉','success');
 }
 
 // ── PROFILE ───────────────────────────────────────
@@ -1919,6 +1936,12 @@ if(d.status==='pending'||d.status==='revision') {
 actionCell += '<button class="admin-del-btn" onclick="adminDelDeal(\''+d.id+'\')">Delete</button>';
 
       rows += '<tr style="'+(d.status==='under_review'?'background:rgba(245,158,11,0.05);border-left:2px solid #f59e0b':'')+'">' +
+        '<td><span style="font-size:11px;color:var(--grey);font-family:monospace">#'+d.id.slice(0,8).toUpperCase()+'</span></td>' +
+        '<td><span style="font-size:11px;color:var(--grey);font-family:monospace">#'+d.id.slice(0,8).toUpperCase()+'</span></td>' +
+        '<td><span style="font-size:11px;color:var(--grey);font-family:monospace">#'+d.id.slice(0,8).toUpperCase()+'</span></td>' +
+        '<td><span style="font-size:11px;color:var(--grey);font-family:monospace">#'+d.id.slice(0,8).toUpperCase()+'</span></td>' +
+        '<td><span style="font-size:11px;color:var(--grey);font-family:monospace">#'+d.id.slice(0,8).toUpperCase()+'</span></td>' +
+        '<td><span style="font-size:11px;color:var(--grey);font-family:monospace">#'+d.id.slice(0,8).toUpperCase()+'</span></td>' +
         '<td>'+(d.description||'Deal')+'</td>' +
         '<td><strong>PKR '+Number(d.amount).toLocaleString()+'</strong></td>' +
         '<td style="color:var(--red)">PKR '+Math.floor(d.amount*0.2)+'</td>' +
@@ -1939,7 +1962,7 @@ actionCell += '<button class="admin-del-btn" onclick="adminDelDeal(\''+d.id+'\')
     '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:32px;letter-spacing:2px">ALL <span style="color:var(--red)">DEALS</span> ('+(deals?deals.length:0)+')</div>' +
     (pendingReviews>0?'<span style="background:var(--red);color:white;font-size:13px;font-weight:700;padding:6px 14px;border-radius:20px">🔍 '+pendingReviews+' Reel'+(pendingReviews>1?'s':'')+' Awaiting Review</span>':'') +
     '</div>' +
-    '<table class="admin-table"><thead><tr><th>Description</th><th>Amount</th><th>Platform Cut</th><th>Creator Gets</th><th>Status</th><th>Usage Rights</th><th>Reel</th><th>Date</th><th>Actions</th></tr></thead><tbody>' +
+    '<table class="admin-table"><thead><tr><th>Deal ID</th><th>Description</th><th>Amount</th><th>Platform Cut</th><th>Creator Gets</th><th>Status</th><th>Usage Rights</th><th>Reel</th><th>Date</th><th>Actions</th></tr></thead><tbody>' +
     rows +
     '</tbody></table>';
 }
