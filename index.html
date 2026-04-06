@@ -209,9 +209,9 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
 /* MESSAGES */
 .messages-layout{display:flex;height:calc(100vh - 64px);padding-top:64px;}
 @media(max-width:768px){
-  .messages-layout{flex-direction:column;height:auto;}
-  .msg-list{width:100%;border-right:none;border-bottom:1px solid var(--border);max-height:40vh;}
-  .msg-window{min-height:60vh;}
+  .messages-layout{flex-direction:column;height:calc(100vh - 64px);}
+  .msg-list{width:100%;border-right:none;height:100%;}
+  .msg-window{display:none;flex-direction:column;width:100%;height:100%;}
 }
 .msg-list{width:300px;border-right:1px solid var(--border);background:var(--black2);overflow-y:auto;flex-shrink:0;}
 .msg-list-header{padding:20px;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:1px;}
@@ -1414,12 +1414,16 @@ async function loadMessages() {
       return '<div class="msg-thread' + (i===0?' active':'') + '" onclick="openThread(\'' + pid + '\',this)"><div class="msg-thread-avatar" style="background:'+col+'20;color:'+col+'">' + getInitials(p.name||'U') + '</div><div style="flex:1;min-width:0"><div class="msg-thread-name">' + (p.name||'User') + '</div><div class="msg-thread-preview">' + (last?last.text.slice(0,40):'No messages') + '</div></div></div>';
     }).join('');
   if(MSG_PARTNER && partnerIds.includes(MSG_PARTNER)) openThread(MSG_PARTNER, list.querySelector('[onclick*="'+MSG_PARTNER+'"]'));
-  else if(partnerIds.length) openThread(partnerIds[0], list.querySelector('.msg-thread'));
+  else if(partnerIds.length && window.innerWidth > 768) openThread(partnerIds[0], list.querySelector('.msg-thread'));
   MSG_PARTNER = null;
 }
 async function openThread(pid, el) {
   document.querySelectorAll('.msg-thread').forEach(t=>t.classList.remove('active'));
   if(el) el.classList.add('active');
+  if(window.innerWidth <= 768) {
+    document.getElementById('msgList').style.display = 'none';
+    document.getElementById('msgWindow').style.display = 'flex';
+  }
   const win = document.getElementById('msgWindow');
   win.innerHTML = '<div style="padding:24px;color:var(--grey)">Loading...</div>';
   const [{ data: partner }, { data: msgs }] = await Promise.all([
@@ -1429,7 +1433,9 @@ async function openThread(pid, el) {
   const col = getColor(partner?partner.name:pid);
   const ini = getInitials(partner?partner.name:'U');
   win.innerHTML =
-    '<div class="msg-window-header"><div class="msg-thread-avatar" style="background:'+col+'20;color:'+col+'">'+ini+'</div><div><div class="msg-header-name">'+(partner?partner.name:'User')+'</div><div class="msg-header-role">'+(partner?(partner.role==='influencer'?'Creator':'Brand'):'')+'</div></div>' +
+    '<div class="msg-window-header">' +
+(window.innerWidth <= 768 ? '<button onclick="document.getElementById(\'msgList\').style.display=\'block\';document.getElementById(\'msgWindow\').style.display=\'none\';" style="background:none;border:none;color:var(--white);font-size:24px;cursor:pointer;margin-right:12px;padding:0">←</button>' : '') +
+'<div class="msg-thread-avatar" style="background:'+col+'20;color:'+col+'">'+ini+'</div><div><div class="msg-header-name">'+(partner?partner.name:'User')+'</div><div class="msg-header-role">'+(partner?(partner.role==='influencer'?'Creator':'Brand'):'')+'</div></div>' +
     (MODE === 'brand' || !CU ? '<button class="btn-msg" style="margin-left:auto" onclick="openDeal(\''+pid+'\',\''+(partner?partner.name.replace(/'/g,''):'User')+'\','+(partner?partner.price||0:0)+')">📋 Propose Deal</button>' : '') + '</div>' +
     '<div class="msg-body" id="msgBody">' +
     ((msgs&&msgs.length)?msgs.map(m=>{
