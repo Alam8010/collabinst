@@ -1373,7 +1373,7 @@ function boardCard(p) {
     '<div class="brand-post-footer"><div class="brand-budget">Budget: <strong>PKR ' + Number(p.budget||0).toLocaleString() + '</strong></div>' +
     '<button class="btn-msg" onclick="msgUser(\'' + p.user_id + '\')">Apply Now</button></div></div>';
 }
-function openPostModal() { if(!CU){showPage('auth');return;} openModal('postModal'); }
+function openPostModal() { if(!CU){showPage('auth');return;} if(MODE!=='brand'){toast('Only brands can post opportunities. Switch to Brand mode first.');return;} openModal('postModal'); }
 async function submitPost() {
   if(!CU) return;
   const title = document.getElementById('postTitle').value.trim();
