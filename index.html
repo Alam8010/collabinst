@@ -1432,7 +1432,8 @@ async function openThread(pid, el) {
     _sb.from('profiles').select('*').eq('id',pid).single(),
     _sb.from('messages').select('*').or('and(sender_id.eq.'+CU.id+',receiver_id.eq.'+pid+'),and(sender_id.eq.'+pid+',receiver_id.eq.'+CU.id+')').order('created_at',{ascending:true})
   ]);
-  await _sb.from('messages').update({ is_read: true }).eq('receiver_id', CU.id).eq('sender_id', pid);
+  await _sb.from('messages').update({ is_read: true }).eq('receiver_id', CU.id).eq('sender_id', pid).eq('is_read', false);
+if(window.innerWidth > 768) loadMessages();
   const col = getColor(partner?partner.name:pid);
   const ini = getInitials(partner?partner.name:'U');
   win.innerHTML =
