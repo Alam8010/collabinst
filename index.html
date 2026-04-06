@@ -208,6 +208,11 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
 
 /* MESSAGES */
 .messages-layout{display:flex;height:calc(100vh - 64px);padding-top:64px;}
+@media(max-width:768px){
+  .messages-layout{flex-direction:column;height:auto;}
+  .msg-list{width:100%;border-right:none;border-bottom:1px solid var(--border);max-height:40vh;}
+  .msg-window{min-height:60vh;}
+}
 .msg-list{width:300px;border-right:1px solid var(--border);background:var(--black2);overflow-y:auto;flex-shrink:0;}
 .msg-list-header{padding:20px;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:1px;}
 .msg-thread{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.2s;}
