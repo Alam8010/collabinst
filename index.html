@@ -1173,13 +1173,13 @@ async function loadProfile(authUser) {
   MODE = CU.role;
 }
 async function logout() {
+  if(!confirm('Are you sure you want to log out?')) return;
   await _sb.auth.signOut();
   CU = null; MODE = 'influencer';
   updateNav();
   toast('Logged out.');
   showPage('landing');
 }
-
 // ── DASHBOARD ─────────────────────────────────────
 function renderDashboard() {
   if(!CU) { showPage('auth'); return; }
