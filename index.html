@@ -1698,9 +1698,9 @@ function openEditModal() {
   document.getElementById('editPrice').value = CU.price||'';
   // set selects
   const ns = document.getElementById('editNiche');
-  for(let i=0;i<ns.options.length;i++) if(ns.options[i].value===CU.niche){ns.selectedIndex=i;break;}
+  if(ns) for(let i=0;i<ns.options.length;i++) if(ns.options[i].text===CU.niche){ns.selectedIndex=i;break;}
   const fs = document.getElementById('editFollowers');
-  for(let i=0;i<fs.options.length;i++) if(fs.options[i].value===CU.followers){fs.selectedIndex=i;break;}
+  if(fs) for(let i=0;i<fs.options.length;i++) if(fs.options[i].text===CU.followers){fs.selectedIndex=i;break;}
   document.getElementById('editHandleWrap').style.display = isInf?'flex':'none';
   document.getElementById('editNicheWrap').style.display = isInf?'flex':'none';
   document.getElementById('editFollowersWrap').style.display = isInf?'flex':'none';
