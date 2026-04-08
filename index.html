@@ -478,7 +478,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
         <div id="infExtra">
           <div class="form-group"><label>Instagram Handle</label><input type="text" id="signupHandle" placeholder="@yourhandle"/></div>
           <div class="form-group"><label>Your Niche</label><select id="signupNiche"><option value="">Select niche...</option><option>Fashion &amp; Style</option><option>Fitness &amp; Health</option><option>Food &amp; Cooking</option><option>Tech &amp; Gadgets</option><option>Travel &amp; Lifestyle</option><option>Gaming</option><option>Beauty &amp; Skincare</option><option>Sports</option><option>Other</option></select></div>
-          <div class="form-group"><label>Follower Count</label><select id="signupFollowers"><option value="">Select range...</option><option>1K - 10K</option><option>10K - 50K</option><option>50K - 100K</option><option>100K - 500K</option><option>500K+</option></select></div>
+          <div class="form-group"><label>Follower Count</label><input type="number" id="signupFollowers" placeholder="e.g. 25000" min="0"/></div>
           <div class="form-group"><label>Price per Reel (PKR)</label><input type="number" id="signupPrice" placeholder="e.g. 150"/></div>
         </div>
         <div id="brandExtra" class="hidden">
@@ -830,7 +830,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
       <div class="form-group"><label>Full Name</label><input type="text" id="editName" class="pay-input"/></div>
       <div class="form-group" id="editHandleWrap"><label>Instagram Handle</label><input type="text" id="editHandle" class="pay-input"/></div>
       <div class="form-group" id="editNicheWrap"><label>Niche</label><select id="editNiche" class="post-select"><option value="">Select niche...</option><option>Fashion &amp; Style</option><option>Fitness &amp; Health</option><option>Food &amp; Cooking</option><option>Tech &amp; Gadgets</option><option>Travel &amp; Lifestyle</option><option>Gaming</option><option>Beauty &amp; Skincare</option><option>Sports</option><option>Other</option></select></div>
-      <div class="form-group" id="editFollowersWrap"><label>Follower Count</label><select id="editFollowers" class="post-select"><option value="">Select...</option><option>1K - 10K</option><option>10K - 50K</option><option>50K - 100K</option><option>100K - 500K</option><option>500K+</option></select></div>
+      <input type="number" id="editFollowers" class="pay-input" placeholder="e.g. 25000" min="0"/>
       <div class="form-group" id="editPriceWrap"><label>Price per Reel (PKR)</label><input type="number" id="editPrice" class="pay-input"/></div>
       <div class="form-group" id="editBrandWrap"><label>Brand Name</label><input type="text" id="editBrand" class="pay-input"/></div>
       <div class="form-group"><label>Bio</label><textarea id="editBio" class="post-textarea" placeholder="Tell brands about yourself..."></textarea></div>
