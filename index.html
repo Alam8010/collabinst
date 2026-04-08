@@ -954,6 +954,7 @@ let UPLOAD_DEAL_ID = null;
 let REVIEW_DEAL = null;
 let UPLOADED_URL = null;
 let MSG_PARTNER = null;
+let MSG_CHANNEL = null; // ADD THIS LINE
 let USAGE_SEL = 'brand_only';
 let PROOF_DEAL_ID = null;
 let PROOF_SCREENSHOT_URL = null;
@@ -1422,6 +1423,13 @@ async function loadMessages() {
 async function openThread(pid, el) {
   document.querySelectorAll('.msg-thread').forEach(t=>t.classList.remove('active'));
   if(el) el.classList.add('active');
+
+  // ── CLEANUP old realtime subscription ──
+  if(MSG_CHANNEL) {
+    _sb.removeChannel(MSG_CHANNEL);
+    MSG_CHANNEL = null;
+  }
+
   if(window.innerWidth <= 768) {
     document.getElementById('msgList').style.display = 'none';
     document.getElementById('msgWindow').style.display = 'flex';
@@ -1449,6 +1457,30 @@ async function openThread(pid, el) {
     '<div class="msg-input-area"><textarea class="msg-input" id="msgInput" placeholder="Type a message..." onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();sendMsg(\''+pid+'\')}"></textarea><button class="msg-send" onclick="sendMsg(\''+pid+'\')">Send</button></div>';
   const body = document.getElementById('msgBody');
   if(body) body.scrollTop = body.scrollHeight;
+
+  // ── START realtime subscription for this conversation ──
+  MSG_CHANNEL = _sb
+    .channel('chat-' + [CU.id, pid].sort().join('-'))
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'messages',
+      filter: 'receiver_id=eq.' + CU.id
+    }, (payload) => {
+      const m = payload.new;
+      // Only show if it's from our current chat partner
+      if(m.sender_id !== pid) return;
+      const body = document.getElementById('msgBody');
+      if(!body) return;
+      const el = document.createElement('div');
+      el.className = 'msg-bubble-wrap';
+      el.innerHTML = '<div class="msg-bub-avatar" style="background:'+col+'">'+ini+'</div><div><div class="msg-bubble theirs">'+m.text+'</div><div class="msg-bubble-time">just now</div></div>';
+      body.appendChild(el);
+      body.scrollTop = body.scrollHeight;
+      // Mark as read immediately
+      _sb.from('messages').update({ is_read: true }).eq('id', m.id);
+    })
+    .subscribe();
 }
 async function sendMsg(pid) {
   if(!CU) return;
