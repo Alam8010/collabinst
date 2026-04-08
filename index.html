@@ -1199,6 +1199,7 @@ function renderDashboard() {
 }
 function dashNav(key, el) {
   document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('.mobile-nav-btn').forEach(i => i.classList.remove('active'));
   if(el) el.classList.add('active');
   if(key==='messages'){showPage('messages');return;}
   if(key==='notifications'){showPage('notifications');return;}
@@ -1701,11 +1702,16 @@ function openEditModal() {
   if(ns) for(let i=0;i<ns.options.length;i++) if(ns.options[i].text===CU.niche){ns.selectedIndex=i;break;}
   const fs = document.getElementById('editFollowers');
   if(fs) for(let i=0;i<fs.options.length;i++) if(fs.options[i].text===CU.followers){fs.selectedIndex=i;break;}
-  document.getElementById('editHandleWrap').style.display = isInf?'flex':'none';
-  document.getElementById('editNicheWrap').style.display = isInf?'flex':'none';
-  document.getElementById('editFollowersWrap').style.display = isInf?'flex':'none';
-  document.getElementById('editPriceWrap').style.display = isInf?'flex':'none';
-  document.getElementById('editBrandWrap').style.display = !isInf?'flex':'none';
+  const editHandleWrap = document.getElementById('editHandleWrap');
+  const editNicheWrap = document.getElementById('editNicheWrap');
+  const editFollowersWrap = document.getElementById('editFollowersWrap');
+  const editPriceWrap = document.getElementById('editPriceWrap');
+  const editBrandWrap = document.getElementById('editBrandWrap');
+  if(editHandleWrap) editHandleWrap.style.display = isInf?'flex':'none';
+  if(editNicheWrap) editNicheWrap.style.display = isInf?'flex':'none';
+  if(editFollowersWrap) editFollowersWrap.style.display = isInf?'flex':'none';
+  if(editPriceWrap) editPriceWrap.style.display = isInf?'flex':'none';
+  if(editBrandWrap) editBrandWrap.style.display = !isInf?'flex':'none';
   openModal('editModal');
 }
 async function saveProfile() {
