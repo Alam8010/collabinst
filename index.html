@@ -1213,6 +1213,8 @@ function dashNav(key, el) {
   if(key==='browse'){showPage('browse');return;}
   if(key==='board'){showPage('board');return;}
   if(key==='profile'){showPage('profile');return;}
+  if(key==='deals'){showPage('dashboard');setTimeout(()=>loadDashDeals(),100);return;}
+  if(key==='overview'){showPage('dashboard');setTimeout(()=>loadDashOverview(),100);return;}
   if(key==='deals') loadDashDeals();
   else loadDashOverview();
 }
