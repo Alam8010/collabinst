@@ -1421,7 +1421,15 @@ async function loadMessages() {
   if(MSG_PARTNER && partnerIds.includes(MSG_PARTNER)) openThread(MSG_PARTNER, list.querySelector('[onclick*="'+MSG_PARTNER+'"]'));
   else if(partnerIds.length && window.innerWidth > 768) openThread(partnerIds[0], list.querySelector('.msg-thread'));
   MSG_PARTNER = null;
+  
+  // Real-time subscription for message list
+  const listChannel = _sb.channel('msg-list-'+CU.id)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: 'receiver_id=eq.'+CU.id }, () => {
+      loadMessages();
+    })
+    .subscribe();
 }
+
 async function openThread(pid, el) {
   document.querySelectorAll('.msg-thread').forEach(t=>t.classList.remove('active'));
   if(el) el.classList.add('active');
