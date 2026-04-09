@@ -1698,10 +1698,10 @@ function openEditModal() {
   document.getElementById('editBrand').value = CU.brandName||'';
   document.getElementById('editPrice').value = CU.price||'';
   // set selects
-  const ns = document.getElementById('editNiche');
-  if(ns) for(let i=0;i<ns.options.length;i++) if(ns.options[i].text===CU.niche){ns.selectedIndex=i;break;}
+const ns = document.getElementById('editNiche');
+  if(ns && ns.options && CU.niche) { for(let i=0;i<ns.options.length;i++) if(ns.options[i].text===CU.niche){ns.selectedIndex=i;break;} }
   const fs = document.getElementById('editFollowers');
-  if(fs) for(let i=0;i<fs.options.length;i++) if(fs.options[i].text===CU.followers){fs.selectedIndex=i;break;}
+  if(fs && fs.options && CU.followers) { for(let i=0;i<fs.options.length;i++) if(fs.options[i].text===CU.followers){fs.selectedIndex=i;break;} }
   const editHandleWrap = document.getElementById('editHandleWrap');
   const editNicheWrap = document.getElementById('editNicheWrap');
   const editFollowersWrap = document.getElementById('editFollowersWrap');
