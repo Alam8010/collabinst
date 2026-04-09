@@ -142,7 +142,13 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
 .sidebar-nav-item.active{color:var(--white);border-left-color:var(--red);background:rgba(232,25,44,0.06);}
 .sidebar-nav-item .icon{font-size:18px;width:20px;text-align:center;}
 .dashboard-main{margin-left:240px;flex:1;padding:40px;}
-@media(max-width:768px){.sidebar{display:none;}.dashboard-main{margin-left:0;padding:20px;}}
+@media(max-width:768px){.sidebar{display:none;}.dashboard-main{margin-left:0;padding:20px;padding-bottom:80px;}
+.mobile-bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--black2);border-top:1px solid var(--border);z-index:998;height:60px;}
+.mobile-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;color:var(--grey);font-size:10px;font-weight:600;cursor:pointer;font-family:'Barlow',sans-serif;padding:6px 0;}
+.mobile-nav-btn.active{color:var(--red);}
+.mobile-nav-btn .mni{font-size:18px;}}
+.mobile-bottom-nav{display:none;}
+@media(max-width:768px){.mobile-bottom-nav{display:flex;}}
 .dash-header{margin-bottom:32px;}
 .dash-greeting{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;}
 .dash-greeting span{color:var(--red);}
@@ -1191,10 +1197,24 @@ function renderDashboard() {
   document.getElementById('sidebarRole').textContent = isInf ? 'Creator Mode' : 'Brand Mode';
   document.getElementById('switchModeBtn').textContent = isInf ? 'Switch to Brand Mode →' : 'Switch to Creator Mode →';
   const items = isInf
-    ? [{icon:'🏠',label:'Overview',key:'overview'},{icon:'💬',label:'Messages',key:'messages'},{icon:'🔔',label:'Notifications',key:'notifications'},{icon:'💼',label:'My Deals',key:'deals'},{icon:'👤',label:'My Profile',key:'profile'},{icon:'🔍',label:'Brand Board',key:'board'}]
-    : [{icon:'🏠',label:'Overview',key:'overview'},{icon:'💬',label:'Messages',key:'messages'},{icon:'🔔',label:'Notifications',key:'notifications'},{icon:'💼',label:'My Deals',key:'deals'},{icon:'🔍',label:'Browse Creators',key:'browse'},{icon:'📢',label:'Post Opportunity',key:'board'}];
+    ? [{icon:'🏠',label:'Overview',key:'overview'},{icon:'💬',label:'Messages',key:'messages'},{icon:'🔔',label:'Notifications',key:'notifications'},{icon:'💼',label:'My Deals',key:'deals'},{icon:'👤',label:'Profile',key:'profile'},{icon:'🔍',label:'Board',key:'board'}]
+    : [{icon:'🏠',label:'Overview',key:'overview'},{icon:'💬',label:'Messages',key:'messages'},{icon:'🔔',label:'Notifications',key:'notifications'},{icon:'💼',label:'My Deals',key:'deals'},{icon:'🔍',label:'Browse',key:'browse'},{icon:'📢',label:'Post',key:'board'}];
   document.getElementById('sidebarNav').innerHTML = items.map(i =>
     '<div class="sidebar-nav-item' + (i.key==='overview'?' active':'') + '" onclick="dashNav(\'' + i.key + '\',this)"><span class="icon">' + i.icon + '</span>' + i.label + '</div>'
+  ).join('');
+  // Mobile bottom nav
+  let mobileNav = document.getElementById('mobileBottomNav');
+  if(!mobileNav) {
+    mobileNav = document.createElement('div');
+    mobileNav.id = 'mobileBottomNav';
+    mobileNav.className = 'mobile-bottom-nav';
+    document.body.appendChild(mobileNav);
+  }
+  const mobileItems = isInf
+    ? [{icon:'🏠',label:'Home',key:'overview'},{icon:'💼',label:'Deals',key:'deals'},{icon:'💬',label:'Messages',key:'messages'},{icon:'🔔',label:'Alerts',key:'notifications'},{icon:'👤',label:'Profile',key:'profile'}]
+    : [{icon:'🏠',label:'Home',key:'overview'},{icon:'💼',label:'Deals',key:'deals'},{icon:'💬',label:'Messages',key:'messages'},{icon:'🔔',label:'Alerts',key:'notifications'},{icon:'🔍',label:'Browse',key:'browse'}];
+  mobileNav.innerHTML = mobileItems.map(i =>
+    '<button class="mobile-nav-btn' + (i.key==='overview'?' active':'') + '" onclick="dashNav(\'' + i.key + '\',this)"><span class="mni">' + i.icon + '</span>' + i.label + '</button>'
   ).join('');
   loadDashOverview();
 }
