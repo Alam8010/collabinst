@@ -994,11 +994,12 @@ function showErr(id, msg) {
 function hideErr(id) { document.getElementById(id).style.display = 'none'; }
 
 // ── ROUTING ───────────────────────────────────────
-function showPage(page) {
+function showPage(page, addHistory=true) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   window.scrollTo(0,0);
   updateNav();
+  if(addHistory) history.pushState({ page }, '', '#' + page);
   if(page === 'browse') loadBrowse();
   if(page === 'board') loadBoard();
   if(page === 'messages') loadMessages();
@@ -2274,6 +2275,14 @@ async function init() {
   if(hash === '#admin') showPage('admin');
   else showPage('landing');
 }
+window.addEventListener('popstate', e => {
+  if(e.state && e.state.page) {
+    showPage(e.state.page, false);
+  } else {
+    showPage(CU ? 'dashboard' : 'landing', false);
+  }
+});
+
 init();
 </script>
 </body>
