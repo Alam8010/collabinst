@@ -2015,10 +2015,7 @@ actionCell += '<button class="admin-del-btn" onclick="adminDelDeal(\''+d.id+'\')
       rows += '<tr style="'+(d.status==='under_review'?'background:rgba(245,158,11,0.05);border-left:2px solid #f59e0b':'')+'">' +
         '<td><span style="font-size:11px;color:var(--grey);font-family:monospace">#'+d.id.slice(0,8).toUpperCase()+'</span></td>' +
         '<td><span style="font-size:11px;color:var(--grey);font-family:monospace">#'+d.id.slice(0,8).toUpperCase()+'</span></td>' +
-        '<td><span style="font-size:11px;color:var(--grey);font-family:monospace">#'+d.id.slice(0,8).toUpperCase()+'</span></td>' +
-        '<td><span style="font-size:11px;color:var(--grey);font-family:monospace">#'+d.id.slice(0,8).toUpperCase()+'</span></td>' +
-        '<td><span style="font-size:11px;color:var(--grey);font-family:monospace">#'+d.id.slice(0,8).toUpperCase()+'</span></td>' +
-        '<td><span style="font-size:11px;color:var(--grey);font-family:monospace">#'+d.id.slice(0,8).toUpperCase()+'</span></td>' +
+        .toUpperCase()+'</span></td>' +
         '<td>'+(d.description||'Deal')+'</td>' +
         '<td><strong>PKR '+Number(d.amount).toLocaleString()+'</strong></td>' +
         '<td style="color:var(--red)">PKR '+Math.floor(d.amount*0.2)+'</td>' +
