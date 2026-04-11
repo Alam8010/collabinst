@@ -1283,7 +1283,10 @@ else if(d.status==='revision')
       else if(d.status==='completed') reel = '<span class="delivered-badge">✅ Approved</span>';
     } else {
    if(d.status==='under_review') {
-  reel = '<span style="font-size:12px;color:#f59e0b;font-weight:600;padding:4px 10px;background:rgba(245,158,11,0.15);border-radius:2px">🔍 Being Reviewed by Admin</span>';
+  reel = '<span style="font-size:12px;color:#f59e0b;font-weight:600;padding:4px 10px;background:rgba(245,158,11,0.15);border-radius:2px">🔍 Reel Being Reviewed by Admin</span>';
+} else if(d.status==='delivered' && d.video_url) {
+  const previewUrl = getWatermarkedUrl(d.video_url);
+  reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openReview(\''+d.id+'\',\''+previewUrl+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">🎬 Review Reel</button>';
 } else if(d.status==='active' && !d.payment_confirmed) {
   reel = '<div style="display:flex;flex-direction:column;gap:6px">' +
     '<span style="font-size:11px;font-weight:700;color:#22c55e">✅ Creator Accepted!</span>' +
@@ -1309,9 +1312,6 @@ else if(d.status==='revision')
     '</div>';
 } else if(d.status==='active' && d.payment_confirmed) {
   reel = '<span style="font-size:12px;color:#22c55e;font-weight:600">✅ Payment Confirmed — Awaiting Reel</span>';
-} else if(d.video_url && d.status==='delivered') {
-  const previewUrl = getWatermarkedUrl(d.video_url);
-  reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openReview(\''+d.id+'\',\''+previewUrl+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">🎬 Review Reel</button>';
 } else if(d.video_url && d.status==='completed') {
   reel = '<div style="display:flex;flex-direction:column;gap:6px">' +
     '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:var(--black4)" onclick="openReview(\''+d.id+'\',\''+d.video_url+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">▶ View Reel</button>' +
