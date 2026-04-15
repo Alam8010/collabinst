@@ -1290,6 +1290,7 @@ else if(d.status==='revision')
 } else if(d.status==='active' && !d.payment_confirmed && !d.payment_trx_id) {
   reel = '<div style="display:flex;flex-direction:column;gap:6px">' +
     '<span style="font-size:11px;font-weight:700;color:#22c55e">✅ Creator Accepted!</span>' +
+    (d.payment_rejection_reason ? '<div style="background:rgba(232,25,44,0.08);border:1px solid rgba(232,25,44,0.3);border-radius:4px;padding:10px;font-size:12px;color:var(--red);font-weight:600">❌ Previous payment rejected — Reason: ' + d.payment_rejection_reason + '</div>' : '') +
     '<span style="font-size:11px;color:var(--white2)">Please complete payment:</span>' +
     '<div style="background:var(--black3);border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:12px;font-size:11px;display:flex;flex-direction:column;gap:8px">' +
     '<div style="font-size:12px;font-weight:700;color:#22c55e;margin-bottom:4px">💰 Total to Pay: PKR '+Number(d.amount).toLocaleString()+'</div>' +
@@ -2061,7 +2062,8 @@ async function adminRejectPayment(dealId, brandId) {
     payment_account: null,
     payment_method: null,
     pkr_amount: null,
-    payment_screenshot: null
+    payment_screenshot: null,
+    payment_rejection_reason: reason || 'Details were incorrect or unclear'
   }).eq('id', dealId);
   await _sb.from('messages').insert({
     sender_id: '00000000-0000-0000-0000-000000000000',
