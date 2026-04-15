@@ -1310,8 +1310,13 @@ else if(d.status==='revision')
     '</div>' +
     '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:#22c55e;margin-top:4px" onclick="confirmPaymentSent(\''+d.id+'\')">💳 Submit Payment →</button>' +
     '</div>';
+} else if(d.status==='active' && !d.payment_confirmed && d.payment_trx_id) {
+  reel = '<div style=\"display:flex;flex-direction:column;gap:6px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:4px;padding:12px\">' +
+    '<span style=\"font-size:13px;font-weight:700;color:#f59e0b\">⏳ Payment Details Submitted</span>' +
+    '<span style=\"font-size:12px;color:var(--white2)\">Waiting for admin to confirm your payment. This usually takes a few hours.</span>' +
+    '</div>';
 } else if(d.status==='active' && d.payment_confirmed) {
-  reel = '<span style="font-size:12px;color:#22c55e;font-weight:600">✅ Payment Confirmed — Awaiting Reel</span>';
+  reel = '<span style=\"font-size:12px;color:#22c55e;font-weight:600\">✅ Payment Confirmed — Awaiting Reel</span>';
 } else if(d.video_url && d.status==='completed') {
   reel = '<div style="display:flex;flex-direction:column;gap:6px">' +
     '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:var(--black4)" onclick="openReview(\''+d.id+'\',\''+d.video_url+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">▶ View Reel</button>' +
@@ -1678,11 +1683,7 @@ async function submitDeal() {
     sender_id:CU.id, receiver_id:DEAL_TARGET.id,
     text:'Hi! I sent you a deal proposal: "'+description+'" for PKR '+amount+'.'+usageMsg+' Please check your deals and accept or reject the proposal!'
   });
-  await _sb.from('messages').insert({
-    sender_id: CU.id,
-    receiver_id: CU.id,
-    text: '📋 Your deal has been sent! Once the creator accepts, you will see payment instructions in your deals section. Payment details: Meezan Bank: 00300114582074 (IBAN: PK95MEZN0000300114582074) | NayaPay: 03198810859 — Account Title: Akash Alam. Amount to send: PKR '+amount+'.'
-  });
+  
   closeModal('dealModal');
   toast('Deal sent! Once the creator accepts, go to your Deals to complete payment. 🎉','success');
 }
