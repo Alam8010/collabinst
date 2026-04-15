@@ -1574,7 +1574,7 @@ async function acceptDeal(dealId, brandId) {
   await _sb.from('messages').insert({
     sender_id: CU.id,
     receiver_id: brandId,
-    text: '✅ I have accepted your deal proposal! Please complete the payment to get started. Send payment to: Meezan Bank (00300114582074 | IBAN: PK95MEZN0000300114582074) or NayaPay (03198810859) — Account Title: Akash Alam'
+    text: '✅ I have accepted your deal proposal! Please go to your Deals section to complete the payment and get started.'
   });
   toast('Deal accepted! Brand has been notified to pay.', 'success');
   loadDashDeals();
