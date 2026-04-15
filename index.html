@@ -1287,7 +1287,7 @@ else if(d.status==='revision')
 } else if(d.status==='delivered' && d.video_url) {
   const previewUrl = getWatermarkedUrl(d.video_url);
   reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openReview(\''+d.id+'\',\''+previewUrl+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">🎬 Review Reel</button>';
-} else if(d.status==='active' && !d.payment_confirmed) {
+} else if(d.status==='active' && !d.payment_confirmed && !d.payment_trx_id) {
   reel = '<div style="display:flex;flex-direction:column;gap:6px">' +
     '<span style="font-size:11px;font-weight:700;color:#22c55e">✅ Creator Accepted!</span>' +
     '<span style="font-size:11px;color:var(--white2)">Please complete payment:</span>' +
@@ -2005,7 +2005,8 @@ if(d.status==='active' && !d.payment_confirmed) {
 '<div><strong>Amount:</strong> PKR '+(d.pkr_amount||'—')+'</div>' +
 (d.payment_screenshot?'<a href="'+d.payment_screenshot+'" target="_blank" style="color:var(--red);font-size:11px;font-weight:600;margin-top:4px">🖼 View Screenshot →</a>':'<div style="color:var(--grey);margin-top:2px">No screenshot yet</div>') +
 '</div>' +
-'<button class="admin-ok-btn" onclick="adminConfirmPayment(\''+d.id+'\',\''+d.creator_id+'\')">💳 Confirm Payment</button>';
+'<button class="admin-ok-btn" onclick="adminConfirmPayment(\''+d.id+'\',\''+d.creator_id+'\')">💳 Confirm Payment</button>' +
+'<button class="admin-del-btn" onclick="adminRejectPayment(\''+d.id+'\',\''+d.brand_id+'\')">❌ Reject Payment</button>';
 }
 if(d.status==='pending'||d.status==='revision') {
   actionCell += '<button class="admin-ok-btn" onclick="adminOkDeal(\''+d.id+'\')" title="Force complete for disputes only">⚠️ Override</button>';
@@ -2049,6 +2050,25 @@ async function adminConfirmPayment(dealId, creatorId) {
     text: '✅ Payment has been confirmed by CollabInst! You can now start working on the reel. Upload it through your deals section when ready.'
   });
   toast('Payment confirmed! Creator has been notified.', 'success');
+  adminDeals();
+}
+
+async function adminRejectPayment(dealId, brandId) {
+  const reason = prompt('Enter rejection reason (will be sent to brand):');
+  if(reason === null) return;
+  await _sb.from('deals').update({
+    payment_trx_id: null,
+    payment_account: null,
+    payment_method: null,
+    pkr_amount: null,
+    payment_screenshot: null
+  }).eq('id', dealId);
+  await _sb.from('messages').insert({
+    sender_id: '00000000-0000-0000-0000-000000000000',
+    receiver_id: brandId,
+    text: '❌ Your payment could not be verified. Reason: ' + (reason || 'Details were incorrect or unclear') + '. Please go to your Deals section and resubmit your payment details.'
+  });
+  toast('Payment rejected. Brand has been notified.', 'success');
   adminDeals();
 }
 
