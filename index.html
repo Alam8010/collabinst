@@ -2024,30 +2024,15 @@ async function adminDeals() {
           '<a href="'+d.video_url+'" target="_blank" style="color:var(--red);font-size:12px;font-weight:600">▶ View Reel</a>' +
           '<span style="font-size:11px;color:#22c55e;font-weight:600">✅ Sent to Brand</span>' +
           '</div>';
-      } else if(d.status==='completed' && d.video_url) {
-        const hasPosting = d.usage_rights==='creator_post' || d.usage_rights==='both';
-        const p1Due = d.payout_1_date ? new Date(d.payout_1_date).toLocaleDateString() : null;
-        const p2Due = d.payout_2_date ? new Date(d.payout_2_date).toLocaleDateString() : null;
-        const now = new Date();
-        const p1Overdue = d.payout_1_date && !d.payout_1_paid && new Date(d.payout_1_date) < now;
-        const p2Overdue = d.payout_2_date && !d.payout_2_paid && new Date(d.payout_2_date) < now;
+    } else if(d.status==='completed' && d.video_url) {
+        const creatorCut = Math.floor(d.amount * 0.8);
         reelCell = '<div style="display:flex;flex-direction:column;gap:4px">' +
           '<a href="'+d.video_url+'" target="_blank" style="color:var(--red);font-size:12px;font-weight:600">▶ View Reel</a>' +
           (d.post_url?'<a href="'+d.post_url+'" target="_blank" style="font-size:11px;color:#22c55e">View Post →</a>':'') +
-          (hasPosting && !d.post_confirmed_at ? '<button class="admin-ok-btn" onclick="adminConfirmPosted(\''+d.id+'\',\''+d.creator_id+'\')">📸 Confirm Posted</button>' : '') +
-          (hasPosting && d.post_confirmed_at && !d.payout_1_paid ? '<div style="background:'+(p1Overdue?'rgba(232,25,44,0.1)':'rgba(245,158,11,0.1)')+';border:1px solid '+(p1Overdue?'rgba(232,25,44,0.4)':'rgba(245,158,11,0.4)')+';border-radius:4px;padding:8px;font-size:11px">' +
-            '<div style="font-weight:700;color:'+(p1Overdue?'var(--red)':'#f59e0b')+'">'+(p1Overdue?'⚠️ OVERDUE':'⏳ 1st Payout Due')+': '+p1Due+'</div>' +
-            '<div style="color:var(--white2);margin-top:2px">PKR '+Math.floor(d.amount*0.8*0.5).toLocaleString()+'</div>' +
-            '<button class="admin-ok-btn" style="margin-top:6px" onclick="adminPayout1(\''+d.id+'\',\''+d.creator_id+'\','+Math.floor(d.amount*0.8*0.5)+')">💸 Pay 1st Instalment</button>' +
-            '</div>' : '') +
-          (hasPosting && d.payout_1_paid && !d.payout_2_paid ? '<div style="background:'+(p2Overdue?'rgba(232,25,44,0.1)':'rgba(245,158,11,0.1)')+';border:1px solid '+(p2Overdue?'rgba(232,25,44,0.4)':'rgba(245,158,11,0.4)')+';border-radius:4px;padding:8px;font-size:11px">' +
-            '<div style="font-weight:700;color:'+(p2Overdue?'var(--red)':'#f59e0b')+'">'+(p2Overdue?'⚠️ OVERDUE':'⏳ 2nd Payout Due')+': '+p2Due+'</div>' +
-            '<div style="color:var(--white2);margin-top:2px">PKR '+Math.floor(d.amount*0.8*0.5).toLocaleString()+'</div>' +
-            '<button class="admin-ok-btn" style="margin-top:6px" onclick="adminPayout2(\''+d.id+'\',\''+d.creator_id+'\','+Math.floor(d.amount*0.8*0.5)+')">💸 Pay 2nd Instalment</button>' +
-            '</div>' : '') +
-          (!hasPosting && !d.payout_1_paid ? '<button class="admin-ok-btn" onclick="adminPayoutFull(\''+d.id+'\',\''+d.creator_id+'\','+Math.floor(d.amount*0.8)+')">💸 Pay Creator</button>' : '') +
-          (d.payout_1_paid && d.payout_2_paid ? '<span style="font-size:11px;color:#22c55e;font-weight:700">✅ Fully Paid Out</span>' : '') +
-          ((!hasPosting) && d.payout_1_paid ? '<span style="font-size:11px;color:#22c55e;font-weight:700">✅ Paid Out</span>' : '') +
+          (!d.payout_1_paid ? '<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:4px;padding:8px;font-size:11px">' +
+            '<div style="color:var(--white2);margin-bottom:4px">Creator due: <strong style="color:#f59e0b">PKR '+creatorCut.toLocaleString()+'</strong></div>' +
+            '<button class="admin-ok-btn" onclick="adminPayoutFull(\''+d.id+'\',\''+d.creator_id+'\','+creatorCut+')">💸 Mark as Disbursed</button>' +
+            '</div>' : '<span style="font-size:11px;color:#22c55e;font-weight:700">✅ Payment Disbursed</span>') +
           '</div>';
       } else if(!d.video_url) {
         reelCell = '<span style="font-size:12px;color:var(--grey)">No reel yet</span>';
@@ -2131,58 +2116,15 @@ async function adminRejectPayment(dealId, brandId) {
   adminDeals();
 }
 
-async function adminConfirmPosted(dealId, creatorId) {
-  if(!confirm('Confirm that the creator has posted on Instagram? This will start the payout timers.')) return;
-  const now = new Date();
-  const payout1Date = new Date(now.getTime() + 7*24*60*60*1000).toISOString();
-  const payout2Date = new Date(now.getTime() + 30*24*60*60*1000).toISOString();
-  await _sb.from('deals').update({
-    post_confirmed_at: now.toISOString(),
-    payout_1_date: payout1Date,
-    payout_2_date: payout2Date
-  }).eq('id', dealId);
-  await _sb.from('messages').insert({
-    sender_id: '00000000-0000-0000-0000-000000000000',
-    receiver_id: creatorId,
-    text: '✅ Your Instagram post has been confirmed! Your 1st payment instalment (50%) will be released in 7 days, and the remaining 50% after 30 days.'
-  });
-  toast('Post confirmed! Payout timers started.', 'success');
-  adminDeals();
-}
-
 async function adminPayoutFull(dealId, creatorId, amount) {
-  if(!confirm('Confirm full payout of PKR '+amount.toLocaleString()+' to creator?')) return;
+  if(!confirm('Confirm disbursement of PKR '+amount.toLocaleString()+' to creator?')) return;
   await _sb.from('deals').update({ payout_1_paid: true }).eq('id', dealId);
   await _sb.from('messages').insert({
     sender_id: '00000000-0000-0000-0000-000000000000',
     receiver_id: creatorId,
-    text: '💸 Your payment of PKR '+amount.toLocaleString()+' has been released! Thank you for completing the deal.'
+    text: '💸 Your payment of PKR '+amount.toLocaleString()+' has been disbursed! Thank you for completing the deal on CollabInst. 🎉'
   });
-  toast('Creator paid successfully!', 'success');
-  adminDeals();
-}
-
-async function adminPayout1(dealId, creatorId, amount) {
-  if(!confirm('Confirm 1st instalment payout of PKR '+amount.toLocaleString()+' to creator?')) return;
-  await _sb.from('deals').update({ payout_1_paid: true }).eq('id', dealId);
-  await _sb.from('messages').insert({
-    sender_id: '00000000-0000-0000-0000-000000000000',
-    receiver_id: creatorId,
-    text: '💸 Your 1st payment instalment of PKR '+amount.toLocaleString()+' has been released! Your remaining 50% will be paid after the 30-day posting period.'
-  });
-  toast('1st instalment paid!', 'success');
-  adminDeals();
-}
-
-async function adminPayout2(dealId, creatorId, amount) {
-  if(!confirm('Confirm 2nd instalment payout of PKR '+amount.toLocaleString()+' to creator?')) return;
-  await _sb.from('deals').update({ payout_2_paid: true }).eq('id', dealId);
-  await _sb.from('messages').insert({
-    sender_id: '00000000-0000-0000-0000-000000000000',
-    receiver_id: creatorId,
-    text: '💸 Your final payment instalment of PKR '+amount.toLocaleString()+' has been released! The full deal is now complete. Great work! 🎉'
-  });
-  toast('2nd instalment paid! Deal fully complete.', 'success');
+  toast('Payment marked as disbursed!', 'success');
   adminDeals();
 }
 
