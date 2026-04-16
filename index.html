@@ -159,6 +159,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
 .dash-card-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey);margin-bottom:10px;}
 .dash-card-val{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--white);letter-spacing:2px;}
 .dash-card-val.red{color:var(--red);}
+.dash-card-val.green{color:#22c55e;}
 .dash-card-sub{font-size:12px;color:var(--grey);margin-top:4px;}
 .dash-section-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:1px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
 .dash-section-title button{font-size:12px;font-weight:600;color:var(--red);background:none;border:none;cursor:pointer;}
@@ -1226,12 +1227,12 @@ function switchMode() {
 async function loadDashOverview() {
   const isInf = MODE === 'influencer';
   document.getElementById('dashMain').innerHTML =
-    '<div class="dash-header"><div class="dash-greeting">WELCOME BACK, <span>' + CU.name.split(' ')[0].toUpperCase() + '</span></div><div class="dash-sub">' + (isInf?'Creator':'Brand') + ' Dashboard</div></div>' +
     '<div class="dash-cards">' +
     '<div class="dash-card"><div class="dash-card-label">Mode</div><div class="dash-card-val red">' + (isInf?'Creator':'Brand') + '</div></div>' +
     '<div class="dash-card"><div class="dash-card-label">Active Deals</div><div class="dash-card-val" id="dc1">...</div></div>' +
     '<div class="dash-card"><div class="dash-card-label">Messages</div><div class="dash-card-val" id="dc2">...</div></div>' +
     '<div class="dash-card"><div class="dash-card-label">Profile</div><div class="dash-card-val red">Live</div></div>' +
+    '<div class="dash-card"><div class="dash-card-label">' + (isInf?'Total Earned':'Total Paid') + '</div><div class="dash-card-val green" id="dc3">...</div><div class="dash-card-sub">' + (isInf?'From completed deals':'Across confirmed deals') + '</div></div>' +
     '</div>' +
     '<div class="dash-section-title">' + (isInf?'Brand Opportunities':'Discover Creators') + ' <button onclick="showPage(\'' + (isInf?'board':'browse') + '\')">View All →</button></div>' +
     '<div id="dashQuick" class="browse-grid" style="padding:0;margin-bottom:40px"><div style="color:var(--grey);font-size:14px;padding:20px">Loading...</div></div>';
@@ -1244,6 +1245,19 @@ async function loadDashOverview() {
   const { data: msgs } = await _sb.from('messages').select('id').or('sender_id.eq.' + CU.id + ',receiver_id.eq.' + CU.id);
   const el2 = document.getElementById('dc2');
   if(el2) el2.textContent = (msgs||[]).length;
+
+  const el3 = document.getElementById('dc3');
+  if(el3) {
+    if(isInf) {
+      const { data: earned } = await _sb.from('deals').select('amount').eq('creator_id', CU.id).eq('status', 'completed');
+      const total = (earned||[]).reduce((s,d) => s + Math.floor(d.amount * 0.8), 0);
+      el3.textContent = 'PKR ' + total.toLocaleString();
+    } else {
+      const { data: paid } = await _sb.from('deals').select('amount').eq('brand_id', CU.id).eq('payment_confirmed', true);
+      const total = (paid||[]).reduce((s,d) => s + (d.amount||0), 0);
+      el3.textContent = 'PKR ' + total.toLocaleString();
+    }
+  }
 
   const qEl = document.getElementById('dashQuick');
   if(!qEl) return;
