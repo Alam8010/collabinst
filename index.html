@@ -899,6 +899,12 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
       <div class="form-group" id="editPriceWrap"><label>Price per Reel (PKR)</label><input type="number" id="editPrice" class="pay-input"/></div>
       <div class="form-group" id="editBrandWrap"><label>Brand Name</label><input type="text" id="editBrand" class="pay-input"/></div>
       <div class="form-group"><label>Bio</label><textarea id="editBio" class="post-textarea" placeholder="Tell brands about yourself..."></textarea></div>
+      <div class="form-group" id="editBankWrap">
+        <label style="font-size:13px;font-weight:700;color:var(--red);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">💳 Payment Details</label>
+        <input type="text" id="editBankName" class="pay-input" placeholder="Bank Name (e.g. Meezan Bank)"/>
+        <input type="text" id="editBankTitle" class="pay-input" style="margin-top:8px" placeholder="Account Title (e.g. John Doe)"/>
+        <input type="text" id="editBankNumber" class="pay-input" style="margin-top:8px" placeholder="Account Number"/>
+      </div>
       <button class="auth-submit" id="editSaveBtn" onclick="saveProfile()">Save Changes →</button>
     </div>
     <div style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border)">
@@ -1969,6 +1975,9 @@ function openEditModal() {
   document.getElementById('editBio').value = CU.bio||'';
   document.getElementById('editBrand').value = CU.brandName||'';
   document.getElementById('editPrice').value = CU.price||'';
+  document.getElementById('editBankName').value = CU.bankName||'';
+  document.getElementById('editBankTitle').value = CU.bankAccountTitle||'';
+  document.getElementById('editBankNumber').value = CU.bankAccountNumber||'';
   // set selects
 const ns = document.getElementById('editNiche');
   if(ns && ns.options && CU.niche) { for(let i=0;i<ns.options.length;i++) if(ns.options[i].text===CU.niche){ns.selectedIndex=i;break;} }
@@ -1984,6 +1993,8 @@ const ns = document.getElementById('editNiche');
   if(editFollowersWrap) editFollowersWrap.style.display = isInf?'flex':'none';
   if(editPriceWrap) editPriceWrap.style.display = isInf?'flex':'none';
   if(editBrandWrap) editBrandWrap.style.display = !isInf?'flex':'none';
+  const editBankWrap = document.getElementById('editBankWrap');
+  if(editBankWrap) editBankWrap.style.display = isInf?'flex':'none';
   openModal('editModal');
 }
 async function saveProfile() {
@@ -1998,11 +2009,14 @@ async function saveProfile() {
     price: parseInt(document.getElementById('editPrice').value)||CU.price,
     brand_name: document.getElementById('editBrand').value.trim()||CU.brandName,
     bio: document.getElementById('editBio').value.trim(),
+    bank_name: document.getElementById('editBankName').value.trim(),
+    bank_account_title: document.getElementById('editBankTitle').value.trim(),
+    bank_account_number: document.getElementById('editBankNumber').value.trim(),
   };
   const { error } = await _sb.from('profiles').update(upd).eq('id',CU.id);
   btn.textContent = 'Save Changes →'; btn.disabled = false;
   if(error){toast('Error: '+error.message);return;}
-  CU.name=upd.name; CU.handle=upd.handle; CU.niche=upd.niche; CU.followers=upd.followers; CU.price=upd.price; CU.brandName=upd.brand_name; CU.bio=upd.bio;
+  CU.name=upd.name; CU.handle=upd.handle; CU.niche=upd.niche; CU.followers=upd.followers; CU.price=upd.price; CU.brandName=upd.brand_name; CU.bio=upd.bio; CU.bankName=upd.bank_name; CU.bankAccountTitle=upd.bank_account_title; CU.bankAccountNumber=upd.bank_account_number;
   closeModal('editModal');
   toast('Profile updated!','success');
   renderProfile();
@@ -2213,6 +2227,16 @@ async function adminDelUser(id, name) {
 async function adminDeals() {
   const { data: deals } = await _sb.from('deals').select('*').order('created_at',{ascending:false});
   const pendingReviews = (deals||[]).filter(d => d.status === 'under_review').length;
+
+  // Fetch all creator and brand profiles involved in these deals
+  const creatorIds = [...new Set((deals||[]).map(d => d.creator_id).filter(Boolean))];
+  const brandIds = [...new Set((deals||[]).map(d => d.brand_id).filter(Boolean))];
+  const allIds = [...new Set([...creatorIds, ...brandIds])];
+  let profileMap = {};
+  if(allIds.length) {
+    const { data: profiles } = await _sb.from('profiles').select('id,name,bank_name,bank_account_title,bank_account_number').in('id', allIds);
+    (profiles||[]).forEach(p => profileMap[p.id] = p);
+  }
   
   let rows = '';
   if(deals && deals.length) {
@@ -2265,8 +2289,21 @@ if(d.status==='pending'||d.status==='revision') {
 }
 actionCell += '<button class="admin-del-btn" onclick="adminDelDeal(\''+d.id+'\')">Delete</button>';
 
+      const creator = profileMap[d.creator_id] || {};
+      const brand = profileMap[d.brand_id] || {};
+      const bankInfo = (creator.bank_name || creator.bank_account_title || creator.bank_account_number)
+        ? '<div style="background:var(--black3);border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:8px;font-size:11px;display:flex;flex-direction:column;gap:3px;margin-top:4px">' +
+          '<div style="font-weight:700;color:#22c55e;margin-bottom:2px">🏦 Creator Bank Info</div>' +
+          '<div><strong>Bank:</strong> '+(creator.bank_name||'—')+'</div>' +
+          '<div><strong>Title:</strong> '+(creator.bank_account_title||'—')+'</div>' +
+          '<div><strong>Account:</strong> '+(creator.bank_account_number||'—')+'</div>' +
+          '</div>'
+        : '<div style="font-size:11px;color:var(--red);margin-top:4px">⚠️ No bank info added</div>';
+
       rows += '<tr style="'+(d.status==='under_review'?'background:rgba(245,158,11,0.05);border-left:2px solid #f59e0b':'')+'">' +
         '<td><span style="font-size:11px;color:var(--grey);font-family:monospace">#'+d.id.slice(0,8).toUpperCase()+'</span></td>' +
+        '<td><div style="font-weight:700;font-size:13px">'+(creator.name||'—')+'</div><div style="font-size:11px;color:var(--grey)">Creator</div>'+bankInfo+'</td>' +
+        '<td><div style="font-weight:700;font-size:13px">'+(brand.name||'—')+'</div><div style="font-size:11px;color:var(--grey)">Brand</div></td>' +
         '<td>'+(d.description||'Deal')+'</td>' +
         '<td><strong>PKR '+Number(d.amount).toLocaleString()+'</strong></td>' +
         '<td style="color:var(--red)">PKR '+Math.floor(d.amount*0.2)+'</td>' +
@@ -2279,7 +2316,7 @@ actionCell += '<button class="admin-del-btn" onclick="adminDelDeal(\''+d.id+'\')
         '</tr>';
     });
   } else {
-    rows = '<tr><td colspan="9" style="text-align:center;color:var(--grey);padding:40px">No deals yet</td></tr>';
+    rows = '<tr><td colspan="12" style="text-align:center;color:var(--grey);padding:40px">No deals yet</td></tr>';
   }
 
   document.getElementById('adminContent').innerHTML =
@@ -2287,7 +2324,7 @@ actionCell += '<button class="admin-del-btn" onclick="adminDelDeal(\''+d.id+'\')
     '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:32px;letter-spacing:2px">ALL <span style="color:var(--red)">DEALS</span> ('+(deals?deals.length:0)+')</div>' +
     (pendingReviews>0?'<span style="background:var(--red);color:white;font-size:13px;font-weight:700;padding:6px 14px;border-radius:20px">🔍 '+pendingReviews+' Reel'+(pendingReviews>1?'s':'')+' Awaiting Review</span>':'') +
     '</div>' +
-    '<table class="admin-table"><thead><tr><th>Deal ID</th><th>Description</th><th>Amount</th><th>Platform Cut</th><th>Creator Gets</th><th>Status</th><th>Usage Rights</th><th>Reel</th><th>Date</th><th>Actions</th></tr></thead><tbody>' +
+    '<table class="admin-table"><thead><tr><th>Deal ID</th><th>Creator & Bank</th><th>Brand</th><th>Description</th><th>Amount</th><th>Platform Cut</th><th>Creator Gets</th><th>Status</th><th>Usage Rights</th><th>Reel</th><th>Date</th><th>Actions</th></tr></thead><tbody>' +
     rows +
     '</tbody></table>';
 }
