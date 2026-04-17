@@ -780,22 +780,68 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
     </div>
 
     <div style="margin-bottom:20px">
-      <div style="font-size:12px;font-weight:600;letter-spacing:0.5px;color:var(--grey);text-transform:uppercase;margin-bottom:10px">Content Usage Rights</div>
-      <div class="usage-opts" id="usageOpts">
-        <label class="usage-opt selected" onclick="selectUsage('brand_only',this)">
-          <input type="radio" name="usage" value="brand_only" checked/>
-          <div><span class="usage-opt-label">🏢 Brand Use Only</span><span class="usage-opt-sub">Creator delivers reel. Brand posts on their account. Creator is not required to post.</span></div>
-        </label>
-        <label class="usage-opt" onclick="selectUsage('creator_post',this)">
-          <input type="radio" name="usage" value="creator_post"/>
-          <div><span class="usage-opt-label">📸 Creator Posts on Instagram</span><span class="usage-opt-sub">Creator posts on their account tagging the brand. Brand gets organic reach. 40/40 split payment.</span></div>
-        </label>
-        <label class="usage-opt" onclick="selectUsage('both',this)">
-          <input type="radio" name="usage" value="both"/>
-          <div><span class="usage-opt-label">🤝 Both — Creator Posts + Brand Gets Reel</span><span class="usage-opt-sub">Creator posts on their account AND delivers reel to brand. 40/40 split payment.</span></div>
-        </label>
-      </div>
-    </div>
+  <div style="font-size:12px;font-weight:600;letter-spacing:0.5px;color:var(--grey);text-transform:uppercase;margin-bottom:10px">Content Type & Placement</div>
+  
+  <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey);margin:0 0 8px;padding-top:4px">Reels / Videos</div>
+  <div class="usage-opts" id="usageOpts">
+    <label class="usage-opt selected" onclick="selectUsage('reel_creator',this)">
+      <input type="radio" name="usage" value="reel_creator" checked/>
+      <div><span class="usage-opt-label">🎬 Reel on Creator's Page</span><span class="usage-opt-sub">Creator posts reel tagging the brand. Organic reach.</span></div>
+    </label>
+    <label class="usage-opt" onclick="selectUsage('reel_brand',this)">
+      <input type="radio" name="usage" value="reel_brand"/>
+      <div><span class="usage-opt-label">📦 Reel Delivered to Brand</span><span class="usage-opt-sub">Brand posts on their own account. No creator post required.</span></div>
+    </label>
+    <label class="usage-opt" onclick="selectUsage('reel_both',this)">
+      <input type="radio" name="usage" value="reel_both"/>
+      <div><span class="usage-opt-label">🤝 Reel on Both Pages (Collab)</span><span class="usage-opt-sub">Appears on creator & brand. Maximum reach.</span></div>
+    </label>
+  </div>
+
+  <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey);margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--border)">Stories</div>
+  <div class="usage-opts">
+    <label class="usage-opt" onclick="selectUsage('story_creator',this)">
+      <input type="radio" name="usage" value="story_creator"/>
+      <div><span class="usage-opt-label">📖 Story on Creator's Page</span><span class="usage-opt-sub">24-hour story with brand tag or link sticker.</span></div>
+    </label>
+    <label class="usage-opt" onclick="selectUsage('story_brand',this)">
+      <input type="radio" name="usage" value="story_brand"/>
+      <div><span class="usage-opt-label">📋 Story Delivered to Brand</span><span class="usage-opt-sub">Brand posts the story on their own account.</span></div>
+    </label>
+    <label class="usage-opt" onclick="selectUsage('story_both',this)">
+      <input type="radio" name="usage" value="story_both"/>
+      <div><span class="usage-opt-label">🔗 Story on Both Pages</span><span class="usage-opt-sub">Creator and brand both post the story.</span></div>
+    </label>
+  </div>
+
+  <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey);margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--border)">Image Posts</div>
+  <div class="usage-opts">
+    <label class="usage-opt" onclick="selectUsage('image_creator',this)">
+      <input type="radio" name="usage" value="image_creator"/>
+      <div><span class="usage-opt-label">🖼️ Image Post on Creator's Page</span><span class="usage-opt-sub">Feed post with brand mention or tag.</span></div>
+    </label>
+    <label class="usage-opt" onclick="selectUsage('image_brand',this)">
+      <input type="radio" name="usage" value="image_brand"/>
+      <div><span class="usage-opt-label">📷 Image Delivered to Brand</span><span class="usage-opt-sub">Brand posts the image on their account.</span></div>
+    </label>
+    <label class="usage-opt" onclick="selectUsage('image_both',this)">
+      <input type="radio" name="usage" value="image_both"/>
+      <div><span class="usage-opt-label">🗂️ Image on Both Pages (Collab)</span><span class="usage-opt-sub">Collab feed post across both accounts.</span></div>
+    </label>
+  </div>
+
+  <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey);margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--border)">Bundles</div>
+  <div class="usage-opts">
+    <label class="usage-opt" onclick="selectUsage('bundle_reel_story',this)">
+      <input type="radio" name="usage" value="bundle_reel_story"/>
+      <div><span class="usage-opt-label">📦 Reel + Story (Creator's Page)</span><span class="usage-opt-sub">Reel post plus a supporting story on creator's account.</span></div>
+    </label>
+    <label class="usage-opt" onclick="selectUsage('bundle_reel_image',this)">
+      <input type="radio" name="usage" value="bundle_reel_image"/>
+      <div><span class="usage-opt-label">🎞️ Reel + Image Post</span><span class="usage-opt-sub">A video reel and a static image feed post.</span></div>
+    </label>
+  </div>
+</div>
 
     <div class="payment-split" id="dealSplit"></div>
 
