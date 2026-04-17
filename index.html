@@ -1616,21 +1616,26 @@ function openDeal(creatorId, creatorName, creatorPrice) {
 }
 function updateSplit() {
   const amt = parseFloat(document.getElementById('dealAmount').value)||0;
-  const fee = Math.round(amt*0.20);
+  const fee = Math.round(amt * 0.20);
   const cut = amt - fee;
-  const part1 = Math.floor(cut*0.5);
-  const part2 = cut - part1;
-  const isSplit = ['creator_post','both'].includes(USAGE_SEL);
+  const labels = {
+    reel_creator: 'Reel on Creator\'s Page',
+    reel_brand: 'Reel Delivered to Brand',
+    reel_both: 'Reel on Both Pages (Collab)',
+    story_creator: 'Story on Creator\'s Page',
+    story_brand: 'Story Delivered to Brand',
+    story_both: 'Story on Both Pages',
+    image_creator: 'Image Post on Creator\'s Page',
+    image_brand: 'Image Delivered to Brand',
+    image_both: 'Image on Both Pages',
+    bundle_reel_story: 'Reel + Story Bundle',
+    bundle_reel_image: 'Reel + Image Bundle',
+  };
   document.getElementById('dealSplit').innerHTML =
-    '<div class="split-row"><span class="split-label">Deal Amount</span><span class="split-val">PKR '+amt.toLocaleString()+'</span></div>' +
-    '<div class="split-row"><span class="split-label">CollabInst Fee (20%)</span><span class="split-val red">-PKR '+fee.toLocaleString()
-
-+'</span></div>' +
-    (isSplit ?
-      '<div class="split-row"><span class="split-label">Creator Gets (80%)</span><span class="split-val green">PKR '+Math.floor(part1+part2).toLocaleString()+'</span></div>'
-    :
-      '<div class="split-row"><span class="split-label">Creator Receives (80%)</span><span class="split-val green">PKR '+cut.toLocaleString()+'</span></div>'
-    );
+    '<div class="split-row"><span class="split-label">Content Type</span><span class="split-val" style="font-size:13px;color:var(--white2)">' + (labels[USAGE_SEL]||USAGE_SEL) + '</span></div>' +
+    '<div class="split-row"><span class="split-label">Deal Amount</span><span class="split-val">PKR ' + amt.toLocaleString() + '</span></div>' +
+    '<div class="split-row"><span class="split-label">CollabInst Fee (20%)</span><span class="split-val red">-PKR ' + fee.toLocaleString() + '</span></div>' +
+    '<div class="split-row"><span class="split-label">Creator Receives (80%)</span><span class="split-val green">PKR ' + cut.toLocaleString() + '</span></div>';
 }
 
 function selectUsage(val, el) {
@@ -1773,7 +1778,8 @@ async function renderProfile() {
   // Fetch completed deals count and reviews
   const { data: completedDeals } = await _sb.from('deals').select('id').eq('creator_id', targetId).eq('status','completed');
   const dealCount = (completedDeals||[]).length;
-const avgRating = reviews && reviews.length ? (reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1) : null;
+  const { data: reviews } = await _sb.from('reviews').select('*').eq('creator_id', targetId).order('created_at', {ascending: false});
+  const avgRating = reviews && reviews.length ? (reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1) : null;
   document.getElementById('profileHero').innerHTML =
     '<div class="profile-big-avatar" style="background:'+col+'20;color:'+col+';border-color:'+col+'">'+ini+'</div>' +
     '<div class="profile-info"><div class="profile-name">'+(user.name||'User')+'</div><div class="profile-handle">'+(user.handle||'@user')+'</div><div class="profile-niche-tag">'+(user.niche||'Creator')+'</div>' +
