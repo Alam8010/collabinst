@@ -1243,7 +1243,7 @@ async function loadDashOverview() {
   if(el1) el1.textContent = active;
 
   const { data: msgs } = await _sb.from('messages').select('id').or('sender_id.eq.' + CU.id + ',receiver_id.eq.' + CU.id);
-  const el2 = document.getElementById(
+  const el2 = document.getElementById('dc2');
   if(el2) el2.textContent = (msgs||[]).length;
 
   const el3 = document.getElementById('dc3');
