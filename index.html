@@ -247,6 +247,23 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
 
 /* PROFILE */
 .profile-hero{background:var(--black2);border-bottom:1px solid var(--border);padding:60px 40px 40px;display:flex;align-items:flex-end;gap:32px;flex-wrap:wrap;}
+/* PROFILE PICTURE & COVER */
+.profile-cover{position:relative;height:200px;background:linear-gradient(135deg,var(--black3),var(--black4));overflow:hidden;cursor:pointer;}
+.profile-cover-img{width:100%;height:100%;object-fit:cover;display:block;}
+.profile-cover-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);transition:background 0.3s;display:flex;align-items:center;justify-content:center;}
+.profile-cover:hover .profile-cover-overlay{background:rgba(0,0,0,0.5);}
+.profile-cover-edit{opacity:0;transition:opacity 0.3s;color:white;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:4px;border:2px solid white;}
+.profile-cover:hover .profile-cover-edit{opacity:1;}
+.profile-cover input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.profile-avatar-wrap{position:relative;display:inline-block;cursor:pointer;flex-shrink:0;}
+.profile-avatar-wrap:hover .profile-avatar-overlay{opacity:1;}
+.profile-avatar-overlay{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.25s;font-size:11px;font-weight:700;color:white;text-align:center;line-height:1.3;}
+.profile-avatar-overlay input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border-radius:50%;}
+/* Lightbox */
+.avatar-lightbox{display:none;position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,0.92);align-items:center;justify-content:center;cursor:zoom-out;}
+.avatar-lightbox.open{display:flex;}
+.avatar-lightbox img{max-width:90vw;max-height:90vh;border-radius:50%;border:4px solid var(--red);box-shadow:0 0 60px rgba(232,25,44,0.4);}
+
 .profile-big-avatar{width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:40px;flex-shrink:0;border:3px solid var(--red);}
 .profile-name{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:2px;}
 .profile-handle{font-size:16px;color:var(--red);margin-top:4px;}
@@ -1205,7 +1222,7 @@ async function handleLogin() {
 async function loadProfile(authUser) {
   const { data: p } = await _sb.from('profiles').select('*').eq('id', authUser.id).single();
   if(p) {
-    CU = { id:p.id, name:p.name, email:p.email, role:p.role, handle:p.handle, niche:p.niche, followers:p.followers, price:p.price, brandName:p.brand_name, bio:p.bio||'' };
+CU = { id:p.id, name:p.name, email:p.email, role:p.role, handle:p.handle, niche:p.niche, followers:p.followers, price:p.price, brandName:p.brand_name, bio:p.bio||'', avatar_url:p.avatar_url||'', cover_url:p.cover_url||'' };
   } else {
     const m = authUser.user_metadata || {};
     CU = { id:authUser.id, name:m.name||authUser.email.split('@')[0], email:authUser.email, role:m.role||'influencer', handle:m.handle||'@user', niche:m.niche||'', followers:m.followers||'', price:m.price||0, brandName:m.brand_name||'', bio:'' };
@@ -1225,7 +1242,12 @@ async function logout() {
 function renderDashboard() {
   if(!CU) { showPage('auth'); return; }
   const isInf = MODE === 'influencer';
-  document.getElementById('sidebarAvatar').textContent = getInitials(CU.name);
+const sidebarAv = document.getElementById('sidebarAvatar');
+if(CU.avatar_url) {
+  sidebarAv.innerHTML = '<img src="'+CU.avatar_url+'" style="width:44px;height:44px;border-radius:50%;object-fit:cover;"/>';
+} else {
+  sidebarAv.textContent = getInitials(CU.name);
+}
   document.getElementById('sidebarName').textContent = CU.name;
   document.getElementById('sidebarRole').textContent = isInf ? 'Creator Mode' : 'Brand Mode';
   document.getElementById('switchModeBtn').textContent = isInf ? 'Switch to Brand Mode →' : 'Switch to Creator Mode →';
@@ -1421,7 +1443,7 @@ function creatorCard(c) {
   const igUrl = 'https://instagram.com/' + igUser;
   const igIcon = '<svg viewBox="0 0 24 24" style="width:11px;height:11px;fill:var(--red);flex-shrink:0"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>';
   return '<div class="inf-card" onclick="viewProfile(\'' + c.id + '\')">' +
-    '<div class="inf-card-top"><div class="inf-avatar" style="background:' + col + '20;color:' + col + '">' + ini + '</div>' +
+    '<div class="inf-card-top"><div class="inf-avatar" style="background:' + col + '20;color:' + col + '">' + (c.avatar_url ? '<img src="'+c.avatar_url+'" style="width:56px;height:56px;object-fit:cover;border-radius:50%;display:block"/>' : ini) + '</div>' +
     '<div><div class="inf-name">' + (c.name||'Creator') + '</div>' +
     '<a href="' + igUrl + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:4px;color:var(--red);font-size:13px;text-decoration:none;margin-top:2px" title="View on Instagram">' + igIcon + handle + '</a>' +
     '<div class="inf-niche">' + (c.niche||'Creator') + '</div></div></div>' +
@@ -1448,11 +1470,18 @@ function filterCreators() {
 // ── BOARD ─────────────────────────────────────────
 async function loadBoard() {
   document.getElementById('boardGrid').innerHTML = '<div style="padding:40px;color:var(--grey)">Loading...</div>';
-  const { data } = await _sb.from('brand_posts').select('*').order('created_at',{ascending:false});
-  document.getElementById('boardGrid').innerHTML = data && data.length ? data.map(boardCard).join('') : '<div class="empty-state" style="grid-column:1/-1"><div class="ei">📢</div><h3>No opportunities yet</h3><p>Be the first to post one!</p></div>';
+  const { data: rawPosts } = await _sb.from('brand_posts').select('*').order('created_at',{ascending:false});
+const userIds = [...new Set((rawPosts||[]).map(p => p.user_id).filter(Boolean))];
+let avatarMap = {};
+if(userIds.length) {
+  const { data: profData } = await _sb.from('profiles').select('id,avatar_url').in('id', userIds);
+  (profData||[]).forEach(p => avatarMap[p.id] = p.avatar_url||'');
+}
+const data = (rawPosts||[]).map(p => ({...p, avatar_url: avatarMap[p.user_id]||''}));
+document.getElementById('boardGrid').innerHTML = data && data.length ? data.map(boardCard).join('') : '<div class="empty-state" style="grid-column:1/-1"><div class="ei">📢</div><h3>No opportunities yet</h3><p>Be the first to post one!</p></div>';
 }
 function boardCard(p) {
-  return '<div class="brand-post"><div class="brand-post-header"><div class="brand-avatar">🏢</div><div><div class="brand-name-txt">' + (p.brand_name||'Brand') + '</div><div class="brand-verified">✦ Verified Brand</div></div></div>' +
+  return '<div class="brand-post"><div class="brand-post-header"><div class="brand-avatar" style="overflow:hidden;padding:0;border-radius:6px;">' + (p.avatar_url ? '<img src="'+p.avatar_url+'" style="width:44px;height:44px;object-fit:cover;border-radius:6px;display:block"/>' : '🏢') + '</div><div><div class="brand-name-txt">' + (p.brand_name||'Brand') + '</div><div class="brand-verified">✦ Verified Brand</div></div></div>' +
     '<div class="brand-post-title">' + p.title + '</div><div class="brand-post-body">' + p.body + '</div>' +
     '<div class="brand-post-tags"><span class="brand-tag">' + (p.niche||'General') + '</span></div>' +
     '<div class="brand-post-footer"><div class="brand-budget">Budget: <strong>PKR ' + Number(p.budget||0).toLocaleString() + '</strong></div>' +
@@ -1498,7 +1527,7 @@ async function loadMessages() {
       const col = getColor(p.name||pid);
       const unreadMsgs = (msgs||[]).filter(m => m.sender_id===pid && m.receiver_id===CU.id && !m.is_read);
       const unreadCount = unreadMsgs.length;
-      return '<div class="msg-thread' + (i===0?' active':'') + '" onclick="openThread(\'' + pid + '\',this)"><div class="msg-thread-avatar" style="background:'+col+'20;color:'+col+'">' + getInitials(p.name||'U') + '</div><div style="flex:1;min-width:0"><div class="msg-thread-name">' + (p.name||'User') + '</div><div class="msg-thread-preview" style="' + (unreadCount>0?'color:var(--white);font-weight:600':'') + '">' + (last?last.text.slice(0,40):'No messages') + '</div></div>' + (unreadCount>0?'<div class="unread-badge" style="min-width:20px;height:20px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+unreadCount+'</div>':'') + '</div>';
+      return '<div class="msg-thread' + (i===0?' active':'') + '" onclick="openThread(\'' + pid + '\',this)"><div class="msg-thread-avatar" style="background:'+col+'20;color:'+col+';overflow:hidden;padding:0">' + (p.avatar_url ? '<img src="'+p.avatar_url+'" style="width:40px;height:40px;object-fit:cover;border-radius:50%;display:block"/>' : getInitials(p.name||'U')) + '</div><div style="flex:1;min-width:0"><div class="msg-thread-name">' + (p.name||'User') + '</div><div class="msg-thread-preview" style="' + (unreadCount>0?'color:var(--white);font-weight:600':'') + '">' + (last?last.text.slice(0,40):'No messages') + '</div></div>' + (unreadCount>0?'<div class="unread-badge" style="min-width:20px;height:20px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+unreadCount+'</div>':'') + '</div>';
     }).join('');
   if(MSG_PARTNER && partnerIds.includes(MSG_PARTNER)) openThread(MSG_PARTNER, list.querySelector('[onclick*="'+MSG_PARTNER+'"]'));
   else if(partnerIds.length && window.innerWidth > 768) openThread(partnerIds[0], list.querySelector('.msg-thread'));
@@ -1546,7 +1575,7 @@ document.querySelectorAll('.msg-thread').forEach(t => {
   win.innerHTML =
     '<div class="msg-window-header">' +
 (window.innerWidth <= 768 ? '<button onclick="document.getElementById(\'msgList\').style.display=\'block\';document.getElementById(\'msgWindow\').style.display=\'none\';" style="background:none;border:none;color:var(--white);font-size:24px;cursor:pointer;margin-right:12px;padding:0">←</button>' : '') +
-'<div class="msg-thread-avatar" style="background:'+col+'20;color:'+col+'">'+ini+'</div><div><div class="msg-header-name">'+(partner?partner.name:'User')+'</div><div class="msg-header-role">'+(partner?(partner.role==='influencer'?'Creator':'Brand'):'')+'</div></div>' +
+'<div class="msg-thread-avatar" style="background:'+col+'20;color:'+col+';overflow:hidden;padding:0">'+(partner&&partner.avatar_url?'<img src="'+partner.avatar_url+'" style="width:40px;height:40px;object-fit:cover;border-radius:50%;display:block"/>':ini)+'</div><div><div class="msg-header-name">'+(partner?partner.name:'User')+'</div><div class="msg-header-role">'+(partner?(partner.role==='influencer'?'Creator':'Brand'):'')+'</div></div>' +
     (MODE === 'brand' || !CU ? '<button class="btn-msg" style="margin-left:auto" onclick="openDeal(\''+pid+'\',\''+(partner?partner.name.replace(/'/g,''):'User')+'\','+(partner?partner.price||0:0)+')">📋 Propose Deal</button>' : '') + '</div>' +
     '<div class="msg-body" id="msgBody">' +
     ((msgs&&msgs.length)?msgs.map(m=>{
@@ -1775,41 +1804,78 @@ async function renderProfile() {
   const ini = getInitials(user.name||'U');
   const isOwn = CU && CU.id === (user.id||id);
   const targetId = user.id || id;
-  // Fetch completed deals count and reviews
-  const { data: completedDeals } = await _sb.from('deals').select('id').eq('creator_id', targetId).eq('status','completed');
+  const [{ data: completedDeals }, { data: reviews }] = await Promise.all([
+    _sb.from('deals').select('id').eq('creator_id', targetId).eq('status','completed'),
+    _sb.from('reviews').select('*').eq('creator_id', targetId).order('created_at',{ascending:false})
+  ]);
   const dealCount = (completedDeals||[]).length;
-  const { data: reviews } = await _sb.from('reviews').select('*').eq('creator_id', targetId).order('created_at', {ascending: false});
   const avgRating = reviews && reviews.length ? (reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1) : null;
+
+  const avatarHtml = user.avatar_url
+    ? `<img src="${user.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onclick="openAvatarLightbox('${user.avatar_url}')" />`
+    : `<span onclick="openAvatarLightbox(null,'${ini}','${col}')">${ini}</span>`;
+
+  const coverHtml = user.cover_url
+    ? `<img class="profile-cover-img" src="${user.cover_url}" />`
+    : `<div style="width:100%;height:100%;background:linear-gradient(135deg,${col}22,${col}08);display:flex;align-items:center;justify-content:center"><span style="font-size:13px;color:var(--grey);font-weight:600;letter-spacing:1px">NO COVER PHOTO</span></div>`;
+
   document.getElementById('profileHero').innerHTML =
-    '<div class="profile-big-avatar" style="background:'+col+'20;color:'+col+';border-color:'+col+'">'+ini+'</div>' +
-    '<div class="profile-info"><div class="profile-name">'+(user.name||'User')+'</div><div class="profile-handle">'+(user.handle||'@user')+'</div><div class="profile-niche-tag">'+(user.niche||'Creator')+'</div>' +
-    '<div class="profile-stats-row">' +
-    '<div><div class="profile-stat-val">'+(user.followers||'N/A')+'</div><div class="profile-stat-label">Followers</div></div>' +
-    '<div><div class="profile-stat-val">PKR '+(user.price||0)+'</div><div class="profile-stat-label">Per Reel</div></div>' +
-    '<div><div class="profile-stat-val" style="color:#22c55e">'+dealCount+'</div><div class="profile-stat-label">Deals Done</div></div>' +
-    (avgRating ? '<div><div class="profile-stat-val" style="color:#f59e0b">⭐ '+avgRating+'</div><div class="profile-stat-label">Avg Rating</div></div>' : '') +
-    '</div>' +
-    '<div class="profile-actions-row">' +
-    (isOwn ? '<button class="btn-hero-red" onclick="openEditModal()">Edit Profile ✏️</button><button class="btn-hero-outline" onclick="showPage(\'dashboard\')" style="margin-left:8px">Dashboard</button>'
-           : (MODE === 'brand' || !CU ? '<button class="btn-hero-red" onclick="openDeal(\''+user.id+'\',\''+(user.name||'Creator').replace(/'/g,'')+'\','+(user.price||0)+')">Send Deal →</button>' : '') + '<button class="btn-hero-outline" onclick="msgUser(\''+user.id+'\');showPage(\'messages\')" style="margin-left:8px">Message</button>') +
-    '</div></div>';
-  // Reviews section
+    // Cover photo
+    `<div class="profile-cover" style="position:relative;height:200px;width:100%;overflow:hidden;background:var(--black3);">
+      ${coverHtml}
+      <div class="profile-cover-overlay">
+        <div class="profile-cover-edit">📷 ${isOwn ? 'Change Cover' : ''}</div>
+      </div>
+      ${isOwn ? `<input type="file" accept="image/*" onchange="uploadCoverPhoto(event)" title="Upload cover photo" />` : ''}
+    </div>` +
+    // Hero info row
+    `<div style="display:flex;align-items:flex-end;gap:28px;flex-wrap:wrap;padding:0 40px 32px;margin-top:-50px;position:relative;z-index:1;">
+      <div class="profile-avatar-wrap">
+        <div class="profile-big-avatar" style="background:${col}20;color:${col};border-color:${col};width:100px;height:100px;font-size:${user.avatar_url?'0':'40px'}">
+          ${avatarHtml}
+        </div>
+        <div class="profile-avatar-overlay">
+          ${isOwn ? `📷<br>Change<input type="file" accept="image/*" onchange="uploadAvatarPhoto(event)" />` : '🔍 View'}
+        </div>
+      </div>
+      <div class="profile-info" style="padding-bottom:4px">
+        <div class="profile-name">${user.name||'User'}</div>
+        <div class="profile-handle">${user.handle||'@user'}</div>
+        <div class="profile-niche-tag">${user.niche||'Creator'}</div>
+        <div class="profile-stats-row">
+          <div><div class="profile-stat-val">${user.followers||'N/A'}</div><div class="profile-stat-label">Followers</div></div>
+          <div><div class="profile-stat-val">PKR ${user.price||0}</div><div class="profile-stat-label">Per Reel</div></div>
+          <div><div class="profile-stat-val" style="color:#22c55e">${dealCount}</div><div class="profile-stat-label">Deals Done</div></div>
+          ${avgRating ? `<div><div class="profile-stat-val" style="color:#f59e0b">⭐ ${avgRating}</div><div class="profile-stat-label">Avg Rating</div></div>` : ''}
+        </div>
+        <div class="profile-actions-row">
+          ${isOwn
+            ? `<button class="btn-hero-red" onclick="openEditModal()">Edit Profile ✏️</button><button class="btn-hero-outline" onclick="showPage('dashboard')" style="margin-left:8px">Dashboard</button>`
+            : (MODE==='brand'||!CU ? `<button class="btn-hero-red" onclick="openDeal('${user.id}','${(user.name||'Creator').replace(/'/g,'')}',${user.price||0})">Send Deal →</button>` : '') +
+              `<button class="btn-hero-outline" onclick="msgUser('${user.id}');showPage('messages')" style="margin-left:8px">Message</button>`
+          }
+        </div>
+      </div>
+    </div>`;
+
   const reviewsHTML = reviews && reviews.length
-    ? reviews.map(r => '<div style="border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;margin-bottom:10px">'+
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
-        '<span style="font-weight:700;color:var(--white);font-size:14px">'+(r.brand_name||'Brand')+'</span>'+
-        '<span style="color:#f59e0b;font-size:14px">'+'⭐'.repeat(r.rating)+'<span style="color:var(--grey);font-size:12px;margin-left:4px">('+r.rating+'/5)</span></span>'+
-        '</div>'+
-        (r.comment ? '<p style="font-size:13px;color:var(--white2);margin:0;line-height:1.6">'+r.comment+'</p>' : '')+
-        '<div style="font-size:11px;color:var(--grey);margin-top:6px">'+timeAgo(r.created_at)+'</div>'+
-        '</div>').join('')
+    ? reviews.map(r =>
+        `<div style="border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-weight:700;color:var(--white);font-size:14px">${r.brand_name||'Brand'}</span>
+            <span style="color:#f59e0b;font-size:14px">${'⭐'.repeat(r.rating)}<span style="color:var(--grey);font-size:12px;margin-left:4px">(${r.rating}/5)</span></span>
+          </div>
+          ${r.comment ? `<p style="font-size:13px;color:var(--white2);margin:0;line-height:1.6">${r.comment}</p>` : ''}
+          <div style="font-size:11px;color:var(--grey);margin-top:6px">${timeAgo(r.created_at)}</div>
+        </div>`).join('')
     : '<div style="color:var(--grey);font-size:13px;padding:10px 0">No reviews yet.</div>';
+
   document.getElementById('profileBody').innerHTML =
-    '<div style="max-width:800px">' +
-    '<div class="section-label">About</div>' +
-    '<p style="font-size:15px;color:var(--white2);line-height:1.7;margin-bottom:28px">'+(user.bio||(isOwn?'Add a bio to attract more brands!':'No bio yet.'))+'</p>' +
-    (user.role==='influencer' ? '<div class="section-label">Reviews</div>'+reviewsHTML : '') +
-    '</div>';
+    `<div style="max-width:800px">
+      <div class="section-label">About</div>
+      <p style="font-size:15px;color:var(--white2);line-height:1.7;margin-bottom:28px">${user.bio||(isOwn?'Add a bio to attract more brands!':'No bio yet.')}</p>
+      ${user.role==='influencer' ? '<div class="section-label">Reviews</div>'+reviewsHTML : ''}
+    </div>`;
 }
 
 // ── REVIEWS ───────────────────────────────────────
@@ -1818,17 +1884,81 @@ async function leaveReview(creatorId, creatorName) {
   if(!rating || rating < 1 || rating > 5) { toast('Invalid rating.'); return; }
   const comment = prompt('Leave a comment (optional):') || '';
   const brandName = CU.brandName || CU.name || 'Brand';
-  const { error } = await _sb.from('reviews').upsert({
+  const { error } = await _sb.from('reviews').insert({
     creator_id: creatorId,
     brand_id: CU.id,
     brand_name: brandName,
     rating,
     comment
-  }, { onConflict: 'creator_id,brand_id' });
+  });
   if(error) { toast('Error: '+error.message); return; }
   toast('Review submitted! ⭐', 'success');
   renderProfile();
 }
+
+function openAvatarLightbox(url, ini, col) {
+  let lb = document.getElementById('avatarLightbox');
+  if(!lb) {
+    lb = document.createElement('div');
+    lb.id = 'avatarLightbox';
+    lb.className = 'avatar-lightbox';
+    lb.onclick = () => lb.classList.remove('open');
+    document.body.appendChild(lb);
+  }
+  if(url) {
+    lb.innerHTML = `<img src="${url}" />`;
+  } else if(ini) {
+    lb.innerHTML = `<div style="width:220px;height:220px;border-radius:50%;background:${col}20;color:${col};border:4px solid var(--red);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:80px;box-shadow:0 0 60px rgba(232,25,44,0.4)">${ini}</div>`;
+  }
+  lb.classList.add('open');
+}
+
+async function uploadAvatarPhoto(e) {
+  const file = e.target.files[0];
+  if(!file||!CU) return;
+  if(file.size > 10*1024*1024){ toast('Image too large. Max 10MB.'); return; }
+  toast('Uploading avatar...');
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CL_PRESET);
+  fd.append('cloud_name', CL_CLOUD);
+  const xhr = new XMLHttpRequest();
+  xhr.addEventListener('load', async () => {
+    if(xhr.status===200) {
+      const d = JSON.parse(xhr.responseText);
+      await _sb.from('profiles').update({ avatar_url: d.secure_url }).eq('id', CU.id);
+      CU.avatar_url = d.secure_url;
+      toast('Avatar updated! ✅', 'success');
+      renderProfile();
+    } else { toast('Upload failed. Try again.'); }
+  });
+  xhr.open('POST', 'https://api.cloudinary.com/v1_1/'+CL_CLOUD+'/image/upload');
+  xhr.send(fd);
+}
+
+async function uploadCoverPhoto(e) {
+  const file = e.target.files[0];
+  if(!file||!CU) return;
+  if(file.size > 15*1024*1024){ toast('Image too large. Max 15MB.'); return; }
+  toast('Uploading cover photo...');
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CL_PRESET);
+  fd.append('cloud_name', CL_CLOUD);
+  const xhr = new XMLHttpRequest();
+  xhr.addEventListener('load', async () => {
+    if(xhr.status===200) {
+      const d = JSON.parse(xhr.responseText);
+      await _sb.from('profiles').update({ cover_url: d.secure_url }).eq('id', CU.id);
+      CU.cover_url = d.secure_url;
+      toast('Cover photo updated! ✅', 'success');
+      renderProfile();
+    } else { toast('Upload failed. Try again.'); }
+  });
+  xhr.open('POST', 'https://api.cloudinary.com/v1_1/'+CL_CLOUD+'/image/upload');
+  xhr.send(fd);
+}
+
 
 // ── EDIT PROFILE ──────────────────────────────────
 function openEditModal() {
