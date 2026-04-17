@@ -1233,7 +1233,6 @@ async function loadDashOverview() {
     '<div class="dash-card"><div class="dash-card-label">Messages</div><div class="dash-card-val" id="dc2">...</div></div>' +
     '<div class="dash-card"><div class="dash-card-label">Profile</div><div class="dash-card-val red">Live</div></div>' +
     '<div class="dash-card"><div class="dash-card-label">' + (isInf?'Total Earned':'Total Paid') + '</div><div class="dash-card-val green" id="dc3">...</div><div class="dash-card-sub">' + (isInf?'From completed deals':'Across confirmed deals') + '</div></div>' +
-    '<div class="dash-card" style="border-color:rgba(245,158,11,0.3)"><div class="dash-card-label">Balance</div><div class="dash-card-val" id="dc4" style="color:#f59e0b">...</div><div class="dash-card-sub">' + (isInf?'Pending payout from CollabInst':'Held by CollabInst') + '</div></div>' +
     '</div>' +
     '<div class="dash-section-title">' + (isInf?'Brand Opportunities':'Discover Creators') + ' <button onclick="showPage(\'' + (isInf?'board':'browse') + '\')">View All →</button></div>' +
     '<div id="dashQuick" class="browse-grid" style="padding:0;margin-bottom:40px"><div style="color:var(--grey);font-size:14px;padding:20px">Loading...</div></div>';
@@ -1249,34 +1248,18 @@ async function loadDashOverview() {
 
   const el3 = document.getElementById('dc3');
   if(el3) {
-    if(isInf) {
-      const { data: earned } = await _sb.from('deals').select('amount,payout_1_paid,payout_2_paid,usage_rights').eq('creator_id', CU.id).eq('status', 'completed');
-      const totalEarned = (earned||[]).reduce((s,d) => s + Math.floor(d.amount * 0.8), 0);
-      // Balance = unpaid amounts still owed to creator
-      const balance = (earned||[]).reduce((s,d) => {
-        const cut = Math.floor(d.amount * 0.8);
-        const hasPosting = d.usage_rights==='creator_post' || d.usage_rights==='both';
-        if(hasPosting) {
-          const half = Math.floor(cut * 0.5);
-          if(!d.payout_1_paid && !d.payout_2_paid) return s + cut;
-          if(d.payout_1_paid && !d.payout_2_paid) return s + half;
-          return s;
-        } else {
-          return d.payout_1_paid ? s : s + cut;
-        }
-      }, 0);
-      el3.textContent = 'PKR ' + totalEarned.toLocaleString();
-      // Add balance card
+   if(isInf) {
+      const { data: earned } = await _sb.from('deals').select('amount,payout_1_paid').eq('creator_id', CU.id).eq('status', 'completed');
+      const total = (earned||[]).reduce((s,d) => s + Math.floor(d.amount * 0.8), 0);
+      el3.textContent = 'PKR ' + total.toLocaleString();
+      const balance = (earned||[]).reduce((s,d) => d.payout_1_paid ? s : s + Math.floor(d.amount * 0.8), 0);
       const balCard = document.getElementById('dc4');
       if(balCard) balCard.textContent = 'PKR ' + balance.toLocaleString();
     } else {
-      const { data: paid } = await _sb.from('deals').select('amount,status,payout_1_paid').eq('brand_id', CU.id).eq('payment_confirmed', true);
-      const totalPaid = (paid||[]).reduce((s,d) => s + (d.amount||0), 0);
-      // Balance = money paid but deal not yet fully settled
-      const balance = (paid||[]).reduce((s,d) => {
-        return d.payout_1_paid ? s : s + (d.amount||0);
-      }, 0);
-      el3.textContent = 'PKR ' + totalPaid.toLocaleString();
+      const { data: paid } = await _sb.from('deals').select('amount,payout_1_paid').eq('brand_id', CU.id).eq('payment_confirmed', true);
+      const total = (paid||[]).reduce((s,d) => s + (d.amount||0), 0);
+      el3.textContent = 'PKR ' + total.toLocaleString();
+      const balance = (paid||[]).reduce((s,d) => d.payout_1_paid ? s : s + (d.amount||0), 0);
       const balCard = document.getElementById('dc4');
       if(balCard) balCard.textContent = 'PKR ' + balance.toLocaleString();
     }
