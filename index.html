@@ -1311,7 +1311,7 @@ else if(d.status==='revision')
 } else if(d.status==='active' && !d.payment_confirmed && !d.payment_trx_id) {
   reel = '<div style="display:flex;flex-direction:column;gap:6px">' +
     '<span style="font-size:11px;font-weight:700;color:#22c55e">✅ Creator Accepted!</span>' +
-    (d.payment_rejection_reason && d.payment_rejection_reason !== 'null' ? '<div style="background:rgba(232,25,44,0.08);border:1px solid rgba(232,25,44,0.3);border-radius:4px;padding:10px;font-size:12px;color:var(--red);font-weight:600">❌ Previous payment rejected — Reason: ' + d.payment_rejection_reason + '</div>' : '') +
+    (d.payment_rejection_reason && String(d.payment_rejection_reason).trim() !== '' && String(d.payment_rejection_reason).toLowerCase() !== 'null' ? '<div style="background:rgba(232,25,44,0.08);border:1px solid rgba(232,25,44,0.3);border-radius:4px;padding:10px;font-size:12px;color:var(--red);font-weight:600">❌ Previous payment rejected — Reason: ' + d.payment_rejection_reason + '</div>' : '') +
     '<span style="font-size:11px;color:var(--white2)">Please complete payment:</span>' +
     '<div style="background:var(--black3);border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:12px;font-size:11px;display:flex;flex-direction:column;gap:8px">' +
     '<div style="font-size:12px;font-weight:700;color:#22c55e;margin-bottom:4px">💰 Total to Pay: PKR '+Number(d.amount).toLocaleString()+'</div>' +
@@ -1726,9 +1726,8 @@ async function renderProfile() {
   const targetId = user.id || id;
   // Fetch completed deals count and reviews
   const { data: completedDeals } = await _sb.from('deals').select('id').eq('creator_id', targetId).eq('status','completed');
-  const avgRating = reviews && reviews.length ? (reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1) : null;
   const dealCount = (completedDeals||[]).length;
-  const avgRating = reviews && reviews.length ? (reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1) : null;
+const avgRating = reviews && reviews.length ? (reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1) : null;
   document.getElementById('profileHero').innerHTML =
     '<div class="profile-big-avatar" style="background:'+col+'20;color:'+col+';border-color:'+col+'">'+ini+'</div>' +
     '<div class="profile-info"><div class="profile-name">'+(user.name||'User')+'</div><div class="profile-handle">'+(user.handle||'@user')+'</div><div class="profile-niche-tag">'+(user.niche||'Creator')+'</div>' +
