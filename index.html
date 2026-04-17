@@ -1343,6 +1343,7 @@ else if(d.status==='revision')
   reel = '<div style="display:flex;flex-direction:column;gap:6px">' +
     '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:var(--black4)" onclick="openReview(\''+d.id+'\',\''+d.video_url+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">▶ View Reel</button>' +
     '<a href="'+d.video_url+'" download target="_blank" style="display:inline-block;padding:5px 10px;border-radius:4px;background:#22c55e;color:white;font-size:11px;font-weight:700;text-align:center;text-decoration:none">⬇️ Download Reel</a>' +
+    '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)" onclick="leaveReview(\''+d.creator_id+'\',\''+(d.creator_name||'Creator').replace(/'/g,'')+'\')">⭐ Leave a Review</button>' +
     '</div>';
 } else {
   reel = '<span style="font-size:12px;color:var(--grey)">Awaiting upload</span>';
@@ -1722,16 +1723,60 @@ async function renderProfile() {
   const col = getColor(user.name||user.id);
   const ini = getInitials(user.name||'U');
   const isOwn = CU && CU.id === (user.id||id);
+  const targetId = user.id || id;
+  // Fetch completed deals count and reviews
+  const { data: completedDeals } = await _sb.from('deals').select('id').eq('creator_id', targetId).eq('status','completed');
+  const { data: reviews } = await _sb.from('reviews').select('*').eq('creator_id', targetId).order('created_at',{ascending:false});
+  const dealCount = (completedDeals||[]).length;
+  const avgRating = reviews && reviews.length ? (reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1) : null;
   document.getElementById('profileHero').innerHTML =
     '<div class="profile-big-avatar" style="background:'+col+'20;color:'+col+';border-color:'+col+'">'+ini+'</div>' +
     '<div class="profile-info"><div class="profile-name">'+(user.name||'User')+'</div><div class="profile-handle">'+(user.handle||'@user')+'</div><div class="profile-niche-tag">'+(user.niche||'Creator')+'</div>' +
-    '<div class="profile-stats-row"><div><div class="profile-stat-val">'+(user.followers||'N/A')+'</div><div class="profile-stat-label">Followers</div></div><div><div class="profile-stat-val">PKR '+(user.price||0)+'</div><div class="profile-stat-label">Per Reel</div></div></div>' +
+    '<div class="profile-stats-row">' +
+    '<div><div class="profile-stat-val">'+(user.followers||'N/A')+'</div><div class="profile-stat-label">Followers</div></div>' +
+    '<div><div class="profile-stat-val">PKR '+(user.price||0)+'</div><div class="profile-stat-label">Per Reel</div></div>' +
+    '<div><div class="profile-stat-val" style="color:#22c55e">'+dealCount+'</div><div class="profile-stat-label">Deals Done</div></div>' +
+    (avgRating ? '<div><div class="profile-stat-val" style="color:#f59e0b">⭐ '+avgRating+'</div><div class="profile-stat-label">Avg Rating</div></div>' : '') +
+    '</div>' +
     '<div class="profile-actions-row">' +
     (isOwn ? '<button class="btn-hero-red" onclick="openEditModal()">Edit Profile ✏️</button><button class="btn-hero-outline" onclick="showPage(\'dashboard\')" style="margin-left:8px">Dashboard</button>'
            : (MODE === 'brand' || !CU ? '<button class="btn-hero-red" onclick="openDeal(\''+user.id+'\',\''+(user.name||'Creator').replace(/'/g,'')+'\','+(user.price||0)+')">Send Deal →</button>' : '') + '<button class="btn-hero-outline" onclick="msgUser(\''+user.id+'\');showPage(\'messages\')" style="margin-left:8px">Message</button>') +
     '</div></div>';
+  // Reviews section
+  const reviewsHTML = reviews && reviews.length
+    ? reviews.map(r => '<div style="border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;margin-bottom:10px">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
+        '<span style="font-weight:700;color:var(--white);font-size:14px">'+(r.brand_name||'Brand')+'</span>'+
+        '<span style="color:#f59e0b;font-size:14px">'+'⭐'.repeat(r.rating)+'<span style="color:var(--grey);font-size:12px;margin-left:4px">('+r.rating+'/5)</span></span>'+
+        '</div>'+
+        (r.comment ? '<p style="font-size:13px;color:var(--white2);margin:0;line-height:1.6">'+r.comment+'</p>' : '')+
+        '<div style="font-size:11px;color:var(--grey);margin-top:6px">'+timeAgo(r.created_at)+'</div>'+
+        '</div>').join('')
+    : '<div style="color:var(--grey);font-size:13px;padding:10px 0">No reviews yet.</div>';
   document.getElementById('profileBody').innerHTML =
-    '<div style="max-width:800px"><div class="section-label">About</div><p style="font-size:15px;color:var(--white2);line-height:1.7">'+(user.bio||(isOwn?'Add a bio to attract more brands!':'No bio yet.'))+'</p></div>';
+    '<div style="max-width:800px">' +
+    '<div class="section-label">About</div>' +
+    '<p style="font-size:15px;color:var(--white2);line-height:1.7;margin-bottom:28px">'+(user.bio||(isOwn?'Add a bio to attract more brands!':'No bio yet.'))+'</p>' +
+    (user.role==='influencer' ? '<div class="section-label">Reviews</div>'+reviewsHTML : '') +
+    '</div>';
+}
+
+// ── REVIEWS ───────────────────────────────────────
+async function leaveReview(creatorId, creatorName) {
+  const rating = parseInt(prompt('Rate '+creatorName+' out of 5 (enter 1-5):'));
+  if(!rating || rating < 1 || rating > 5) { toast('Invalid rating.'); return; }
+  const comment = prompt('Leave a comment (optional):') || '';
+  const brandName = CU.brandName || CU.name || 'Brand';
+  const { error } = await _sb.from('reviews').upsert({
+    creator_id: creatorId,
+    brand_id: CU.id,
+    brand_name: brandName,
+    rating,
+    comment
+  }, { onConflict: 'creator_id,brand_id' });
+  if(error) { toast('Error: '+error.message); return; }
+  toast('Review submitted! ⭐', 'success');
+  renderProfile();
 }
 
 // ── EDIT PROFILE ──────────────────────────────────
