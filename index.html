@@ -708,7 +708,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
       <ul>
         <li>All payments are made to CollabInst first. CollabInst holds funds in escrow until content is approved.</li>
         <li>Creator receives 80% of the agreed deal amount. CollabInst retains 20% as platform fee.</li>
-        <li>For deals requiring Instagram posting, payment is split: 40% on reel delivery and approval, 40% after 30-day posting period is complete.</li>
+        <li>For deals requiring Instagram posting, payment is disbursed in full once the deal is completed and verified by admin.</li>
         <li>CollabInst reserves the right to withhold or refund payment in case of disputes, fraud or policy violations.</li>
         <li>All payments are final once released. No refunds after content is approved and rights transferred.</li>
       </ul>
@@ -897,7 +897,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
     <div class="modal-title">PROOF OF POST</div>
     <div class="modal-sub">Submit proof that you posted the reel on your Instagram</div>
 
-    <div class="watermark-notice">⚠️ Your remaining 40% payment will be held for 30 days after submission to verify the post stays live.</div>
+    <div class="watermark-notice">⚠️ Your payment will be disbursed by admin once the deal is fully verified and complete.</div>
 
     <div style="display:flex;flex-direction:column;gap:14px">
       <div class="form-group">
@@ -1580,8 +1580,7 @@ function updateSplit() {
 
 +'</span></div>' +
     (isSplit ?
-      '<div class="split-row"><span class="split-label">Creator Gets on Delivery (40%)</span><span class="split-val green">PKR '+part1.toFixed(2)+'</span></div>' +
-      '<div class="split-row"><span class="split-label">Creator Gets after 30 Days (40%)</span><span class="split-val green">PKR '+part2.toFixed(2)+'</span></div>'
+      '<div class="split-row"><span class="split-label">Creator Gets (80%)</span><span class="split-val green">PKR '+Math.floor(part1+part2).toLocaleString()+'</span></div>'
     :
       '<div class="split-row"><span class="split-label">Creator Receives (80%)</span><span class="split-val green">PKR '+cut.toLocaleString()+'</span></div>'
     );
@@ -1700,7 +1699,7 @@ async function submitDeal() {
     usage_rights: USAGE_SEL,
   });
   if(error){toast('Error: '+error.message);return;}
-  const usageMsg = USAGE_SEL !== 'brand_only' ? ' Content usage: '+usageLabels[USAGE_SEL]+'. Payment will be split 40% on delivery, 40% after 30-day posting period.' : '';
+  const usageMsg = USAGE_SEL !== 'brand_only' ? ' Content usage: '+usageLabels[USAGE_SEL]+'.' : '';
   await _sb.from('messages').insert({
     sender_id:CU.id, receiver_id:DEAL_TARGET.id,
     text:'Hi! I sent you a deal proposal: "'+description+'" for PKR '+amount+'.'+usageMsg+' Please check your deals and accept or reject the proposal!'
