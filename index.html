@@ -1233,6 +1233,7 @@ async function loadDashOverview() {
     '<div class="dash-card"><div class="dash-card-label">Messages</div><div class="dash-card-val" id="dc2">...</div></div>' +
     '<div class="dash-card"><div class="dash-card-label">Profile</div><div class="dash-card-val red">Live</div></div>' +
     '<div class="dash-card"><div class="dash-card-label">' + (isInf?'Total Earned':'Total Paid') + '</div><div class="dash-card-val green" id="dc3">...</div><div class="dash-card-sub">' + (isInf?'From completed deals':'Across confirmed deals') + '</div></div>' +
+  '<div class="dash-card" style="border-color:rgba(245,158,11,0.3)"><div class="dash-card-label">Balance</div><div class="dash-card-val" id="dc4" style="color:#f59e0b">...</div><div class="dash-card-sub">' + (isInf?'Pending payout from CollabInst':'Held by CollabInst') + '</div></div>' +
     '</div>' +
     '<div class="dash-section-title">' + (isInf?'Brand Opportunities':'Discover Creators') + ' <button onclick="showPage(\'' + (isInf?'board':'browse') + '\')">View All →</button></div>' +
     '<div id="dashQuick" class="browse-grid" style="padding:0;margin-bottom:40px"><div style="color:var(--grey);font-size:14px;padding:20px">Loading...</div></div>';
