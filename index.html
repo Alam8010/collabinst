@@ -1392,7 +1392,15 @@ async function loadDashDeals() {
     '<div><strong>Description:</strong> '+sanitize(d.description||'—')+'</div>' +
     '<div><strong>Deadline:</strong> '+sanitize(d.deadline||'—')+'</div>' +
     '<div><strong>Amount:</strong> <span style="color:#22c55e;font-weight:700">PKR '+Number(d.amount).toLocaleString()+'</span> <span style="color:var(--grey);font-size:11px">(You get PKR '+Math.floor(d.amount*0.8).toLocaleString()+')</span></div>' +
-    '<div><strong>Usage:</strong> '+(d.usage_rights==='reel_creator'?'📸 Post on Your Page':d.usage_rights==='reel_brand'?'📦 Deliver to Brand':d.usage_rights==='reel_both'?'🤝 Post on Both Pages':'—')+'</div>' +
+    '<div><strong>Usage:</strong> '+(
+      d.usage_rights==='reel_creator'?'📸 Post on Your Page':
+      d.usage_rights==='reel_brand'?'📦 Deliver to Brand':
+      d.usage_rights==='reel_both'?'🤝 Post on Both Pages':
+      d.usage_rights==='brand_only'?'🏢 Brand Use Only':
+      d.usage_rights==='both'?'🤝 Both Pages':
+      d.usage_rights==='bundle_reel_story'?'🎬 Reel + Story Bundle':
+      d.usage_rights==='story_both'?'📖 Story on Both Pages':
+      sanitize(d.usage_rights||'—'))+'</div>' +
     '</div>' +
     '<div style="display:flex;gap:6px">' +
     '<button class="admin-ok-btn" onclick="acceptDeal(\''+d.id+'\',\''+d.brand_id+'\')">✅ Accept</button>' +
