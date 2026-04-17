@@ -1021,6 +1021,17 @@ let USAGE_SEL = 'brand_only';
 let PROOF_DEAL_ID = null;
 let PROOF_SCREENSHOT_URL = null;
 
+// ── SANITIZER ─────────────────────────────────────
+function sanitize(str) {
+  if(!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#x27;');
+}
+
 // ── HELPERS ───────────────────────────────────────
 const AVATAR_COLORS = ['#e8192c','#7c3aed','#ea580c','#0ea5e9','#10b981','#f59e0b','#ec4899','#14b8a6'];
 function getColor(str) {
@@ -1450,9 +1461,9 @@ function creatorCard(c) {
   const igIcon = '<svg viewBox="0 0 24 24" style="width:11px;height:11px;fill:var(--red);flex-shrink:0"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>';
   return '<div class="inf-card" onclick="viewProfile(\'' + c.id + '\')">' +
     '<div class="inf-card-top"><div class="inf-avatar" style="background:' + col + '20;color:' + col + '">' + (c.avatar_url ? '<img src="'+c.avatar_url+'" style="width:56px;height:56px;object-fit:cover;border-radius:50%;display:block"/>' : ini) + '</div>' +
-    '<div><div class="inf-name">' + (c.name||'Creator') + '</div>' +
-    '<a href="' + igUrl + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:4px;color:var(--red);font-size:13px;text-decoration:none;margin-top:2px" title="View on Instagram">' + igIcon + handle + '</a>' +
-    '<div class="inf-niche">' + (c.niche||'Creator') + '</div></div></div>' +
+    '<div><div class="inf-name">' + sanitize(c.name||'Creator') + '</div>' +
+    '<a href="' + igUrl + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:4px;color:var(--red);font-size:13px;text-decoration:none;margin-top:2px" title="View on Instagram">' + igIcon + sanitize(handle) + '</a>' +
+    '<div class="inf-niche">' + sanitize(c.niche||'Creator') + '</div></div></div>' +
     '<div class="inf-card-stats"><div class="inf-stat-item"><div class="inf-stat-val">' + (c.followers||'N/A') + '</div><div class="inf-stat-label">Followers</div></div></div>' +
     '<div class="inf-card-footer"><div class="inf-price">From <strong>PKR ' + (c.price||0).toLocaleString() + '</strong>/reel</div>' +
     (MODE === 'brand' || !CU ? '<button class="btn-msg" onclick="event.stopPropagation();openDeal(\'' + c.id + '\',\'' + (c.name||'Creator').replace(/'/g,'') + '\',' + (c.price||0) + ')">Send Deal</button>' : '') + '</div></div>';
@@ -1487,9 +1498,9 @@ const data = (rawPosts||[]).map(p => ({...p, avatar_url: avatarMap[p.user_id]||'
 document.getElementById('boardGrid').innerHTML = data && data.length ? data.map(boardCard).join('') : '<div class="empty-state" style="grid-column:1/-1"><div class="ei">📢</div><h3>No opportunities yet</h3><p>Be the first to post one!</p></div>';
 }
 function boardCard(p) {
-  return '<div class="brand-post"><div class="brand-post-header"><div class="brand-avatar" style="overflow:hidden;padding:0;border-radius:6px;">' + (p.avatar_url ? '<img src="'+p.avatar_url+'" style="width:44px;height:44px;object-fit:cover;border-radius:6px;display:block"/>' : '🏢') + '</div><div><div class="brand-name-txt">' + (p.brand_name||'Brand') + '</div><div class="brand-verified">✦ Verified Brand</div></div></div>' +
-    '<div class="brand-post-title">' + p.title + '</div><div class="brand-post-body">' + p.body + '</div>' +
-    '<div class="brand-post-tags"><span class="brand-tag">' + (p.niche||'General') + '</span></div>' +
+  return '<div class="brand-post"><div class="brand-post-header"><div class="brand-avatar" style="overflow:hidden;padding:0;border-radius:6px;">' + (p.avatar_url ? '<img src="'+p.avatar_url+'" style="width:44px;height:44px;object-fit:cover;border-radius:6px;display:block"/>' : '🏢') + '</div><div><div class="brand-name-txt">' + sanitize(p.brand_name||'Brand') + '</div><div class="brand-verified">✦ Verified Brand</div></div></div>' +
+    '<div class="brand-post-title">' + sanitize(p.title) + '</div><div class="brand-post-body">' + sanitize(p.body) + '</div>' +
+    '<div class="brand-post-tags"><span class="brand-tag">' + sanitize(p.niche||'General') + '</span></div>' +
     '<div class="brand-post-footer"><div class="brand-budget">Budget: <strong>PKR ' + Number(p.budget||0).toLocaleString() + '</strong></div>' +
     '<button class="btn-msg" onclick="msgUser(\'' + p.user_id + '\')">Apply Now</button></div></div>';
 }
@@ -1845,9 +1856,9 @@ async function renderProfile() {
         </div>
       </div>
       <div class="profile-info" style="padding-bottom:4px">
-        <div class="profile-name">${user.name||'User'}</div>
-        <div class="profile-handle">${user.handle||'@user'}</div>
-        <div class="profile-niche-tag">${user.niche||'Creator'}</div>
+        <div class="profile-name">${sanitize(user.name||'User')}</div>
+        <div class="profile-handle">${sanitize(user.handle||'@user')}</div>
+        <div class="profile-niche-tag">${sanitize(user.niche||'Creator')}</div>
         <div class="profile-stats-row">
           <div><div class="profile-stat-val">${user.followers||'N/A'}</div><div class="profile-stat-label">Followers</div></div>
           <div><div class="profile-stat-val">PKR ${user.price||0}</div><div class="profile-stat-label">Per Reel</div></div>
@@ -1868,10 +1879,10 @@ async function renderProfile() {
     ? reviews.map(r =>
         `<div style="border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <span style="font-weight:700;color:var(--white);font-size:14px">${r.brand_name||'Brand'}</span>
+            <span style="font-weight:700;color:var(--white);font-size:14px">${sanitize(r.brand_name||'Brand')}</span>
             <span style="color:#f59e0b;font-size:14px">${'⭐'.repeat(r.rating)}<span style="color:var(--grey);font-size:12px;margin-left:4px">(${r.rating}/5)</span></span>
           </div>
-          ${r.comment ? `<p style="font-size:13px;color:var(--white2);margin:0;line-height:1.6">${r.comment}</p>` : ''}
+          ${r.comment ? `<p style="font-size:13px;color:var(--white2);margin:0;line-height:1.6">${sanitize(r.comment)}</p>` : ''}
           <div style="font-size:11px;color:var(--grey);margin-top:6px">${timeAgo(r.created_at)}</div>
         </div>`).join('')
     : '<div style="color:var(--grey);font-size:13px;padding:10px 0">No reviews yet.</div>';
@@ -1879,7 +1890,7 @@ async function renderProfile() {
   document.getElementById('profileBody').innerHTML =
     `<div style="max-width:800px">
       <div class="section-label">About</div>
-      <p style="font-size:15px;color:var(--white2);line-height:1.7;margin-bottom:28px">${user.bio||(isOwn?'Add a bio to attract more brands!':'No bio yet.')}</p>
+      <p style="font-size:15px;color:var(--white2);line-height:1.7;margin-bottom:28px">${sanitize(user.bio||(isOwn?'Add a bio to attract more brands!':'No bio yet.'))}</p>
       ${user.role==='influencer' ? '<div class="section-label">Reviews</div>'+reviewsHTML : ''}
     </div>`;
 }
