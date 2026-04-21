@@ -329,6 +329,12 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
 .progress-label{font-size:12px;color:var(--grey);margin-top:6px;text-align:center;}
 .video-preview{margin-top:16px;border-radius:6px;overflow:hidden;border:1px solid var(--border);}
 .video-preview video{width:100%;max-height:280px;display:block;}
+.media-preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:16px;}
+.media-preview-item{position:relative;border-radius:6px;overflow:hidden;border:1px solid var(--border);background:var(--black3);}
+.media-preview-item video,.media-preview-item img{width:100%;height:140px;object-fit:cover;display:block;}
+.media-preview-item .media-label{font-size:11px;font-weight:600;color:var(--grey);padding:6px 10px;background:var(--black2);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.media-preview-item .media-remove{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:rgba(232,25,44,0.85);color:white;font-size:13px;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.upload-count-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:2px;background:rgba(232,25,44,0.1);border:1px solid rgba(232,25,44,0.3);color:var(--red);font-size:12px;font-weight:700;margin-top:10px;}
 
 /* ADMIN */
 .admin-tab{padding:16px 24px;background:transparent;color:var(--grey);font-size:13px;font-weight:600;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all 0.2s;font-family:'Barlow',sans-serif;white-space:nowrap;}
@@ -931,20 +937,21 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:48px 4
 <div class="modal-overlay" id="uploadModal">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('uploadModal')">✕</button>
-    <div class="modal-title">DELIVER YOUR REEL</div>
-    <div class="modal-sub" id="uploadModalSub">Upload your completed reel</div>
+    <div class="modal-title">DELIVER CONTENT</div>
+    <div class="modal-sub" id="uploadModalSub">Upload your completed content</div>
     <div class="upload-zone" id="uploadZone">
-      <input type="file" id="videoFileInput" accept="video/*" onchange="onFileSelected(event)"/>
+      <input type="file" id="videoFileInput" accept="video/*,image/*" multiple onchange="onFileSelected(event)"/>
       <div class="upload-icon">🎬</div>
-      <div class="upload-title">Drop your reel here</div>
-      <div class="upload-sub">MP4, MOV — Max 100MB</div>
+      <div class="upload-title">Drop files here</div>
+      <div class="upload-sub">Videos (MP4, MOV) or Images — Max 100MB each · Up to 3 files</div>
     </div>
+    <div id="uploadCountBadge" style="display:none"></div>
     <div id="uploadProgressWrap" style="display:none;margin-top:16px">
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       <div class="progress-label" id="progressLabel">Uploading...</div>
     </div>
     <div id="videoPreviewWrap"></div>
-    <button class="auth-submit" id="submitVideoBtn" onclick="submitVideo()" style="display:none;margin-top:16px">Submit Reel →</button>
+    <button class="auth-submit" id="submitVideoBtn" onclick="submitVideo()" style="display:none;margin-top:16px">Submit Content →</button>
   </div>
 </div>
 
@@ -1005,6 +1012,7 @@ const CL_CLOUD = 'dwy5loxsn';
 const CL_PRESET = 'collabinst_uploads';
 
 // ── STATE ─────────────────────────────────────────
+let DEAL_MAP = {};
 let CU = null; // current user profile object
 let MODE = 'influencer';
 let ROLE_SEL = 'influencer';
@@ -1014,7 +1022,8 @@ let NICHE_FILTER = 'all';
 let DEAL_TARGET = null;
 let UPLOAD_DEAL_ID = null;
 let REVIEW_DEAL = null;
-let UPLOADED_URL = null;
+let UPLOADED_URL = null;       // kept for backward compat (holds first URL)
+let UPLOADED_URLS = [];        // holds up to 3 uploaded URLs
 let MSG_PARTNER = null;
 let MSG_CHANNEL = null; // ADD THIS LINE
 let USAGE_SEL = 'brand_only';
@@ -1366,6 +1375,7 @@ async function loadDashDeals() {
   const main = document.getElementById('dashMain');
   main.innerHTML = '<div class="dash-header"><div class="dash-greeting">MY <span>DEALS</span></div></div><div id="dealsWrap" style="background:var(--black2);border:1px solid var(--border);border-radius:4px;overflow:hidden"><div style="padding:24px;color:var(--grey)">Loading...</div></div>';
   const { data: deals } = await _sb.from('deals').select('*').or('brand_id.eq.' + CU.id + ',creator_id.eq.' + CU.id).order('created_at',{ascending:false});
+  (deals||[]).forEach(d => DEAL_MAP[d.id] = d);
   const wrap = document.getElementById('dealsWrap');
   if(!wrap) return;
   if(!deals || !deals.length) { wrap.innerHTML = '<div class="empty-state"><div class="ei">💼</div><h3>No deals yet</h3><p>Deals will appear here once created.</p></div>'; return; }
@@ -1385,39 +1395,20 @@ async function loadDashDeals() {
       const brandProfile = profileMap[d.brand_id] || {};
       const creatorProfile = profileMap[d.creator_id] || {};
       if(d.status==='pending')
-  reel = '<div style="display:flex;flex-direction:column;gap:8px">' +
-    '<div style="background:var(--black3);border:1px solid rgba(232,25,44,0.3);border-radius:4px;padding:10px;font-size:12px;display:flex;flex-direction:column;gap:6px">' +
-    '<div style="font-weight:700;color:var(--red);margin-bottom:2px">📋 Deal Details</div>' +
-    '<div><strong>From Brand:</strong> '+sanitize(brandProfile.name||'—')+'</div>' +
-    '<div><strong>Description:</strong> '+sanitize(d.description||'—')+'</div>' +
-    '<div><strong>Deadline:</strong> '+sanitize(d.deadline||'—')+'</div>' +
-    '<div><strong>Amount:</strong> <span style="color:#22c55e;font-weight:700">PKR '+Number(d.amount).toLocaleString()+'</span> <span style="color:var(--grey);font-size:11px">(You get PKR '+Math.floor(d.amount*0.8).toLocaleString()+')</span></div>' +
-    '<div><strong>Usage:</strong> '+(
-      d.usage_rights==='reel_creator'?'📸 Post on Your Page':
-      d.usage_rights==='reel_brand'?'📦 Deliver to Brand':
-      d.usage_rights==='reel_both'?'🤝 Post on Both Pages':
-      d.usage_rights==='brand_only'?'🏢 Brand Use Only':
-      d.usage_rights==='both'?'🤝 Both Pages':
-      d.usage_rights==='bundle_reel_story'?'🎬 Reel + Story Bundle':
-      d.usage_rights==='story_both'?'📖 Story on Both Pages':
-      sanitize(d.usage_rights||'—'))+'</div>' +
-    '</div>' +
-    '<div style="display:flex;gap:6px">' +
+  reel = '<div style="display:flex;gap:6px;align-items:center">' +
+    '<button class="btn-ghost" style="font-size:11px;padding:5px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:#ccc;cursor:pointer" onclick="openDealDetails(\''+d.id+'\',\''+d.brand_id+'\')">View details</button>' +
     '<button class="admin-ok-btn" onclick="acceptDeal(\''+d.id+'\',\''+d.brand_id+'\')">✅ Accept</button>' +
     '<button class="admin-del-btn" onclick="rejectDeal(\''+d.id+'\',\''+d.brand_id+'\')">❌ Reject</button>' +
-    '</div></div>';
+    '</div>';
 else if(d.status==='active' && d.payment_confirmed)
-  reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openUpload(\''+d.id+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\')">📤 Upload Reel</button>';
+  reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openUpload(\''+d.id+'\')">📤 Upload Reel</button>';
 else if(d.status==='active' && !d.payment_confirmed)
   reel = '<span style="font-size:11px;color:#f59e0b;font-weight:600;padding:4px 10px;background:rgba(245,158,11,0.15);border-radius:2px">⏳ Awaiting Payment</span>';
 else if(d.status==='revision')
   reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openUpload(\''+d.id+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\')">🔄 Re-upload</button>';
       else if(d.status==='delivered') reel = '<span class="delivered-badge">📦 Awaiting Review</span>';
-      else if(d.status==='completed') reel = '<span class="delivered-badge">✅ Approved</span>';
-    } else {
-   if(d.status==='under_review') {
-  reel = '<span style="font-size:12px;color:#f59e0b;font-weight:600;padding:4px 10px;background:rgba(245,158,11,0.15);border-radius:2px">🔍 Reel Being Reviewed by Admin</span>';
-} else if(d.status==='delivered' && d.video_url) {
+else if(d.status==='completed') reel = '<div style="display:flex;flex-direction:column;gap:4px"><span class="delivered-badge">✅ Approved</span><button onclick="reportDeal(\''+d.id+'\',\'creator\')" style="margin-top:4px;padding:4px 10px;border-radius:3px;border:1px solid rgba(232,25,44,0.3);background:rgba(232,25,44,0.06);color:var(--red);font-size:11px;font-weight:600;cursor:pointer">🚩 Report Issue</button></div>';    } else {
+   if(d.status==='under_review' || (d.status==='delivered' && d.video_url)) {
   const previewUrl = getWatermarkedUrl(d.video_url);
   reel = '<button class="btn-msg" style="font-size:11px;padding:5px 10px" onclick="openReview(\''+d.id+'\',\''+previewUrl+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">🎬 Review Reel</button>';
 } else if(d.status==='active' && !d.payment_confirmed && !d.payment_trx_id) {
@@ -1455,14 +1446,23 @@ else if(d.status==='revision')
   reel = '<div style="display:flex;flex-direction:column;gap:6px">' +
     '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:var(--black4)" onclick="openReview(\''+d.id+'\',\''+d.video_url+'\',\''+(d.description||'Deal').replace(/'/g,'')+'\',\''+d.creator_id+'\')">▶ View Reel</button>' +
     '<a href="'+d.video_url+'" download target="_blank" style="display:inline-block;padding:5px 10px;border-radius:4px;background:#22c55e;color:white;font-size:11px;font-weight:700;text-align:center;text-decoration:none">⬇️ Download Reel</a>' +
-    '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)" onclick="leaveReview(\''+d.creator_id+'\',\''+(d.creator_name||'Creator').replace(/'/g,'')+'\')">⭐ Leave a Review</button>' +
+    '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)" onclick="leaveReview(\''+d.creator_id+'\',\'Creator\')">⭐ Leave a Review</button>' +
+    '<button class="btn-msg" style="font-size:11px;padding:5px 10px;background:rgba(232,25,44,0.1);color:var(--red);border:1px solid rgba(232,25,44,0.3)" onclick="reportDeal(\''+d.id+'\',\'brand\')">🚩 Report Issue</button>' +
     '</div>';
 } else {
   reel = '<span style="font-size:12px;color:var(--grey)">Awaiting upload</span>';
 }
     }
     const rowProfile = isInf ? (profileMap[d.brand_id]||{}) : (profileMap[d.creator_id]||{});
-    return '<tr><td><strong>'+sanitize(rowProfile.name||'—')+'</strong></td><td>' + sanitize(d.description||'Deal') + '</td><td><strong>PKR ' + Number(d.amount).toLocaleString() + '</strong></td><td style="color:#22c55e;font-weight:700">PKR ' + Math.floor(d.amount*0.8) + '</td><td><span class="deal-status ' + sc + '">' + sl + '</span></td><td>' + reel + '</td><td>' + new Date(d.created_at).toLocaleDateString() + '</td></tr>';
+    const descFull = d.description || 'Deal';
+const descShort = descFull.length > 40 ? descFull.slice(0, 40) + '...' : descFull;
+const viewMoreId = 'desc_' + d.id;
+const descCell = descFull.length > 40
+  ? sanitize(descShort) +
+    ' <a href="#" onclick="event.preventDefault();var el=document.getElementById(\''+viewMoreId+'\');el.style.display=el.style.display===\'none\'?\'block\':\'none\';this.textContent=el.style.display===\'none\'?\'view more\':\'view less\'" style="color:var(--red);font-size:11px;font-weight:600;white-space:nowrap">view more</a>' +
+    '<div id="'+viewMoreId+'" style="display:none;font-size:13px;color:var(--white2);margin-top:6px;line-height:1.6;background:var(--black3);border:1px solid var(--border);border-radius:4px;padding:8px 10px">' + sanitize(descFull) + '</div>'
+  : sanitize(descFull);
+return '<tr><td><strong>'+sanitize(rowProfile.name||'—')+'</strong></td><td>' + descCell + '</td><td><strong>PKR ' + Number(d.amount).toLocaleString() + '</strong></td><td style="color:#22c55e;font-weight:700">PKR ' + Math.floor(d.amount*0.8) + '</td><td><span class="deal-status ' + sc + '">' + sl + '</span></td><td>' + reel + '</td><td>' + new Date(d.created_at).toLocaleDateString() + '</td></tr>';
   }).join('');
  wrap.innerHTML = '<div style="overflow-x:auto;width:100%"><table class="deals-table" style="min-width:1000px"><thead><tr><th>'+(isInf?'Brand':'Creator')+'</th><th>Description</th><th>Amount</th><th>' + (isInf?'Your Cut':'Creator Gets') + ' (80%)</th><th>Status</th><th>Reel</th><th>Date</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
 }
@@ -2096,65 +2096,131 @@ async function loadNotifications() {
 }
 
 // ── VIDEO UPLOAD ──────────────────────────────────
-function openUpload(dealId, dealDesc) {
-  UPLOAD_DEAL_ID = dealId; UPLOADED_URL = null;
-  document.getElementById('uploadModalSub').textContent = 'Upload your reel for: ' + dealDesc;
-  document.getElementById('uploadProgressWrap').style.display = 'none';
+function openUpload(dealId) {
+  const deal = DEAL_MAP[dealId] || {};
+  const dealDesc = deal.description || 'Deal';
+  UPLOAD_DEAL_ID = dealId; UPLOADED_URL = null; UPLOADED_URLS = [];
+  document.getElementById('uploadModalSub').textContent = 'Upload your content for: ' + dealDesc;  document.getElementById('uploadProgressWrap').style.display = 'none';
   document.getElementById('videoPreviewWrap').innerHTML = '';
+  document.getElementById('uploadCountBadge').style.display = 'none';
+  document.getElementById('uploadCountBadge').innerHTML = '';
   document.getElementById('submitVideoBtn').style.display = 'none';
   document.getElementById('submitVideoBtn').disabled = false;
-document.getElementById('submitVideoBtn').textContent = 'Submit Reel →';
+  document.getElementById('submitVideoBtn').textContent = 'Submit Content →';
   document.getElementById('progressFill').style.width = '0%';
   document.getElementById('progressFill').style.background = 'var(--red)';
   document.getElementById('videoFileInput').value = '';
   openModal('uploadModal');
 }
 function onFileSelected(e) {
-  const file = e.target.files[0];
-  if(!file) return;
-  if(file.size > 100*1024*1024){ toast('File too large. Max 100MB.'); return; }
-  uploadToCloudinary(file);
+  const files = Array.from(e.target.files);
+  if(!files.length) return;
+
+  // Enforce max 3 files total
+  const remaining = 3 - UPLOADED_URLS.length;
+  if(remaining <= 0){ toast('Maximum 3 files already uploaded.'); e.target.value=''; return; }
+  const toUpload = files.slice(0, remaining);
+  if(files.length > remaining) toast('Only ' + remaining + ' more file(s) allowed. Extra files ignored.');
+
+  for(const file of toUpload){
+    if(file.size > 100*1024*1024){ toast(file.name + ' is too large. Max 100MB per file.'); continue; }
+    uploadToCloudinary(file);
+  }
+  e.target.value = ''; // reset so same file can be re-added if removed
 }
+
 function uploadToCloudinary(file) {
   const pw = document.getElementById('uploadProgressWrap');
   const pf = document.getElementById('progressFill');
   const pl = document.getElementById('progressLabel');
   const sb = document.getElementById('submitVideoBtn');
   pw.style.display = 'block';
-  pl.textContent = 'Uploading... 0%';
+  sb.style.display = 'none';
+  pl.textContent = 'Uploading ' + file.name + '...';
+  pf.style.width = '0%';
+  pf.style.background = 'var(--red)';
+
+  const isVideo = file.type.startsWith('video/');
+  const endpoint = isVideo
+    ? 'https://api.cloudinary.com/v1_1/'+CL_CLOUD+'/video/upload'
+    : 'https://api.cloudinary.com/v1_1/'+CL_CLOUD+'/image/upload';
+
   const fd = new FormData();
   fd.append('file', file);
   fd.append('upload_preset', CL_PRESET);
   fd.append('cloud_name', CL_CLOUD);
+
   const xhr = new XMLHttpRequest();
-  xhr.upload.addEventListener('progress', e => {
-    if(e.lengthComputable){ const p=Math.round(e.loaded/e.total*100); pf.style.width=p+'%'; pl.textContent='Uploading... '+p+'%'; }
+  xhr.upload.addEventListener('progress', ev => {
+    if(ev.lengthComputable){ const p=Math.round(ev.loaded/ev.total*100); pf.style.width=p+'%'; pl.textContent='Uploading '+file.name+'... '+p+'%'; }
   });
   xhr.addEventListener('load', () => {
     if(xhr.status===200) {
       const d = JSON.parse(xhr.responseText);
-      UPLOADED_URL = d.secure_url;
-console.log('Uploaded URL:', UPLOADED_URL);
-      pf.style.width='100%'; pf.style.background='#22c55e'; pl.textContent='Upload complete! ✅';
-      document.getElementById('videoPreviewWrap').innerHTML = '<div class="video-preview" style="margin-top:16px"><video controls src="'+UPLOADED_URL+'"></video></div><div style="margin-top:8px;font-size:13px;color:#22c55e;font-weight:600">✅ Reel uploaded! Review it above then submit.</div>';
-      sb.textContent = 'Submit Reel →';
-sb.disabled = false;
-sb.style.display = 'block';
-    } else { pl.textContent='Upload failed. Try again.'; pf.style.background='var(--red)'; }
+      const url = d.secure_url;
+      UPLOADED_URLS.push(url);
+      UPLOADED_URL = UPLOADED_URLS[0]; // backward compat
+      pf.style.width='100%'; pf.style.background='#22c55e';
+      pl.textContent='Uploaded ' + UPLOADED_URLS.length + ' of 3 file(s). ✅';
+      renderUploadedPreviews(isVideo);
+      updateUploadBadge();
+      if(UPLOADED_URLS.length > 0){ sb.textContent='Submit Content →'; sb.disabled=false; sb.style.display='block'; }
+    } else { pl.textContent='Upload failed for '+file.name+'. Try again.'; pf.style.background='var(--red)'; }
   });
   xhr.addEventListener('error', () => { pl.textContent='Upload failed. Check connection.'; });
-  xhr.open('POST', 'https://api.cloudinary.com/v1_1/'+CL_CLOUD+'/video/upload');
+  xhr.open('POST', endpoint);
   xhr.send(fd);
 }
+
+function renderUploadedPreviews() {
+  const wrap = document.getElementById('videoPreviewWrap');
+  if(!UPLOADED_URLS.length){ wrap.innerHTML=''; return; }
+  let html = '<div class="media-preview-grid">';
+  UPLOADED_URLS.forEach((url, i) => {
+    const isVid = url.includes('/video/') || url.match(/\.(mp4|mov|webm|ogg)(\?|$)/i);
+    const media = isVid
+      ? '<video controls src="'+url+'" style="width:100%;height:140px;object-fit:cover;display:block"></video>'
+      : '<img src="'+url+'" style="width:100%;height:140px;object-fit:cover;display:block"/>';
+    html += '<div class="media-preview-item">'
+      + media
+      + '<button class="media-remove" onclick="removeUploadedFile('+i+')" title="Remove">✕</button>'
+      + '<div class="media-label">File '+(i+1)+'</div>'
+      + '</div>';
+  });
+  html += '</div><div style="margin-top:8px;font-size:13px;color:#22c55e;font-weight:600">✅ '+UPLOADED_URLS.length+' file(s) ready. Review above then submit.</div>';
+  wrap.innerHTML = html;
+}
+
+function removeUploadedFile(index) {
+  UPLOADED_URLS.splice(index, 1);
+  UPLOADED_URL = UPLOADED_URLS[0] || null;
+  renderUploadedPreviews();
+  updateUploadBadge();
+  const sb = document.getElementById('submitVideoBtn');
+  if(UPLOADED_URLS.length === 0) sb.style.display='none';
+}
+
+function updateUploadBadge() {
+  const badge = document.getElementById('uploadCountBadge');
+  if(UPLOADED_URLS.length === 0){ badge.style.display='none'; return; }
+  badge.style.display='block';
+  badge.innerHTML = '<span class="upload-count-badge">📎 '+UPLOADED_URLS.length+'/3 file(s) added'+(UPLOADED_URLS.length<3?' — you can add '+(3-UPLOADED_URLS.length)+' more':' — limit reached')+'</span>';
+}
+
 async function submitVideo() {
-  if(!UPLOADED_URL||!UPLOAD_DEAL_ID) return;
+  if(!UPLOADED_URLS.length||!UPLOAD_DEAL_ID) return;
   const btn = document.getElementById('submitVideoBtn');
   btn.textContent='Submitting...'; btn.disabled=true;
-  const { data: deal, error } = await _sb.from('deals').update({ video_url:UPLOADED_URL, status:'under_review' }).eq('id',UPLOAD_DEAL_ID).select().single();
-  if(error){ toast('Error: '+error.message); btn.textContent='Submit Reel →'; btn.disabled=false; return; }
-  if(deal) await _sb.from('messages').insert({ sender_id:CU.id, receiver_id:deal.brand_id, text:'I have submitted my reel for admin review. You will be notified once it is approved and ready for your review!' });
-  closeModal('uploadModal');
-  toast('Reel submitted for review! You will be notified once approved. 🎉','success');
+  // Store all URLs as JSON array in video_url column
+  const videoUrlValue = UPLOADED_URLS.length === 1 ? UPLOADED_URLS[0] : JSON.stringify(UPLOADED_URLS);
+  const { data: deal, error } = await _sb.from('deals').update({ video_url:UPLOADED_URL, status:'delivered' }).eq('id',UPLOAD_DEAL_ID).select().single();
+if(error){ toast('Error: '+error.message); btn.textContent='Submit Reel →'; btn.disabled=false; return; }
+if(deal) {
+  await _sb.from('messages').insert({ sender_id:CU.id, receiver_id:deal.brand_id, text:'🎬 Your reel is ready for review! Please go to your Deals section to review and approve it.' });
+  await _sb.from('messages').insert({ sender_id:CU.id, receiver_id:'00000000-0000-0000-0000-000000000000', text:'📋 REEL COPY — Deal #'+deal.id.slice(0,8).toUpperCase()+' | Creator: '+CU.name+' | Brand ID: '+deal.brand_id+' | Reel URL: '+UPLOADED_URL });
+}
+closeModal('uploadModal');
+  toast('Content submitted for review! You will be notified once approved. 🎉','success');
   loadDashDeals();
 }
 
@@ -2604,7 +2670,92 @@ async function submitProof() {
   toast('Proof submitted! Your remaining payment will be released after 30 days. 🎉', 'success');
   loadDashDeals();
 }
-
+async function reportDeal(dealId, reporterRole) {
+  const reason = prompt('Describe the issue (this will be sent to CollabInst admin):');
+  if(!reason || !reason.trim()) return;
+  const deal = DEAL_MAP[dealId];
+  const reporterName = CU.name;
+  const msg = '🚨 REPORT from '+reporterRole.toUpperCase()+' — '+reporterName+
+    '\nDeal ID: #'+(dealId.slice(0,8).toUpperCase())+
+    '\nReason: '+reason+
+    (deal ? '\nAmount: PKR '+deal.amount+' | Status: '+deal.status : '');
+  await _sb.from('messages').insert({
+    sender_id: CU.id,
+    receiver_id: '00000000-0000-0000-0000-000000000000',
+    text: msg
+  });
+  toast('Report submitted to CollabInst admin. ✅', 'success');
+}
+function openDealDetails(dealId, brandId) {
+  const deal = DEAL_MAP[dealId];
+  if(!deal) { toast('Could not load deal details.'); return; }
+  const usageLabels = {
+    reel_creator:'🎬 Reel on Creator\'s Page', reel_brand:'📦 Reel Delivered to Brand',
+    reel_both:'🤝 Reel on Both Pages', story_creator:'📖 Story on Creator\'s Page',
+    story_brand:'📋 Story Delivered to Brand', story_both:'🔗 Story on Both Pages',
+    image_creator:'🖼️ Image Post on Creator\'s Page', image_brand:'📷 Image Delivered to Brand',
+    image_both:'🗂️ Image on Both Pages', bundle_reel_story:'📦 Reel + Story', bundle_reel_image:'🎞️ Reel + Image'
+  };
+  const fee = Math.round(deal.amount * 0.2);
+  const cut = deal.amount - fee;
+  const date = new Date(deal.created_at).toLocaleDateString();
+  const existing = document.getElementById('dealDetailOverlay');
+  if(existing) existing.remove();
+  const box = document.createElement('div');
+  box.id = 'dealDetailOverlay';
+  box.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px';
+  box.innerHTML = `
+    <div style="background:var(--black2);border:1px solid var(--border);border-radius:6px;width:100%;max-width:500px;padding:36px 32px;position:relative;max-height:90vh;overflow-y:auto">
+      <button onclick="document.getElementById('dealDetailOverlay').remove()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--grey);font-size:20px;cursor:pointer;line-height:1">✕</button>
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:8px">Deal Proposal</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:4px;color:var(--white)">DEAL DETAILS</div>
+      <div style="font-size:13px;color:var(--grey);margin-bottom:24px">Received ${date}</div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px">
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--grey);margin-bottom:6px">Description</div>
+          <div style="font-size:14px;color:var(--white2);line-height:1.7;background:var(--black3);border:1px solid var(--border);border-radius:4px;padding:12px 14px">${sanitize(deal.description||'—')}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--grey);margin-bottom:6px">Deadline</div>
+            <div style="font-size:14px;color:var(--white2);background:var(--black3);border:1px solid var(--border);border-radius:4px;padding:10px 12px">${sanitize(deal.deadline||'—')}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--grey);margin-bottom:6px">Content type</div>
+            <div style="font-size:13px;color:var(--white2);background:var(--black3);border:1px solid var(--border);border-radius:4px;padding:10px 12px">${usageLabels[deal.usage_rights]||deal.usage_rights||'—'}</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--black3);border:1px solid var(--border);border-radius:4px;padding:16px;margin-bottom:24px">
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:13px;border-bottom:1px solid var(--border)">
+          <span style="color:var(--grey)">Deal amount</span>
+          <span style="font-weight:700;color:var(--white)">PKR ${Number(deal.amount).toLocaleString()}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:13px;border-bottom:1px solid var(--border)">
+          <span style="color:var(--grey)">CollabInst fee (20%)</span>
+          <span style="font-weight:700;color:var(--red)">− PKR ${fee.toLocaleString()}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:14px">
+          <span style="color:var(--grey)">You receive (80%)</span>
+          <span style="font-weight:700;color:#22c55e;font-size:16px">PKR ${cut.toLocaleString()}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button id="ddAcceptBtn" style="flex:1;padding:13px;border-radius:4px;background:#22c55e;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:'Barlow',sans-serif">✅ Accept Deal</button>
+        <button id="ddRejectBtn" style="flex:1;padding:13px;border-radius:4px;background:rgba(232,25,44,0.1);border:1px solid rgba(232,25,44,0.4);color:var(--red);font-size:14px;font-weight:700;cursor:pointer;font-family:'Barlow',sans-serif;background-color:transparent">❌ Reject</button>
+      </div>
+    </div>`;
+  box.addEventListener('click', e => { if(e.target === box) box.remove(); });
+  document.body.appendChild(box);
+  document.getElementById('ddAcceptBtn').addEventListener('click', () => {
+    box.remove();
+    acceptDeal(dealId, brandId);
+  });
+  document.getElementById('ddRejectBtn').addEventListener('click', () => {
+    box.remove();
+    rejectDeal(dealId, brandId);
+  });
+}
 // ── INIT ──────────────────────────────────────────
 async function init() {
   // Check if this is a password reset redirect
